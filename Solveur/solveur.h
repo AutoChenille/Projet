@@ -2,10 +2,7 @@
 
 #pragma once
 
-void check_possibilities(int matrix[][9][9]);
+void print_matrix(int matrix[9][9]);
 
-void check_line(int matrix[][9][9], size_t i, size_t j);
-void check_column(int matrix[][9][9], size_t i, size_t j);
-void check_zone(int matrix[][9][9], size_t i, size_t j);
-
-void intersect(int m1[], int m2[], int m3[]);
+int is_possible(int matrix[9][9], size_t i, size_t j, int n);
+void solve(int matrix[9][9]);
