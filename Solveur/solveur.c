@@ -2,21 +2,26 @@
 #include "solveur.h"
 
 
-
-void print_matrix(int matrix[9][9])
+void print_matrix(Matrix *matrix)
 {
-    for(size_t i = 0; i < 9; i++)
+    //Pretty print for matrix
+    //place a '-' line each tier of the total number of line
+    //place a '|' column each tier of the total number of column
+    
+    for(size_t i = 0; i < matrix->size; i++)
     {
-        if(i == 0 || i == 3 || i == 6 )
+        //place a '-' line
+        if(i == 0 || i == matrix->size/3 || i == 2*matrix->size/3 )
             printf("\n -----------");
 
         printf("\n");
         printf("|");
-        for(size_t j = 0; j < 9; j++)
+        for(size_t j = 0; j < matrix->size; j++)
         {
-            printf("%i", matrix[i][j]);
+            printf("%i", matrix->data[i * matrix->size + j]);
 
-            if(j == 2 || j == 5)
+            //place a '|'
+            if(j == matrix->size/3 - 1 || j == 2*matrix->size/3 - 1)
                 printf("|");
         }
         printf("|");
