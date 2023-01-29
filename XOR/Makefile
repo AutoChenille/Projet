@@ -19,6 +19,6 @@ matrix: ${OBJ}
 clean:
 	${RM} ${OBJ}
 	${RM} ${DEP}
-	${RM} main
+	${RM} matrix
 
 # END

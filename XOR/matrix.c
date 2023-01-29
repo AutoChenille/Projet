@@ -58,7 +58,7 @@ int main()
 	//It also initializes the training inputs and outputs.
 	//It works with 2 inputs, 2 hidden nodes and 1 output.
 	
-	const double lr = 0.4f;// learning rate can change to train faster or slower
+	const double lr = 0.1f;// learning rate can change to train faster or slower
 
 	double hiddenLayer[NumHiddenNodes];
 	double outputLayer[NumOutputs];
@@ -102,7 +102,7 @@ int main()
 
 	int trainingSetOrder[NumTrainingSets] = { 0,1,2,3 }; //array to shuffle the training sets
 
-	int numEpochs = 10000; //number of times the training set will be used to train the network can be changed
+	int numEpochs = 100000; //number of times the training set will be used to train the network can be changed
 
 	//TRAINING
 
