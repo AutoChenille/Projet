@@ -1,4 +1,4 @@
-//xor 
+//xor
 //0 0 -> 0
 //1 0 -> 1
 //0 1 -> 1
@@ -106,7 +106,7 @@ int main()
 
 	//TRAINING
 
-	for(int epoch = 0; epoch < numEpochs; epoch++ )
+	for(int epoch = 0; epoch < numEpochs; epoch++)
 	{
 		shuffle(trainingSetOrder, NumTrainingSets); //shuffle the training sets
 		for(int x = 0; x < NumTrainingSets; x++)
@@ -188,7 +188,7 @@ int main()
 					hiddenLayerWeights[k][j] += lr * deltaHidden[j] * training_inputs[i][k];
 				}
 			}
-
+                        /* debugging
 			fputs("]\nFinal hidden weights:\n[", stdout);
 			for(int j = 0; j < NumImputs; j++)
 			{
@@ -203,7 +203,7 @@ int main()
 			fputs("]\nFinal hidden bias:\n[", stdout);
 			for(int j = 0; j < NumHiddenNodes; j++)
 			{
-				printf("%f ", hiddenLayerBias[j]);
+				printf("%g ", hiddenLayerBias[j]);
 			}
 
 
@@ -225,9 +225,10 @@ int main()
 			}
 
 			fputs("] \n", stdout);
+                        */
 		}
-		return 0;
 
 	}
 
+	return 0;
 }

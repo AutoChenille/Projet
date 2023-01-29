@@ -2,9 +2,9 @@
 
 CC = gcc
 CPPFLAGS = -MMD
-CFLAGS = -Wall -Wextra -Werror -lm
+CFLAGS = -Wall -Wextra
 LDFLAGS =
-LDLIBS =
+LDLIBS = -lm
 
 SRC = matrix.c
 OBJ = ${SRC:.c=.o}
