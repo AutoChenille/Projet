@@ -208,12 +208,27 @@ int main()
 				printf("%f ", hiddenLayerBias[j]);
 			}
 
+
+			fputs("]\nFinal output weights:\n[", stdout);
+			for(int j = 0; j < NumHiddenNodes; j++)
+			{
+				fputs("[", stdout);
+				for(inr k = 0; k < NumOutputs; k++)
+				{
+					printf("%f ", outputLayerWeights[j][k]);
+				}
+				fputs("] \n", stdout);
+			}
+
 			fputs("]\nFinal output bias:\n[", stdout);
 			for(inr j = 0; j < NumOutputs; j++)
 			{
 				printf("%f ", outputLayerBias[j]);
 			}
+
+			fputs("] \n", stdout);
 		}
+		return 0;
 
 	}
 
