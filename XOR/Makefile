@@ -10,7 +10,7 @@ SRC = matrix.c
 OBJ = ${SRC:.c=.o}
 DEP = ${SRC:.c=.d}
 
-main: ${OBJ}
+matrix: ${OBJ}
 
 -include ${DEP}
 

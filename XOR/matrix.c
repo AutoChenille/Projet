@@ -58,7 +58,7 @@ int main()
 	//It also initializes the training inputs and outputs.
 	//It works with 2 inputs, 2 hidden nodes and 1 output.
 	
-	const double lr = 0.1f;// learning rate can change to train faster or slower
+	const double lr = 0.4f;// learning rate can change to train faster or slower
 
 	double hiddenLayer[NumHiddenNodes];
 	double outputLayer[NumOutputs];
@@ -138,7 +138,7 @@ int main()
 			}
 		
 			printf("Epoch : %d Input: %f %f Output: %f Expected: %f \n",
-				epoch, training_inputs[i][0], training_inputs[i][1], outputLayer[0], training_outputs[i][0]);
+				epoch + 1, training_inputs[i][0], training_inputs[i][1], outputLayer[0], training_outputs[i][0]);
 
 		
 
