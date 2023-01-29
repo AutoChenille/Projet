@@ -21,7 +21,7 @@ matrix *Matrix(size_t row, size_t col);
 matrix *m_copy(matrix m1);
 
 //Add m2 to m1 and return the result
-matrix *m_sum(matrix m1, matrix m2);
+matrix *m_add(matrix m1, matrix m2);
 
 //Substract m2 to m1 and return the result
 matrix *m_sub(matrix m1, matrix m2);
@@ -34,3 +34,9 @@ matrix *m_mul(const matrix m1, const matrix m2);
 
 //Return the transposed matrix of m1
 matrix *m_transpose(matrix m1);
+
+//Apply function f on all elements of m1 and return the resulted matrix
+matrix *m_apply(double (*f)(double), matrix m1);
+
+//Return the sum of all elements of m1
+double m_sum(matrix m1);

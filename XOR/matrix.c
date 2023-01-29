@@ -43,7 +43,7 @@ matrix *m_copy(matrix m1)
     return copy;
 }
 
-matrix *m_sum(matrix m1, matrix m2)
+matrix *m_add(matrix m1, matrix m2)
 {
     //Add m2 to m1 and return the result
     
@@ -68,7 +68,7 @@ matrix *m_sub(matrix m1, matrix m2)
 {
     //Substract m2 to m1 and return the result
 
-    return m_sum(m1, *m_dot(m2, -1));
+    return m_add(m1, *m_dot(m2, -1));
 }
 
 
@@ -106,6 +106,29 @@ matrix *m_mul(const matrix m1, const matrix m2)
             result->data[i*result->col + j] = sum;
         }
     }
+
+    return result;
+}
+
+matrix *m_apply(double (*f)(double), matrix m1)
+{
+    //Apply function f on all elements of m1 and return the resulted matrix
+    matrix *result = Matrix(m1.row, m1.col);
+
+    for(size_t i = 0; i < m1.row * m1.col; i++)
+            result->data[i] = (*f)(m1.data[i]);
+
+    return result;
+}
+
+double m_sum(matrix m1)
+{
+    //Return the sum of all elements of m1
+
+    double result = 0;
+
+    for(size_t i = 0; i < m1.row * m1.col; i++)
+        result += m1.data[i];
 
     return result;
 }
