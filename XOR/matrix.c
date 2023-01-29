@@ -15,6 +15,8 @@
 #define NumTrainingSets 4 //Can be changed
 
 
+//Recommanded video (in french): https://www.youtube.com/watch?v=VlMm4VZ6lk4&t=511s
+
 double initWeights()
 {
 	return (double)rand() / (double)RAND_MAX;//random number between 0 and 1
@@ -137,36 +139,80 @@ int main()
 				outputLayer[j] = sigmoid(activation);//only one output
 			}
 		
-		printf("Epoch : %d Input: %f %f Output: %f Expected: %f \n",
+			printf("Epoch : %d Input: %f %f Output: %f Expected: %f \n",
 				epoch, training_inputs[i][0], training_inputs[i][1], outputLayer[0], training_outputs[i][0]);
 
-		}
+		
 
 
-		//Backpropagation
+			//Backpropagation
 
-		//Calculate change in output layer weights
+			//Calculate change in output layer weights
 
-		double deltaOutput[NumOutputs];
+			double deltaOutput[NumOutputs];
 
-		for(int j = 0; j < NumOutputs; j++)
-		{
-			double error = training_outputs[i][j] - outputLayer[j];
-			deltaOutput[j] = error * sigmoidDerivative(outputLayer[j]);
-		}
-
-		//Calculate change in hidden layer weights
-
-		double deltaHidden[NumHiddenNodes];
-
-		for (int j = 0; j < NumHiddenNodes; j++)
-		{
-			double error = 0.0f;
-			for (int k = 0; k < NumOutputs; k++)
+			for(int j = 0; j < NumOutputs; j++)
 			{
-				error += deltaOutput[k] * outputLayerWeights[j][k];
+				double error = training_outputs[i][j] - outputLayer[j];
+				deltaOutput[j] = error * sigmoidDerivative(outputLayer[j]);
 			}
-			deltaHidden[j] = error * sigmoidDerivative(hiddenLayer[j]);
+
+			//Calculate change in hidden layer weights
+
+			double deltaHidden[NumHiddenNodes];
+
+			for (int j = 0; j < NumHiddenNodes; j++)
+			{
+				double error = 0.0f;
+				for (int k = 0; k < NumOutputs; k++)
+				{
+					error += deltaOutput[k] * outputLayerWeights[j][k];
+				}
+				deltaHidden[j] = error * sigmoidDerivative(hiddenLayer[j]);
+			}
+
+			//Update output layer weights
+			for(int j = 0; j < NumOutputs; j++)
+			{
+				outputLayerBias[j] += lr * deltaOutput[j];
+				for (int k = 0; k < NumHiddenNodes; k++)
+				{
+					outputLayerWeights[k][j] += lr * deltaOutput[j] * hiddenLayer[k];
+				}
+			}
+
+			//Update hidden layer weights
+			for(int j = 0; j < NumHiddenNodes; j++)
+			{
+				hiddenLayerBias[j] += lr * deltaHidden[j];
+				for (int k = 0; k < NumImputs; k++)
+				{
+					hiddenLayerWeights[k][j] += lr * deltaHidden[j] * training_inputs[i][k];
+				}
+			}
+
+			fputs("]\nFinal hidden weights:\n[", stdout);
+			for(int j = 0; j < NumImputs; j++)
+			{
+				fputs("[", stdout);
+				for(inr k = 0; k < NumHiddenNodes; k++)
+				{
+					printf("%f ", hiddenLayerWeights[j][k]);
+				}
+				fputs("]", stdout);
+			}
+
+			fputs("]\nFinal hidden bias:\n[", stdout);
+			for(inr j = 0; j < NumHiddenNodes; j++)
+			{
+				printf("%f ", hiddenLayerBias[j]);
+			}
+
+			fputs("]\nFinal output bias:\n[", stdout);
+			for(inr j = 0; j < NumOutputs; j++)
+			{
+				printf("%f ", outputLayerBias[j]);
+			}
 		}
 
 	}
