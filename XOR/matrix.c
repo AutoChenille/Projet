@@ -38,7 +38,6 @@ void shuffle(int *array, size_t n)//shuffle array
 	//Shuffle an array of integers. For each index, swap the value at that index. 
 	//with a random value between itself and the end of the array.
 	//for more info: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-	"""
 	if (n > 1)
 	{
 		size_t i;
