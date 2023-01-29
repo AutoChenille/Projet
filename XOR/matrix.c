@@ -35,10 +35,9 @@ double sigmoidDerivative(double x) //derivative of sigmoid
 
 void shuffle(int *array, size_t n)//shuffle array
 {
-	"""
-	Shuffle an array of integers. For each index, swap the value at that index. 
-	with a random value between itself and the end of the array.
-	for more info: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+	//Shuffle an array of integers. For each index, swap the value at that index. 
+	//with a random value between itself and the end of the array.
+	//for more info: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
 	"""
 	if (n > 1)
 	{
@@ -55,11 +54,11 @@ void shuffle(int *array, size_t n)//shuffle array
 
 int main()
 {
-	"""
-	Initializes the weights and biases for the neural network.
-	It also initializes the training inputs and outputs.
-	It works with 2 inputs, 2 hidden nodes and 1 output.
-	"""
+
+	//Initializes the weights and biases for the neural network.
+	//It also initializes the training inputs and outputs.
+	//It works with 2 inputs, 2 hidden nodes and 1 output.
+	
 	const double lr = 0.1f;// learning rate can change to train faster or slower
 
 	double hiddenLayer[NumHiddenNodes];
@@ -195,7 +194,7 @@ int main()
 			for(int j = 0; j < NumImputs; j++)
 			{
 				fputs("[", stdout);
-				for(inr k = 0; k < NumHiddenNodes; k++)
+				for(int k = 0; k < NumHiddenNodes; k++)
 				{
 					printf("%f ", hiddenLayerWeights[j][k]);
 				}
@@ -203,7 +202,7 @@ int main()
 			}
 
 			fputs("]\nFinal hidden bias:\n[", stdout);
-			for(inr j = 0; j < NumHiddenNodes; j++)
+			for(int j = 0; j < NumHiddenNodes; j++)
 			{
 				printf("%f ", hiddenLayerBias[j]);
 			}
@@ -213,7 +212,7 @@ int main()
 			for(int j = 0; j < NumHiddenNodes; j++)
 			{
 				fputs("[", stdout);
-				for(inr k = 0; k < NumOutputs; k++)
+				for(int k = 0; k < NumOutputs; k++)
 				{
 					printf("%f ", outputLayerWeights[j][k]);
 				}
@@ -221,7 +220,7 @@ int main()
 			}
 
 			fputs("]\nFinal output bias:\n[", stdout);
-			for(inr j = 0; j < NumOutputs; j++)
+			for(int j = 0; j < NumOutputs; j++)
 			{
 				printf("%f ", outputLayerBias[j]);
 			}
