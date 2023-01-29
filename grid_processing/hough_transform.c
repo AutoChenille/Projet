@@ -1,29 +1,12 @@
-// Libraries.
-// ========================
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <err.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-// ========================
-
-// Files.
-// ========================
-#include "doubles_lists.h"
-#include "basic_utilities.h"
-#include "SDL_utilities.h"
-// ========================
+#include "hough_transform.h"
 
 // Main function to perform the algorithm of Hough.
+// Fills list_theta and list_rho with the coordinates of all lines detected.
 //
 // path: path of an image.
 // return: nothing.
-void hough_transform(char path[], int debug)
+void hough_transform(SDL_Surface* surf, int debug, struct list* list_theta, struct list* list_rho)
 {
-    // Creates a new surface from an image.
-    SDL_Surface* surf = load_image(path);
-
     // Gets the length and the width of the surface.
     int width = surf->w;
     int height = surf->h;
@@ -122,14 +105,6 @@ void hough_transform(char path[], int debug)
     int max_acc = max_array(accumulator, size_acc);
     int threshold = (int) ((double) max_acc / 2);
 
-    // Initializes lists to store rho and theta.
-    struct list* list_rho = list_new();
-    struct list* list_theta = list_new();
-
-    // Gets threshold in degrees to detect horizontal and vertical lines.
-    // We suppose sudoku is the good position to solve it.
-    int theta_threshold = 8;
-
     // Gets maximums in accumulator.
     for (int rho = 0; rho < number_rho_acc; rho++)
     {
@@ -142,26 +117,9 @@ void hough_transform(char path[], int debug)
                 double line_rho = rho_array[rho];
                 double line_theta = arr_theta[theta];
 
-                // Line horizontal ? Checks in interval:
-                // [0 - threshold, 0 + threshold].
-                int horizontal_line = line_theta > deg_to_rad(-theta_threshold)
-                        && line_theta < deg_to_rad(theta_threshold);
-
-                // Line vertical ? Checks in interval:
-                // [-90 - threshold, -90 + threshold] U [90 - threshold, 90 + threshold].
-                int vertical_line =
-                        (line_theta > deg_to_rad(90 - theta_threshold)
-                        && line_theta < deg_to_rad(90 + theta_threshold)) ||
-                        ((line_theta > deg_to_rad(-90 - theta_threshold))
-                        && (line_theta < deg_to_rad(-90 + theta_threshold)));
-
-                // Keeps the line if it is horizontal or vertical. The other are deleted.
-                if (horizontal_line || vertical_line)
-                {
-                    // Saves values of rho and theta.
-                    list_rho = list_insert_head(list_rho, line_rho);
-                    list_theta = list_insert_head(list_theta, line_theta);
-                }
+                // Saves values of rho and theta.
+                list_rho = list_insert_head(list_rho, line_rho);
+                list_theta = list_insert_head(list_theta, line_theta);
             }
         }
     }
@@ -171,34 +129,13 @@ void hough_transform(char path[], int debug)
     if (debug)
     {
         // Opens window with lines drawn on it and waits...
-        draw_lines_on_window(list_rho, list_theta, path, surf_diag);
+        draw_lines_on_window(list_rho, list_theta, surf, surf_diag);
     }
     // =============================================================
-
-
-    // Separates horizontal lines and vertical lines.
-
-    // Gets points of intersection.
-
-
-
-
 
     // Frees memory.
     free(accumulator);
     SDL_FreeSurface(surf);
     list_destroy(list_rho);
     list_destroy(list_theta);
-}
-
-// Test function.
-int main(int argc, char** argv)
-{
-    // Checks the number of arguments.
-    if (argc != 2)
-        errx(EXIT_FAILURE, "Usage: image-file");
-
-    hough_transform(argv[1], 1);
-
-    return EXIT_SUCCESS;
 }

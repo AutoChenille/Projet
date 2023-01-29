@@ -164,7 +164,7 @@ void show_surface_on_window(SDL_Surface* surf)
     SDL_DestroyWindow(window);
 }
 
-void draw_lines_on_window(struct list* list_rho, struct list* list_theta, char *path, double surf_diag)
+void draw_lines_on_window(struct list* list_rho, struct list* list_theta, SDL_Surface* surf, double surf_diag)
 {
     // Initializes the SDL.
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -174,7 +174,7 @@ void draw_lines_on_window(struct list* list_rho, struct list* list_theta, char *
     int w, h;
     SDL_Window* window = SDL_CreateWindow("Line Detection", 0, 0, 0, 0, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_Texture* texture = IMG_LoadTexture(renderer, path);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_QueryTexture(texture, NULL, NULL, &w, &h);
     SDL_SetWindowSize(window, w, h);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
