@@ -71,6 +71,7 @@ int pixel_to_bit_value(SDL_Surface* surf, Uint32 color)
 {
     // Will use only red value.
     // We do not need the other because it is a black and white image.
+
     Uint8 r, g, b;
 
     // Saves value of red color in variable r.
@@ -90,19 +91,22 @@ int pixel_to_bit_value(SDL_Surface* surf, Uint32 color)
 void get_array_of_pixels(SDL_Surface* surf, int pixel_bit_array[])
 {
     // Gets the length and the width of the surface.
-    size_t width = surf->w;
-    size_t height = surf->h;
+    int width = surf->w;
+    int height = surf->h;
+
+    // Locks surface.
+    SDL_LockSurface(surf);
 
     // Get array of pixels of type Uint32.
     Uint32* pixels = surf->pixels;
 
     // Stores all the pixels of the surface in one int array.
-    for (size_t i = 0; i < height; i++)
+    for (int i = 0; i < height; i++)
     {
-        for (size_t j = 0; j < width; j++)
+        for (int j = 0; j < width; j++)
         {
             // Gets index in array.
-            size_t index = j + width * i;
+            int index = j + width * i;
 
             // Gets color of pixel.
             int bit = pixel_to_bit_value(surf, pixels[index]);
@@ -111,6 +115,9 @@ void get_array_of_pixels(SDL_Surface* surf, int pixel_bit_array[])
             pixel_bit_array[index] = bit;
         }
     }
+
+    // Unlocks surface.
+    SDL_UnlockSurface(surf);
 }
 
 // Event loop for displaying a window.

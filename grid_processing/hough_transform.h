@@ -18,6 +18,6 @@
 #include "SDL_utilities.h"
 // ========================
 
-void hough_transform(SDL_Surface* surf, int debug, struct list* list_theta, struct list* list_rho);
+void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, struct list** list_rho);
 
 #endif

@@ -1,11 +1,10 @@
 #include "hough_transform.h"
 
 // Main function to perform the algorithm of Hough.
-// Fills list_theta and list_rho with the coordinates of all lines detected.
 //
 // path: path of an image.
-// return: nothing.
-void hough_transform(SDL_Surface* surf, int debug, struct list* list_theta, struct list* list_rho)
+// return: nothing but fills list_theta and list_rho with the coordinates of all lines detected.
+void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, struct list** list_rho)
 {
     // Gets the length and the width of the surface.
     int width = surf->w;
@@ -36,7 +35,7 @@ void hough_transform(SDL_Surface* surf, int debug, struct list* list_theta, stru
     int theta_min = -90;
     int theta_max = 90;
 
-    int size_theta_array = 800;
+    int size_theta_array = 180;
     double arr_theta[size_theta_array];
     make_double_array(size_theta_array, theta_min, theta_max, arr_theta);
     // =================
@@ -118,8 +117,8 @@ void hough_transform(SDL_Surface* surf, int debug, struct list* list_theta, stru
                 double line_theta = arr_theta[theta];
 
                 // Saves values of rho and theta.
-                list_rho = list_insert_head(list_rho, line_rho);
-                list_theta = list_insert_head(list_theta, line_theta);
+                *list_rho = list_insert_head(*list_rho, line_rho);
+                *list_theta = list_insert_head(*list_theta, line_theta);
             }
         }
     }
@@ -129,13 +128,10 @@ void hough_transform(SDL_Surface* surf, int debug, struct list* list_theta, stru
     if (debug)
     {
         // Opens window with lines drawn on it and waits...
-        draw_lines_on_window(list_rho, list_theta, surf, surf_diag);
+        draw_lines_on_window(*list_rho, *list_theta, surf, surf_diag);
     }
     // =============================================================
 
     // Frees memory.
     free(accumulator);
-    SDL_FreeSurface(surf);
-    list_destroy(list_rho);
-    list_destroy(list_theta);
 }
