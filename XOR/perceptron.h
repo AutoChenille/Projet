@@ -14,12 +14,13 @@ double sigmoid(double x);
 //return 1 - x (used to be combined with m_apply in matrix.h)
 double oneLessX(double x);
 
+void p_print(perceptron_param *p);
+
 //Return a perceptron_param p with ll parameters initialized to 1
 matrix *model(const matrix *X, const matrix *W, double b);
 
 //Return a double, result of application of Log Loss function to A and y
-double log_loss(const matrix *A, const matrix *y);
-   
+double log_loss(const matrix *A, const matrix *y);   
 
 //Return a perceptron_param tuple dp containing gradients of W and b
 perceptron_param *gradients(const matrix *A, const matrix *X, const matrix *Y);

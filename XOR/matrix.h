@@ -17,6 +17,9 @@ typedef struct
     matrix *m2;
 }matrix_tuple;
 
+
+void m_free(matrix *m1);
+
 //Print matrix m1
 void m_print(const matrix *m1);
 
@@ -29,6 +32,7 @@ matrix *m_copy(const matrix *m1);
 
 //Add m2 to m1 and return the result
 matrix *m_add(const matrix *m1, const matrix *m2);
+matrix *m_addS(const matrix *m1, double k);
 
 //Substract m2 to m1 and return the result
 matrix *m_sub(const matrix *m1, const matrix *m2);

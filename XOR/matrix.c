@@ -5,6 +5,12 @@
 #include "matrix.h"
 
 
+void m_free(matrix *m1)
+{
+    free(m1->data);
+    free(m1);
+}
+
 matrix *Matrix(size_t row, size_t col)
 {
     //Create a matrix with row rows and col columns and return it
@@ -40,11 +46,13 @@ void m_print(const matrix *m1)
     for(size_t i = 0; i < m1->row; i++)
     {
         printf("|");
-        for(size_t j = 0; j < m1->col-1; j++)
+        size_t j = 0;
+        while(j < m1->col-1)
         {
             printf("%lf ", m1->data[i*m1->col + j]);
+            j++;
         }
-        printf("%lf|\n", m1->data[i*m1->col+m1->row-1]);
+        printf("%lf|\n", m1->data[i*m1->col + j]);
     }
  
 }
@@ -66,7 +74,7 @@ matrix *m_add(const matrix *m1, const matrix *m2)
     matrix *result = Matrix(m1->row, m2->col);
 
     if(m1->row != m2->row || m1->col != m2->col)
-        errx(1, "Error : wrong dimension matrix");
+        errx(1, "Error sum: wrong dimension matrix");
 
     for(size_t i = 0; i < m2->row * m2->col; i++)
     {
@@ -121,7 +129,7 @@ matrix *m_mul(const matrix *m1, const matrix *m2)
     //Multiply m1 by m2 and return the result
 
     if(m1->col != m2->row)
-        errx(1, "Error: wrong dimension matrix");
+        errx(1, "Error mul: wrong dimension matrix");
 
     matrix *result = Matrix(m1->row, m2->col);
 

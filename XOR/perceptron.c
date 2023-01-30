@@ -17,6 +17,16 @@ double oneLessX(double x)
     return 1 - x;
 }
 
+void p_print(perceptron_param *p)
+{
+    printf("b : %f\n", p->b);
+    printf("W :");
+    for(size_t i = 0; i < p->W->row; i++)
+    {
+        printf(" w%li->%f", i, p->W->data[i]);
+    }
+    printf("\n\n");
+}
 
 perceptron_param *InitParam(size_t nb_entry)
 {
@@ -24,20 +34,19 @@ perceptron_param *InitParam(size_t nb_entry)
     //All parameters initialized to 1 and p.W.row = nb_entry
 
     perceptron_param *p = malloc(sizeof(perceptron_param));
-    p->W = MatrixOf(nb_entry, 1, 1);
-    p->b = 0;
+    p->W = MatrixOf(nb_entry, 1, 2);
+    p->b = 2;
 
     return p;
 }
-
 
 matrix *model(const matrix *X, const matrix *W, double b)
 {
     //Return a matrix containing all the results of the application of the model to each entry
     
-    matrix *B = MatrixOf(X->row, W->col, b);
-    matrix *Z = m_add( m_mul(X, W), B );
-    return m_apply(sigmoid, Z);
+    matrix *Z = m_addS( m_mul(X, W), b);
+    Z = m_apply(sigmoid, Z);
+    return Z;
 }
 
 double log_loss(const matrix *A, const matrix *y)
@@ -46,21 +55,23 @@ double log_loss(const matrix *A, const matrix *y)
 
     matrix *L = m_sub( m_mul(m_dot(y, -1), m_apply(log, A) ), m_mul(m_apply(oneLessX, y), m_apply(log, m_apply(oneLessX, A))));
 
-    return 1/y->col * m_sum(L);
+    double loss = (double) 1/y->col * m_sum(L);
+    free(L);
+
+    return loss;
 }
 
 perceptron_param *gradients(const matrix *A, const matrix *X, const matrix *Y)
 {
     //Return a perceptron_param tuple dp containing gradients of W and b
+    matrix *dw = m_dot(m_mul(m_transpose(X), m_sub(A, m_transpose(Y))), (double) 1/Y->col); 
 
-    matrix *dw = m_mul( MatrixOf(X->row, A->row, 1/Y->col), m_mul(m_transpose(X), m_sub(A, Y)) );
-
-    double db = 1/Y->col * m_sum(m_sub(A, Y));
-
+    double db = (double) 1/Y->col * m_sum(m_sub(A, m_transpose(Y)));
+    
     perceptron_param *p = malloc(sizeof(perceptron_param));
     p->W = dw;
     p->b = db;
-    
+
     return p;
 }
 
