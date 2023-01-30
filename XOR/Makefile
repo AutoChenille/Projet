@@ -4,7 +4,7 @@ CC = gcc
 CPPFLAGS = -MMD
 CFLAGS = -Wall -Wextra
 LDFLAGS =
-LDLIBS =
+LDLIBS = -lm
 
 SRC = main.c matrix.c perceptron.c
 OBJ = ${SRC:.c=.o}
