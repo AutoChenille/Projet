@@ -1,5 +1,8 @@
 #include "hough_transform.h"
 
+// Number of theta for each pixel.
+const double MAX_THETA = 360;
+
 // Main function to perform the algorithm of Hough.
 //
 // path: path of an image.
@@ -35,7 +38,7 @@ void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, str
     int theta_min = -90;
     int theta_max = 90;
 
-    int size_theta_array = 180;
+    int size_theta_array = MAX_THETA;
     double arr_theta[size_theta_array];
     make_double_array(size_theta_array, theta_min, theta_max, arr_theta);
     // =================

@@ -24,5 +24,6 @@ void get_array_of_pixels(SDL_Surface* surf, int pixel_bit_array[]);
 void event_loop();
 void show_surface_on_window(SDL_Surface* surf);
 void draw_lines_on_window(struct list* list_rho, struct list* list_theta, SDL_Surface* surf, double surf_diag);
+void draw_points_on_window(struct list* list_x, struct list* list_y, SDL_Surface* surf);
 
 #endif

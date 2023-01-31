@@ -44,8 +44,38 @@ int max_array(const int* arr, int size)
     {
         if (max < arr[i])
             max = arr[i];
-
     }
 
     return max;
+}
+
+// Returns the index of the maximum integer of an array.
+//
+// arr: the array with the maximum.
+// size: size of the array.
+// return: maximum of the array.
+int max_array_index_abs(const double* arr, int size)
+{
+    int max_index = 0;
+
+    for (int i = 1; i < size; i++)
+    {
+        if (fabs(arr[max_index]) < fabs(arr[i]))
+            max_index = i;
+    }
+
+    return max_index;
+}
+
+int min_array_index_abs(const double* arr, int size)
+{
+    int min_index = 0;
+
+    for (int i = 1; i < size; i++)
+    {
+        if (fabs(arr[min_index]) > fabs(arr[i]))
+            min_index = i;
+    }
+
+    return min_index;
 }

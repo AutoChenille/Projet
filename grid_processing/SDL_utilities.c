@@ -225,3 +225,59 @@ void draw_lines_on_window(struct list* list_rho, struct list* list_theta, SDL_Su
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 }
+
+void draw_points_on_window(struct list* list_x, struct list* list_y, SDL_Surface* surf)
+{
+    // Initializes the SDL.
+    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+        errx(EXIT_FAILURE, "%s", SDL_GetError());
+
+    // Creates a window and initializes parameters.
+    int w, h;
+    SDL_Window* window = SDL_CreateWindow("Point Detection", 0, 0, 0, 0, SDL_WINDOW_SHOWN);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+    SDL_SetWindowSize(window, w, h);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 1);
+
+    // Creates two pointers to iterate lists.
+    struct list* p_x = list_x;
+    struct list* p_y = list_y;
+
+    // Draw lines.
+    while(p_x && p_y)
+    {
+        // Gets values of theta and rho.
+        double x = p_x->value;
+        double y = p_y->value;
+
+        SDL_Rect rect;
+        rect.x = (int) x - 2;
+        rect.y = (int) y - 2;
+        rect.w = 5;
+        rect.h = 5;
+
+        // Draws line on renderer.
+        SDL_RenderDrawRect(renderer, &rect);
+        SDL_RenderFillRect(renderer, &rect);
+
+        // SDL_RenderDrawPoint(renderer, (int) x, (int) y);
+
+        // Goes to the next values.
+        p_x = p_x->next;
+        p_y = p_y->next;
+    }
+
+    // Updates the display.
+    SDL_RenderPresent(renderer);
+
+    // Dispatches events.
+    event_loop();
+
+    // Destroy SDL objects.
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+}
