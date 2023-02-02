@@ -2,13 +2,20 @@
 
 // Number of theta for each pixel.
 const double MAX_THETA = 360;
+const double THRESHOLD_PICK_LINES = 2;
 
 // Main function to perform the algorithm of Hough.
 //
 // path: path of an image.
 // return: nothing but fills list_theta and list_rho with the coordinates of all lines detected.
-void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, struct list** list_rho)
+void hough_transform(int debug, SDL_Surface* surf, struct list** list_theta, struct list** list_rho)
 {
+    if (debug)
+    {
+        printf("%s", "HOUGH TRANSFORM\n");
+        printf("%s", "===============\n");
+    }
+
     // Gets the length and the width of the surface.
     int width = surf->w;
     int height = surf->h;
@@ -19,6 +26,11 @@ void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, str
 
     // Gets the array of pixels from the surface.
     get_array_of_pixels(surf, pixel_array);
+
+    if (debug)
+    {
+        printf("%s", "Initializing parameters for Hough Transform... ");
+    }
 
     // Rho parameters.
     // ==============================
@@ -61,6 +73,12 @@ void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, str
         err(EXIT_FAILURE, "%s", "Accumulator not initialized");
     // =========================================================
 
+    if (debug)
+    {
+        printf(ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET, "Done.\n");
+        printf("Filling accumulator with votes... ");
+    }
+
     // Set all votes in accumulator.
     // For each pixel.
     for (int x = 0; x < (int) width; x++)
@@ -88,24 +106,15 @@ void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, str
         }
     }
 
-    // DEBUG.
-    // ===============================================================================================
     if (debug)
     {
-        // Gets surface from accumulator.
-        SDL_Surface* surf_acc = array_to_surface(number_theta_acc, size_rho_array, accumulator);
-
-        // Save image of accumulator in PNG format.
-        IMG_SavePNG(surf_acc, "hough_diagram.png");
-
-        // Frees memory.
-        SDL_FreeSurface(surf_acc);
+        printf(ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET, "Done.\n");
+        printf("Detecting lines... ");
     }
-    // ===============================================================================================
 
     // Gets threshold to filter lines.
     int max_acc = max_array(accumulator, size_acc);
-    int threshold = (int) ((double) max_acc / 2);
+    int threshold = (int) ((double) max_acc / THRESHOLD_PICK_LINES);
 
     // Gets maximums in accumulator.
     for (int rho = 0; rho < number_rho_acc; rho++)
@@ -126,14 +135,11 @@ void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, str
         }
     }
 
-    // DEBUG.
-    // =============================================================
     if (debug)
     {
-        // Opens window with lines drawn on it and waits...
-        draw_lines_on_window(*list_rho, *list_theta, surf, surf_diag);
+        printf("%i lines found. ", list_len(*list_rho));
+        printf(ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET, "Done.\n\n");
     }
-    // =============================================================
 
     // Frees memory.
     free(accumulator);

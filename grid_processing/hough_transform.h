@@ -18,6 +18,12 @@
 #include "SDL_utilities.h"
 // ========================
 
-void hough_transform(SDL_Surface* surf, int debug, struct list** list_theta, struct list** list_rho);
+// Colors for fun.
+// ========================
+#define ANSI_COLOR_GREEN  "\x1b[32m"
+#define ANSI_COLOR_RESET  "\x1b[0m"
+// ========================
+
+void hough_transform(int debug, SDL_Surface* surf, struct list** list_theta, struct list** list_rho);
 
 #endif

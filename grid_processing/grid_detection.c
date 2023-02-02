@@ -3,13 +3,17 @@
 // Constants and global variables.
 // =========
 // Theta threshold in degrees to keep vertical and horizontal lines.
-const double THETA_THRESHOLD = 13;
+const double THETA_THRESHOLD = 15;
+
 // Rho and theta thresholds in pixels to merge equivalent lines.
-const double RHO_THR_AV = 10;
-const double THETA_THR_AV = 10;
+const double RHO_THR_AV = 15;
+const double THETA_THR_AV = 15;
 
 // Distance maximal to say two lines can be merged.
 const double LIMIT_DISTANCE = 64;
+
+// Distance maximal to say two points can be merged.
+const double POINT_RADIUS = 20;
 
 // Colors for fun.
 #define ANSI_COLOR_RED    "\x1b[31m"
@@ -259,6 +263,10 @@ void get_intersections(double w, double h, double diag, struct list* list_rho, s
     }
 }
 
+//
+//
+//
+//
 void get_extremes_lines(SDL_Surface* surf, double diag, struct list* list_rho, struct list* list_theta)
 {
     // Keeps horizontal lines and vertical lines.
@@ -321,9 +329,6 @@ void get_extremes_lines(SDL_Surface* surf, double diag, struct list* list_rho, s
         list_points_y = list_insert_head(list_points_y, point_bottom_right_y);
 
         draw_points_on_window(list_points_x, list_points_y, surf);
-
-        list_destroy(list_points_x);
-        list_destroy(list_points_y);
     }
 
     // Gets coordinates of all cells.
@@ -383,36 +388,14 @@ void get_extremes_lines(SDL_Surface* surf, double diag, struct list* list_rho, s
 
 
     // Frees memory.
+    list_destroy(coordinates_y);
+    list_destroy(coordinates_x);
     list_destroy(list_rho_v);
     list_destroy(list_theta_v);
     list_destroy(list_rho_h);
     list_destroy(list_theta_h);
     free(arr_rho_v);
     free(arr_rho_h);
-}
-
-void get_barycentre(struct list* list_x, struct list* list_y, double* x, double* y)
-{
-    // Inits sums.
-    double sum_x = 0;
-    double sum_y = 0;
-    double size_x = list_len(list_x);
-    double size_y = list_len(list_y);
-
-    while (list_x)
-    {
-        sum_x += list_x->value;
-        list_x = list_x->next;
-    }
-
-    while (list_y)
-    {
-        sum_y += list_y->value;
-        list_y = list_y->next;
-    }
-
-    *x = sum_x / size_x;
-    *y = sum_y / size_y;
 }
 
 //
@@ -477,7 +460,7 @@ void average_points(struct list* list_x, struct list* list_y, struct list** dest
             }
 
             // First filter.
-            if (sqrt((x_curr - x) * (x_curr - x) + (y_curr - y) * (y_curr - y)) < 12)
+            if (sqrt((x_curr - x) * (x_curr - x) + (y_curr - y) * (y_curr - y)) < POINT_RADIUS)
             {
                 arr_x[index_curr] = (x_curr + x) / 2;
                 arr_y[index_curr] = (y_curr + y) / 2;
@@ -500,6 +483,19 @@ void average_points(struct list* list_x, struct list* list_y, struct list** dest
     }
 }
 
+//
+//
+//
+//
+double distance_horizontal_lines(double rho1, double theta1, double rho2, double theta2, double width)
+{
+    double x = width;
+    double y1 = (rho1 - x * cos(theta1)) / sin(theta1);
+    double y2 = (rho2 - x * cos(theta2)) / sin(theta2);
+
+    return fabs(y2 - y1);
+}
+
 // Full process to detect the grid and the digits.
 //
 // debug: set to one for additional information during the process.
@@ -516,7 +512,7 @@ void grid_detection(int debug, struct list* list_rho, struct list* list_theta, d
         printf("Averaging lines... ");
     }
 
-    // AVERAGING OF VERTICAL AND HORIZONTAL LINES
+    // AVERAGING LINES.
     // ==========================================
     struct list* list_rho_av = list_new();
     struct list* list_theta_av = list_new();
@@ -539,7 +535,7 @@ void grid_detection(int debug, struct list* list_rho, struct list* list_theta, d
         printf("Finding intersections... ");
     }
 
-    // GETS ALL INTERSECTIONS OF ALL LINES
+    // GETS ALL INTERSECTIONS OF ALL LINES (INCLUDES ORTHOGONAL FILTER)
     // ===================================
     struct list* list_point_x = list_new();
     struct list* list_point_y = list_new();
@@ -562,6 +558,7 @@ void grid_detection(int debug, struct list* list_rho, struct list* list_theta, d
 
     // AVERAGING OF POINTS (TO BE SURE)
     // ===================================
+
     struct list* list_x_av = list_new();
     struct list* list_y_av = list_new();
     average_points(list_point_x, list_point_y, &list_x_av, &list_y_av);
@@ -578,16 +575,14 @@ void grid_detection(int debug, struct list* list_rho, struct list* list_theta, d
         printf(ANSI_COLOR_GREEN "Done.\n" ANSI_COLOR_RESET);
     }
 
-
-    // Now we have to find 2 sets of 10 points horizontally and vertically. And we have the grid.
+    get_extremes_lines(surf, diag, list_rho, list_theta);
 
     // Frees memory.
-    list_destroy(list_rho);
-    list_destroy(list_theta);
     list_destroy(list_rho_av);
     list_destroy(list_theta_av);
     list_destroy(list_point_x);
     list_destroy(list_point_y);
     list_destroy(list_x_av);
     list_destroy(list_y_av);
+
 }
