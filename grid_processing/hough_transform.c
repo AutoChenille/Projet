@@ -2,7 +2,7 @@
 
 // Number of theta for each pixel.
 const double MAX_THETA = 360;
-const double THRESHOLD_PICK_LINES = 2;
+const double THRESHOLD_PICK_LINES = 2.1;
 
 // Main function to perform the algorithm of Hough.
 //

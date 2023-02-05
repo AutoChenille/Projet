@@ -1,6 +1,7 @@
 #include "hough_transform.h"
 #include "grid_detection.h"
 #include "img_upgrade.h"
+#include "contour_manager.h"
 
 // Test function.
 int main(int argc, char** argv)
@@ -25,44 +26,53 @@ int main(int argc, char** argv)
     // ====================================================
 
 
-    // PREPROCESSING - REMOVE PARASITES
+    // PREPROCESSING IMAGE
     // ====================================================
-    // Creates a new surface.
-    SDL_Surface* surf_processed = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32, SDL_PIXELFORMAT_RGBA32);
 
-    // Upgrade image to remove big parasites zones.
-    upgrade_exploitation(1, surf, &surf_processed);
-    if (surf_processed == NULL)
-        errx(EXIT_FAILURE, "%s", SDL_GetError());
 
-    // Frees surface.
-    SDL_FreeSurface(surf);
+
+    // ====================================================
+
+
+    // CONTOURS - EDGES DETECTION
+    // ====================================================
+    struct list* corners_x = list_new();
+    struct list* corners_y = list_new();
+    get_max_points_rect(surf, &corners_x, &corners_y);
+    // ====================================================
+
+
+    // ROTATION AND NEW SQUARED SURFACE WITH ONLY SUDOKU
+    // ====================================================
+
+
+
     // ====================================================
 
 
     // HOUGH TRANSFORM - LINES DETECTION
     // ====================================================
-    // Initializes lists to store rho and theta.
     struct list* list_rho = list_new();
     struct list* list_theta = list_new();
-
-    // Performs Hough Transform to get lists of thetas and rhos of all lines.
-    hough_transform(1, surf_processed, &list_theta, &list_rho);
+    hough_transform(0, surf, &list_theta, &list_rho);
     // ====================================================
 
 
-    // EXPLOITATION - GRID & CELLS DETECTION
+    // MAXIMUM DETECTION - MATRIX PERSPECTIVE TRANSFORM - CELLS EXTRACTION
     // ====================================================
     double w = surf->w;
     double h = surf->h;
-    grid_detection(0, list_rho, list_theta, sqrt(w * w + h * h), surf_processed);
+    grid_detection(0, list_rho, list_theta, sqrt(w * w + h * h), surf);
     // ====================================================
 
 
     // Frees memory.
-    SDL_FreeSurface(surf_processed);
+    SDL_FreeSurface(surf);
     list_destroy(list_rho);
     list_destroy(list_theta);
+    list_destroy(corners_x);
+    list_destroy(corners_y);
 
+    // End.
     return EXIT_SUCCESS;
 }

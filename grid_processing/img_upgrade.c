@@ -210,7 +210,6 @@ void upgrade_exploitation(int debug, SDL_Surface* surf, SDL_Surface** dest)
 {
     if (debug)
     {
-        printf("\e[1;1H\e[2J");
         printf("%s", "IMPROVED IMAGE PRE-PROCESSING\n");
         printf("%s", "=============================\n");
     }

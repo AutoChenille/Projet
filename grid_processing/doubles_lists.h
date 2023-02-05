@@ -22,6 +22,7 @@ int list_len(struct list* l);
 void list_print(struct list* l);
 void list_destroy(struct list* l);
 struct list* list_insert_head(struct list* l, double v);
+struct list* list_remove_head(struct list* l);
 double* list_to_array(struct list* list);
 
 #endif

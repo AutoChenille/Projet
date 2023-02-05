@@ -57,6 +57,18 @@ struct list* list_insert_head(struct list* l, double v)
     return tmp;
 }
 
+// Remove a value in list.
+struct list* list_remove_head(struct list* l)
+{
+    struct list* tmp;
+    tmp = malloc(sizeof(struct list));
+    tmp = l->next;
+    free(l);
+    l = NULL;
+    return tmp;
+
+}
+
 // List to array.
 double* list_to_array(struct list* list)
 {

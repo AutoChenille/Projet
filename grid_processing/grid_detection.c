@@ -6,8 +6,8 @@
 const double THETA_THRESHOLD = 15;
 
 // Rho and theta thresholds in pixels to merge equivalent lines.
-const double RHO_THR_AV = 15;
-const double THETA_THR_AV = 15;
+const double RHO_THR_AV = 25;
+const double THETA_THR_AV = 25;
 
 // Distance maximal to say two lines can be merged.
 const double LIMIT_DISTANCE = 64;
@@ -496,6 +496,96 @@ double distance_horizontal_lines(double rho1, double theta1, double rho2, double
     return fabs(y2 - y1);
 }
 
+//
+//
+//
+//
+void get_good_points(struct list* point_x, struct list* point_y, struct list** dest_x, struct list** dest_y, double width, double height)
+{
+    double hypo_width_cell = width / 9;
+    double hypo_height_cell = height / 9;
+
+    double threshold = hypo_width_cell / 3;
+
+    double hypo_grid_x[9];
+    double hypo_grid_y[9];
+
+    for (int j = 0; j < 9; j++)
+    {
+        hypo_grid_x[j] = j * hypo_width_cell;
+    }
+
+    for (int i = 0; i < 9; i++)
+    {
+        hypo_grid_y[i] = i * hypo_height_cell;
+    }
+
+    // Now with have a hypothetical grid to compare with the real one with intersections.
+    double size = list_len(point_x);
+    double *real_grid_x = list_to_array(point_x);
+    double *real_grid_y = list_to_array(point_y);
+
+    for (int y = 0; y < 9; y++)
+    {
+        for (int x = 0; x < 9; x++)
+        {
+            double hypo_x = hypo_grid_x[x];
+            double hypo_y = hypo_grid_y[y];
+
+            int i;
+
+            for (i = 0; i < size ; i++)
+            {
+                double real_x = real_grid_x[i];
+                double real_y = real_grid_y[i];
+
+                if (distance(real_x, real_y, hypo_x, hypo_y) < threshold)
+                {
+                    *dest_x = list_insert_head(*dest_x, real_x);
+                    *dest_y = list_insert_head(*dest_y, real_y);
+                    break;
+                }
+            }
+
+            if (i == size)
+            {
+                *dest_x = list_insert_head(*dest_x, hypo_x);
+                *dest_y = list_insert_head(*dest_y, hypo_y);
+            }
+        }
+    }
+}
+
+void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf)
+{
+    double width = surf->w / 9;
+    double height = surf->h / 9;
+
+    double *arr_x = list_to_array(list_x);
+    double *arr_y = list_to_array(list_y);
+
+    for (int y = 0; y < 9; y++)
+    {
+        for (int x = 0; x < 9; x++)
+        {
+            SDL_Rect rect;
+            rect.h = height;
+            rect.w = width;
+            rect.x = arr_x[x + 9 * y];
+            rect.y = arr_y[x + 9 * y];
+
+            SDL_Surface* new_surf = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
+            SDL_BlitSurface(surf, &rect, new_surf, NULL);
+
+            char filepath[100];
+            snprintf(filepath, sizeof(filepath), "img/flex_%i_%i.png", 8 - y, 8 - x);
+            IMG_SavePNG(new_surf, filepath);
+
+            SDL_FreeSurface(new_surf);
+        }
+    }
+}
+
 // Full process to detect the grid and the digits.
 //
 // debug: set to one for additional information during the process.
@@ -504,13 +594,11 @@ double distance_horizontal_lines(double rho1, double theta1, double rho2, double
 // diag: diagonal of the image.
 // surf: surface from the image.
 // return: nothing.
-void grid_detection(int debug, struct list* list_rho, struct list* list_theta, double diag, SDL_Surface* surf)
+void grid_detection(int debug, struct list* list_rho, struct list* list_theta, double diag, SDL_Surface* surf_sudoku)
 {
-    // DEBUG.
-    if (debug)
-    {
-        printf("Averaging lines... ");
-    }
+    // Parameters.
+    double width = surf_sudoku->w;
+    double height = surf_sudoku->h;
 
     // AVERAGING LINES.
     // ==========================================
@@ -519,70 +607,33 @@ void grid_detection(int debug, struct list* list_rho, struct list* list_theta, d
     average_lines(diag, list_rho, list_theta, &list_rho_av, &list_theta_av);
     // ==========================================
 
-    // DEBUG.
-    if (debug)
-    {
-        // Some information about averaging.
-        printf("Average %i lines to %i lines. ", list_len(list_rho), list_len(list_rho_av));
-
-        // Show window with the new lines averaged.
-        draw_lines_on_window(list_rho_av, list_theta_av, surf, diag);
-
-        // Informs the process is done.
-        printf(ANSI_COLOR_GREEN "Done.\n" ANSI_COLOR_RESET);
-
-        // Some information about points.
-        printf("Finding intersections... ");
-    }
-
     // GETS ALL INTERSECTIONS OF ALL LINES (INCLUDES ORTHOGONAL FILTER)
-    // ===================================
+    // ==========================================
     struct list* list_point_x = list_new();
     struct list* list_point_y = list_new();
-    get_intersections(surf->w, surf->h, diag, list_rho_av, list_theta_av, &list_point_x, &list_point_y);
-    // ===================================
+    get_intersections(width, height, diag, list_rho_av, list_theta_av, &list_point_x, &list_point_y);
+    // ==========================================
 
-    // DEBUG.
-    if (debug)
-    {
-        // Show window with the points.
-        draw_points_on_window(list_point_x, list_point_y, surf);
 
-        // Informs the process is done.
-        printf("%i intersections found. ", list_len(list_point_x));
-        printf(ANSI_COLOR_GREEN "Done.\n" ANSI_COLOR_RESET);
+    // KEEPS ONLY GOOD POINTS
+    // ==========================================
+    struct list* final_grid_x = list_new();
+    struct list* final_grid_y = list_new();
+    get_good_points(list_point_x, list_point_y, &final_grid_x, &final_grid_y, width, height);
+    // ==========================================
 
-        // Some information about points.
-        printf("Averaging points... ");
-    }
 
-    // AVERAGING OF POINTS (TO BE SURE)
-    // ===================================
+    // EXTRACTS CELLS - THE END !
+    // ==========================================
+    cell_extraction(final_grid_x, final_grid_y, surf_sudoku);
+    // ==========================================
 
-    struct list* list_x_av = list_new();
-    struct list* list_y_av = list_new();
-    average_points(list_point_x, list_point_y, &list_x_av, &list_y_av);
-    // ===================================
-
-    // DEBUG.
-    if (debug)
-    {
-        // Show window with the points.
-        draw_points_on_window(list_x_av, list_y_av, surf);
-
-        // Informs the process is done.
-        printf("Average %i points to %i points. ", list_len(list_point_x), list_len(list_x_av));
-        printf(ANSI_COLOR_GREEN "Done.\n" ANSI_COLOR_RESET);
-    }
-
-    get_extremes_lines(surf, diag, list_rho, list_theta);
 
     // Frees memory.
     list_destroy(list_rho_av);
     list_destroy(list_theta_av);
     list_destroy(list_point_x);
     list_destroy(list_point_y);
-    list_destroy(list_x_av);
-    list_destroy(list_y_av);
-
+    list_destroy(final_grid_x);
+    list_destroy(final_grid_y);
 }
