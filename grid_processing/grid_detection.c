@@ -14,16 +14,17 @@ const double LIMIT_DISTANCE = 64;
 
 // Distance maximal to say two points can be merged.
 const double POINT_RADIUS = 20;
-
-// Colors for fun.
-#define ANSI_COLOR_RED    "\x1b[31m"
-#define ANSI_COLOR_GREEN  "\x1b[32m"
-#define ANSI_COLOR_RESET  "\x1b[0m"
 // =========
 
-// Keeps only vertical and horizontal lines with list_rho and list_theta.
-//
-// return: nothing, but fills list_rho_vert, list_theta_vert, list_rho_hori, list_theta_hori.
+/// @brief Keeps only vertical and horizontal lines with list_rho and list_theta.
+///
+/// \param list_rho Initial list or rhos.
+/// \param list_theta Initial list or thetas.
+/// \param list_rho_vert Destination list for vertical rhos.
+/// \param list_theta_vert Destination list for vertical thetas.
+/// \param list_rho_hori Destination list for horizontal rhos.
+/// \param list_theta_hori Destination list for horizontal thetas.
+/// @return nothing, but fills list_rho_vert, list_theta_vert, list_rho_hori, list_theta_hori.
 void orthogonal_filter(struct list* list_rho,struct list* list_theta,
         struct list** list_rho_vert, struct list** list_theta_vert,
                 struct list** list_rho_hori, struct list** list_theta_hori)
@@ -64,10 +65,14 @@ void orthogonal_filter(struct list* list_rho,struct list* list_theta,
     }
 }
 
-// Average clusters of line.
-//
-//
-//
+/// @brief Average clusters of line.
+///
+/// @param diag Diagonal of surface.
+/// @param list_rho Rhos of lines.
+/// @param list_theta Thetas of lines.
+/// @param dest_rho Rhos of new averaged lines.
+/// @param dest_theta Thetas of new averaged lines.
+/// @return nothing.
 void average_lines(double diag, struct list* list_rho, struct list* list_theta, struct list** dest_rho, struct list** dest_theta)
 {
     // Converts lists in arrays.
@@ -174,10 +179,16 @@ void average_lines(double diag, struct list* list_rho, struct list* list_theta, 
     }
 }
 
-//
-//
-//
-//
+/// @brief Computes the coordinates of the intersection of two lines.
+///
+/// \param surf_diag Diagonal of surface.
+/// \param rho1 Rho of first line.
+/// \param theta1 Theta of first line.
+/// \param rho2 Rho of second line.
+/// \param theta2 Theta of second line.
+/// \param x Intersection point x.
+/// \param y Intersection point y
+/// @return nothing.
 void point_intersection(double surf_diag, double rho1, double theta1, double rho2, double theta2, double* x, double* y)
 {
     double x0_1 = cos(theta1) * rho1;
@@ -202,11 +213,18 @@ void point_intersection(double surf_diag, double rho1, double theta1, double rho
     *y = (t2 * (y3 - y4) - (y1 - y2) * t3) / t1;
 }
 
-//
-//
-//
-//
-void get_intersections(double w, double h, double diag, struct list* list_rho, struct list* list_theta, struct list** list_point_x, struct list** list_point_y)
+/// @brief Gets all intersections of all lines.
+///
+/// \param w Width of surface.
+/// \param h Height of surface
+/// \param diag Diagonal of surface.
+/// \param list_rho Rhos of lines
+/// \param list_theta Thetas of lines
+/// \param list_point_x Destination list with the x coordinates of points.
+/// \param list_point_y Destination list with the y coordinates of points.
+/// @return nothing.
+void get_intersections(double w, double h, double diag, struct list* list_rho,
+        struct list* list_theta, struct list** list_point_x, struct list** list_point_y)
 {
     // Inits sorted lines.
     struct list* list_rho_v = list_new();
@@ -263,243 +281,16 @@ void get_intersections(double w, double h, double diag, struct list* list_rho, s
     }
 }
 
-//
-//
-//
-//
-void get_extremes_lines(SDL_Surface* surf, double diag, struct list* list_rho, struct list* list_theta)
-{
-    // Keeps horizontal lines and vertical lines.
-    struct list* list_rho_v = list_new();
-    struct list* list_theta_v = list_new();
-    struct list* list_rho_h = list_new();
-    struct list* list_theta_h = list_new();
-    orthogonal_filter(list_rho, list_theta, &list_rho_v, &list_theta_v, &list_rho_h, &list_theta_h);
-
-    // Converts lists in array. It will be easier to work with.
-    double* arr_rho_v = list_to_array(list_rho_v);
-    double* arr_rho_h = list_to_array(list_rho_h);
-    double* arr_theta_v = list_to_array(list_theta_v);
-    double* arr_theta_h = list_to_array(list_theta_h);
-
-    int max_v_index = max_array_index_abs(arr_rho_v, list_len(list_rho_v));
-    int max_h_index = max_array_index_abs(arr_rho_h, list_len(list_rho_h));
-    int min_v_index = min_array_index_abs(arr_rho_v, list_len(list_rho_v));
-    int min_h_index = min_array_index_abs(arr_rho_h, list_len(list_rho_h));
-
-    double top_rho = arr_rho_h[min_h_index];
-    double top_theta = arr_theta_h[min_h_index];
-    double bottom_rho = arr_rho_h[max_h_index];
-    double bottom_theta = arr_theta_h[max_h_index];
-    double left_rho = arr_rho_v[min_v_index];
-    double left_theta = arr_theta_v[min_v_index];
-    double right_rho = arr_rho_v[max_v_index];
-    double right_theta = arr_theta_v[max_v_index];
-
-
-    double point_top_left_x;
-    double point_top_left_y;
-    point_intersection(diag, top_rho, top_theta, left_rho, left_theta, &point_top_left_x, &point_top_left_y);
-
-    double point_top_right_x;
-    double point_top_right_y;
-    point_intersection(diag, top_rho, top_theta, right_rho, right_theta, &point_top_right_x, &point_top_right_y);
-
-    double point_bottom_left_x;
-    double point_bottom_left_y;
-    point_intersection(diag, bottom_rho, bottom_theta, left_rho, left_theta, &point_bottom_left_x, &point_bottom_left_y);
-
-    double point_bottom_right_x;
-    double point_bottom_right_y;
-    point_intersection(diag, bottom_rho, bottom_theta, right_rho, right_theta, &point_bottom_right_x, &point_bottom_right_y);
-
-    struct list* list_points_x = list_new();
-    struct list* list_points_y = list_new();
-
-    if (0)
-    {
-        list_points_x = list_insert_head(list_points_x, point_top_left_x);
-        list_points_x = list_insert_head(list_points_x, point_top_right_x);
-        list_points_x = list_insert_head(list_points_x, point_bottom_left_x);
-        list_points_x = list_insert_head(list_points_x, point_bottom_right_x);
-
-        list_points_y = list_insert_head(list_points_y, point_top_left_y);
-        list_points_y = list_insert_head(list_points_y, point_top_right_y);
-        list_points_y = list_insert_head(list_points_y, point_bottom_left_y);
-        list_points_y = list_insert_head(list_points_y, point_bottom_right_y);
-
-        draw_points_on_window(list_points_x, list_points_y, surf);
-    }
-
-    // Gets coordinates of all cells.
-    struct list* coordinates_x = list_new();
-    struct list* coordinates_y = list_new();
-
-    double step_h = sqrt((point_top_left_x - point_top_right_x) * (point_top_left_x - point_top_right_x) + (point_top_left_y - point_top_right_y) * (point_top_left_y - point_top_right_y)) / 9;
-    double step_v = sqrt((point_top_left_x - point_bottom_left_x) * (point_top_left_x - point_bottom_left_x) + (point_top_left_y - point_bottom_left_y) * (point_top_left_y - point_bottom_left_y)) / 9;
-
-    double tmp_x = point_top_left_x;
-    for (int i = 0; i < 9; i++)
-    {
-        coordinates_x = list_insert_head(coordinates_x, tmp_x);
-        tmp_x += step_h;
-    }
-
-    double tmp_y = point_top_left_y;
-    for (int i = 0; i < 9; i++)
-    {
-        coordinates_y = list_insert_head(coordinates_y, tmp_y);
-        tmp_y += step_v;
-    }
-
-    int cpt_y = 0;
-
-    // Creates surfaces.
-    struct list* y_tmp = coordinates_y;
-
-    while (y_tmp)
-    {
-        struct list* x_tmp = coordinates_x;
-        int cpt_x = 0;
-
-        while (x_tmp)
-        {
-            SDL_Rect rect;
-            rect.h = step_h;
-            rect.w = step_v;
-            rect.x = x_tmp->value;
-            rect.y = y_tmp->value;
-
-            SDL_Surface* new_surf = SDL_CreateRGBSurfaceWithFormat(0, step_h, step_v, 32, SDL_PIXELFORMAT_RGBA32);
-            SDL_BlitSurface(surf, &rect, new_surf, NULL);
-
-            // char filepath[100];
-            // snprintf(filepath, sizeof(filepath), "flex_%i%i.png", cpt_x, cpt_y);
-            // IMG_SavePNG(new_surf, filepath);
-
-            cpt_x++;
-            x_tmp = x_tmp->next;
-            SDL_FreeSurface(new_surf);
-        }
-
-        cpt_y++;
-        y_tmp = y_tmp->next;
-    }
-
-
-    // Frees memory.
-    list_destroy(coordinates_y);
-    list_destroy(coordinates_x);
-    list_destroy(list_rho_v);
-    list_destroy(list_theta_v);
-    list_destroy(list_rho_h);
-    list_destroy(list_theta_h);
-    free(arr_rho_v);
-    free(arr_rho_h);
-}
-
-//
-//
-//
-//
-void average_points(struct list* list_x, struct list* list_y, struct list** dest_x,  struct list** dest_y)
-{
-    // Converts lists in arrays.
-    int size = list_len(list_x);
-    double arr_x[size];
-    double arr_y[size];
-
-    // Fills list with rho values.
-    int i_tmp = 0;
-    struct list* x_tmp = list_x;
-    struct list* y_tmp = list_y;
-    while (x_tmp)
-    {
-        // Assigns values in arrays.
-        arr_x[i_tmp] = x_tmp->value;
-        arr_y[i_tmp] = y_tmp->value;
-        i_tmp++;
-
-        // Goes on the next values.
-        x_tmp = x_tmp->next;
-        y_tmp = y_tmp->next;
-    }
-
-    // For each point.
-    for (int index_curr = 0; index_curr < size; index_curr++)
-    {
-        // Gets the values of x and y.
-        double x_curr = arr_x[index_curr];
-        double y_curr =  arr_y[index_curr];
-
-        // x and y has already been treated, pass.
-        if (x_curr == -100 && y_curr == -100)
-        {
-            index_curr++;
-            continue;
-        }
-
-        // For each point.
-        for (int index = 0; index < size; index++)
-        {
-            // We want everything except the current point.
-            if (index_curr == index)
-            {
-                index++;
-                continue;
-            }
-
-            // Gets the values of x and y, again.
-            double x = arr_x[index];
-            double y = arr_y[index];
-
-            if (x == -100 && y == -100)
-            {
-                index++;
-                continue;
-            }
-
-            // First filter.
-            if (sqrt((x_curr - x) * (x_curr - x) + (y_curr - y) * (y_curr - y)) < POINT_RADIUS)
-            {
-                arr_x[index_curr] = (x_curr + x) / 2;
-                arr_y[index_curr] = (y_curr + y) / 2;
-
-                // Sets that the point has been treated.
-                arr_x[index] = -100;
-                arr_y[index] = -100;
-            }
-        }
-    }
-
-    // Gets all the points averaged.
-    for (int i = 0; i < size; i++)
-    {
-        if (arr_x[i] != -100 && arr_y[i] != -100)
-        {
-            *dest_x = list_insert_head(*dest_x, arr_x[i]);
-            *dest_y = list_insert_head(*dest_y, arr_y[i]);
-        }
-    }
-}
-
-//
-//
-//
-//
-double distance_horizontal_lines(double rho1, double theta1, double rho2, double theta2, double width)
-{
-    double x = width;
-    double y1 = (rho1 - x * cos(theta1)) / sin(theta1);
-    double y2 = (rho2 - x * cos(theta2)) / sin(theta2);
-
-    return fabs(y2 - y1);
-}
-
-//
-//
-//
-//
+/// @brief Creates an hypothetical perfect grid,
+/// and compare it with the experimental points.
+///
+/// @param point_x X coordinates of points.
+/// @param point_y Y coordinates of points.
+/// @param dest_x X coordinates of final points.
+/// @param dest_y Y coordinates of final points.
+/// @param width Width of surface.
+/// @param height Height of surface.
+/// @return nothing.
 void get_good_points(struct list* point_x, struct list* point_y, struct list** dest_x, struct list** dest_y, double width, double height)
 {
     double hypo_width_cell = width / 9;
@@ -556,6 +347,12 @@ void get_good_points(struct list* point_x, struct list* point_y, struct list** d
     }
 }
 
+/// @brief Extracts cells and put them in files.
+///
+/// @param list_x List of x coordinates (81 x coordinates).
+/// @param list_y List of y coordinates (81 y coordinates).
+/// @param surf Initial surface.
+/// @return nothing.
 void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf)
 {
     double width = surf->w / 9;
@@ -578,7 +375,7 @@ void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf
             SDL_BlitSurface(surf, &rect, new_surf, NULL);
 
             char filepath[100];
-            snprintf(filepath, sizeof(filepath), "img/flex_%i_%i.png", 8 - y, 8 - x);
+            snprintf(filepath, sizeof(filepath), "img/%i_%i.png", 8 - y, 8 - x);
             IMG_SavePNG(new_surf, filepath);
 
             SDL_FreeSurface(new_surf);
@@ -586,19 +383,18 @@ void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf
     }
 }
 
-// Full process to detect the grid and the digits.
-//
-// debug: set to one for additional information during the process.
-// list_rho: initial list of rhos.
-// list_rho: initial list of thetas.
-// diag: diagonal of the image.
-// surf: surface from the image.
-// return: nothing.
-void grid_detection(int debug, struct list* list_rho, struct list* list_theta, double diag, SDL_Surface* surf_sudoku)
+/// @brief Full process to detect the grid and the digits.
+///
+/// @param list_rho Initial list of rhos from
+/// @param list_theta Initial list of thetas.
+/// @param surf_sudoku Surface from the image
+/// @return nothing.
+void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface* surf_sudoku)
 {
     // Parameters.
     double width = surf_sudoku->w;
     double height = surf_sudoku->h;
+    double diag = sqrt(width * width + height * height);
 
     // AVERAGING LINES.
     // ==========================================
@@ -607,7 +403,8 @@ void grid_detection(int debug, struct list* list_rho, struct list* list_theta, d
     average_lines(diag, list_rho, list_theta, &list_rho_av, &list_theta_av);
     // ==========================================
 
-    // GETS ALL INTERSECTIONS OF ALL LINES (INCLUDES ORTHOGONAL FILTER)
+    // GETS ALL INTERSECTIONS OF ALL LINES
+    // (INCLUDES ORTHOGONAL FILTER)
     // ==========================================
     struct list* list_point_x = list_new();
     struct list* list_point_y = list_new();
@@ -623,7 +420,7 @@ void grid_detection(int debug, struct list* list_rho, struct list* list_theta, d
     // ==========================================
 
 
-    // EXTRACTS CELLS - THE END !
+    // EXTRACTS CELLS - THE END
     // ==========================================
     cell_extraction(final_grid_x, final_grid_y, surf_sudoku);
     // ==========================================
