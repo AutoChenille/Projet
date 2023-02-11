@@ -1,6 +1,7 @@
 #include "hough_transform.h"
 #include "grid_detection.h"
 #include "contour_manager.h"
+#include "img_upgrade.h"
 
 
 /// @brief Main function to test the detection of sudoku.
@@ -19,9 +20,16 @@ int main(int argc, char** argv)
     if (surf_img == NULL)
         errx(EXIT_FAILURE, "%s", SDL_GetError());
     // Converts surface to the right format.
-    SDL_Surface* surf = SDL_ConvertSurfaceFormat(surf_img, SDL_PIXELFORMAT_RGBA32, 0);
+    SDL_Surface* surf_wait = SDL_ConvertSurfaceFormat(surf_img, SDL_PIXELFORMAT_RGBA32, 0);
     // Frees initial surface.
     SDL_FreeSurface(surf_img);
+    // ====================================================
+
+
+    // UPGRADE IMAGE - REMOVE PARASITES
+    // ====================================================
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, surf_wait->w, surf_wait->h, 32, SDL_PIXELFORMAT_RGBA32);
+    upgrade_exploitation(surf_wait, &surf);
     // ====================================================
 
 
