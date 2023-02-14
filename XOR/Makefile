@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra
 LDFLAGS =
 LDLIBS = -lm
 
-SRC = main.c matrix.c perceptron.c
+SRC = main.c matrix.c xor.c
 OBJ = ${SRC:.c=.o}
 DEP = ${SRC:.c=.d}
 

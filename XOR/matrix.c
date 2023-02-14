@@ -77,6 +77,11 @@ void m_print(const matrix *m1)
     }
 }
 
+void m_printSize(matrix *m1)
+{
+    printf("(%li, %li)", m1->row, m1->col);
+}
+
 matrix *m_copy(const matrix *m1)
 {
     matrix *copy = Matrix(m1->row, m1->col);
@@ -241,6 +246,28 @@ matrix *m_horizontalSum(const matrix *m1)
             sum_line += m1->data[i*m1->col+j];
         }
         result->data[i] = sum_line;
+    }
+
+    return result;
+}
+
+matrix *m_HSum_keepDim(const matrix *m1)
+{
+    //Return the vertical matrix containing the sum of all the elements on each line of m1
+
+    matrix *result = Matrix(m1->row, m1->col);
+
+    for(size_t i = 0; i < m1->row; i++)
+    {
+        double sum_line = 0;
+        for(size_t j = 0; j < m1->col; j++)
+        {
+            sum_line += m1->data[i*m1->col+j];
+        }
+        for(size_t j= 0; j < m1->col; j++)
+        {
+            result->data[i*m1->col+j] = sum_line;
+        }
     }
 
     return result;

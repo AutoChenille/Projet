@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "matrix.h"
-#include "perceptron.h"
+//#include "perceptron.h"
+#include "xor.h"
 #include <math.h>
 #include <sys/random.h>
 #include <time.h>
@@ -30,6 +31,7 @@ void getDataSup(int n, matrix *X, matrix *Y)
 
 int main()
 {
+    /*
     size_t size = 100;
 
     matrix *X = Matrix(size*size, 2);
@@ -58,4 +60,18 @@ int main()
     //m_print(Y);
 
     printf("z : %f, a : %f\n",z,a);
+    */
+
+    matrix *X = Matrix(2, 4);
+    double tmp[] = {0, 0, 0, 1, 1, 1, 1, 0};
+    X->data = tmp;
+
+    matrix *y = Matrix(1, 4);
+    double tmp2[] = {0, 1, 0, 1};
+    y->data = tmp2;
+
+    parameters *p = neuronal_network(X, y, 2, 0.1, 100);
+
+    m_print(predict(X, p));
+
 }

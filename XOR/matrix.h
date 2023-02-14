@@ -28,6 +28,8 @@ matrix *MatrixOf(size_t row, size_t col, double x);
 
 void m_print(const matrix *m1);
 
+void m_printSize(matrix *m1);
+
 matrix *m_copy(const matrix *m1);
 
 matrix *m_add(const matrix *m1, const matrix *m2);
@@ -47,6 +49,8 @@ matrix *m_transpose(const matrix *m1);
 matrix *m_apply(double (*f)(double), const matrix *m1);
 
 matrix *m_horizontalSum(const matrix *m1);
+
+matrix *m_HSum_keepDim(const matrix *m1);
 
 matrix *m_verticalSum(const matrix *m1);
 
