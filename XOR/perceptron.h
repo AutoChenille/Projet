@@ -8,6 +8,8 @@ typedef struct
     double b;
 }perceptron_param;
 
+perceptron_param *InitParam(size_t nb_entry);
+
 //return x apply to sigmoid function
 double sigmoid(double x);
 
@@ -39,4 +41,4 @@ matrix *predict(const matrix *X, const matrix *W, double b);
 //Y is a matrix of associated results
 //learning_rate is a double representing the correction added to each lesson
 //nbr_generation is a double
-perceptron_param *neuron(const matrix *X, const matrix *Y, double learning_rate, int nbr_generation);
+void neuron(matrix *X, matrix *Y, double learning_rate, int nbr_generation, perceptron_param *p);
