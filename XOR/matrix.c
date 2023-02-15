@@ -43,7 +43,30 @@ void shuffle_matrixXY(matrix *m1, matrix *m2)
        m1->data[i2*m1->col+1] = x1_temp;
 
        m2->data[i2] = y_temp;
+    }
+}
 
+
+void shuffle_matrix(matrix *m1, matrix *m2)
+{
+    srand(time(NULL));
+    for(size_t i = 0; i < m1->col; i++)
+    {
+       size_t i2 = rand() % m1->row;
+
+       double x0_temp = m1->data[i*m1->row];
+       double x1_temp = m1->data[i*m1->row+1];
+       double y_temp = m2->data[i];
+
+       m1->data[i*m1->row] = m1->data[i2*m1->row];
+       m1->data[i*m1->row+1] = m1->data[i2*m1->row+1];
+
+       m2->data[i] = m2->data[i2];
+
+       m1->data[i2*m1->row] = x0_temp;
+       m1->data[i2*m1->row+1] = x1_temp;
+
+       m2->data[i2] = y_temp;
     }
 }
 
@@ -77,9 +100,9 @@ void m_print(const matrix *m1)
     }
 }
 
-void m_printSize(matrix *m1)
+void m_printSize(char name[], matrix *m1)
 {
-    printf("(%li, %li)", m1->row, m1->col);
+    printf("%s(%li, %li)\n", name, m1->row, m1->col);
 }
 
 matrix *m_copy(const matrix *m1)
@@ -118,6 +141,28 @@ matrix *m_add(const matrix *m1, const matrix *m2)
 
 }
 
+matrix *m_addColumn(const matrix *m1, const matrix *m2)
+{
+    //Add m2 to m1 and return the result
+    
+    //printf("m_add -> init result matrix\n");
+    matrix *result = Matrix(m1->row, m1->col);
+
+    //printf("m_add -> test dimensions\n");
+
+    //printf("m_add -> makes sum\n");
+    for(size_t i = 0; i < m1->row; i++)
+    {
+        for(size_t j = 0; j < m1->col; j++)
+        {
+            result->data[i*result->col+j] = m1->data[i*m1->col+j] + m2->data[i];
+        }
+    }
+
+    return result;
+
+}
+
 matrix *m_scalarSum(const matrix *m1, double k)
 {
     //Add m2 to m1 and return the result
@@ -139,7 +184,7 @@ matrix *m_sub(const matrix *m1, const matrix *m2)
     matrix *result = Matrix(m1->row, m2->col);
 
     if(m1->row != m2->row || m1->col != m2->col)
-        errx(1, "Error sum: wrong dimension matrix");
+        errx(1, "Error sub: wrong dimension matrix");
 
     for(size_t i = 0; i < m2->row * m2->col; i++)
     {

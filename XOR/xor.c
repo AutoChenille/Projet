@@ -24,7 +24,7 @@ double random11()
 
 double ceil_prob(double x)
 {
-    return x >= 0.5;
+    return x;
 }
 
 parameters *InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2)
@@ -40,7 +40,7 @@ parameters *InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2)
         p->W1->data[i] = random11();
     p->b1 = Matrix(sizeC1, 1);
 
-    p->W2 = Matrix(sizeC1, nb_entry);
+    p->W2 = Matrix(sizeC2, sizeC1);
     for(size_t i = 0; i < p->W2->col*p->W2->row; i++)
         p->W2->data[i] = random11();
     p->b2 = Matrix(sizeC2, 1);
@@ -55,18 +55,16 @@ activations *forward_propagation(matrix *X, parameters *p)
     activations *A = malloc(sizeof(activations));
        
     matrix *W1X = m_mul(p->W1, X);
-    printf("W1X(%li, %li) and p->b1(%li, %li)\n", W1X->row, W1X->col, p->b1->row, p->b1->col);
-    matrix *Z1 = m_add(W1X, p->b1);
-    printf("2\n");
+    matrix *Z1 = m_addColumn(W1X, p->b1);
     A->A1 = m_apply(sigmoid, Z1);
 
-    matrix *W2X = m_mul(p->W2, A->A1);
-    matrix *Z2 = m_add(W1X, p->b2);
+    matrix *W2A1 = m_mul(p->W2, A->A1);
+    matrix *Z2 = m_addColumn(W2A1, p->b2);
     A->A2 = m_apply(sigmoid, Z2);
 
     m_free(W1X);
     m_free(Z1);
-    m_free(W2X);
+    m_free(W2A1);
     m_free(Z2);
 
     return A;
@@ -82,7 +80,7 @@ parameters *back_propagation(matrix *X, matrix *y, parameters *p, activations *A
     matrix *tA1 = m_transpose(A->A1);
     matrix *dZ2A1 = m_mul(dZ2, tA1);
     dp->W2 = m_scalarProd(dZ2A1, 1/m);
-    matrix *sumdZ2 = m_HSum_keepDim(dZ2);
+    matrix *sumdZ2 = m_horizontalSum(dZ2);
     dp->b2 = m_scalarProd(sumdZ2, 1/m);
 
 
@@ -95,7 +93,7 @@ parameters *back_propagation(matrix *X, matrix *y, parameters *p, activations *A
     matrix *tX = m_transpose(X);
     matrix *dZ1X = m_mul(dZ1, tX);
     dp->W1 = m_scalarProd(dZ1X, 1/m);
-    matrix *sumdZ1 = m_HSum_keepDim(dZ1);
+    matrix *sumdZ1 = m_horizontalSum(dZ1);
     dp->b1 = m_scalarProd(sumdZ1, 1/m);
 
     m_free(dZ2);
@@ -118,6 +116,7 @@ parameters *back_propagation(matrix *X, matrix *y, parameters *p, activations *A
 
 void update(parameters *p, parameters *dp, double learning_rate)
 {
+
     matrix *dW1 = m_scalarProd(dp->W1, learning_rate);
     p->W1 = m_sub(p->W1, dW1);
 
@@ -145,12 +144,10 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learnin
 
     for(size_t i = 0; i < nb_iter; i++)
     {
-        printf("forward\n");
+        //shuffle_matrix(X, y);
         activations *A = forward_propagation(X, p);
 
-        printf("backward\n");
         parameters *dp = back_propagation(X, y, p, A);
-        printf("update\n");
         update(p, dp, learning_rate);
 
         free(A);

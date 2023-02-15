@@ -22,17 +22,19 @@ void m_free(matrix *m1);
 
 matrix *Matrix(size_t row, size_t col);
 
-void shuffle_matrixXY(matrix *m1, matrix *m2);
+void shuffle_matrix(matrix *m1, matrix *m2);
 
 matrix *MatrixOf(size_t row, size_t col, double x);
 
 void m_print(const matrix *m1);
 
-void m_printSize(matrix *m1);
+void m_printSize(char name[], matrix *m1);
 
 matrix *m_copy(const matrix *m1);
 
 matrix *m_add(const matrix *m1, const matrix *m2);
+
+matrix *m_addColumn(const matrix *m1, const matrix *m2);
 
 matrix *m_scalarSum(const matrix *m1, double k);
     

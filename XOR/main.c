@@ -63,14 +63,22 @@ int main()
     */
 
     matrix *X = Matrix(2, 4);
-    double tmp[] = {0, 0, 0, 1, 1, 1, 1, 0};
+    double tmp[] = {0, 0, 1, 1, 0, 1, 1, 0};
     X->data = tmp;
 
     matrix *y = Matrix(1, 4);
     double tmp2[] = {0, 1, 0, 1};
     y->data = tmp2;
 
-    parameters *p = neuronal_network(X, y, 2, 0.1, 100);
+    parameters *p = neuronal_network(X, y, 2, 0.1, 1000000);
+
+    m_print(X);
+
+    printf("\n");
+
+    m_print(y);
+
+    printf("\n");
 
     m_print(predict(X, p));
 
