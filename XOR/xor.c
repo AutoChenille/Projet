@@ -138,7 +138,7 @@ matrix *predict(matrix *X, parameters *p)
     return A2;
 }
 
-parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learning_rate, size_t nb_iter)
+parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learning_rate, size_t nb_iter, int show_debug)
 {
     parameters *p = InitParam(X->row, sizeSC, y->row);
 
@@ -150,9 +150,24 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learnin
         parameters *dp = back_propagation(X, y, p, A);
         update(p, dp, learning_rate);
 
+        if(show_debug)
+        {
+            printf("\n#############################################\n\n");
+            printf("Data gived :\n");
+            m_print(X);
+            printf("\nWaited results :\n");
+            m_print(y);
+            printf("\nPrediction result :\n");
+            m_print(A->A2);
+            printf("\n");
+        }
+
         free(A);
         free(dp);
     }
+
+    if(show_debug)
+        printf("\n");
 
     return p;
 }

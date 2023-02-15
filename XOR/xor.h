@@ -29,4 +29,4 @@ void update(parameters *p, parameters *dp, double learning_rate);
 
 matrix *predict(matrix *X, parameters *p);
 
-parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learning_rate, size_t nb_iter);
+parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learning_rate, size_t nb_iter, int show_debug);
