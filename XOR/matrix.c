@@ -13,7 +13,7 @@ void m_free(matrix *m1)
 
 matrix *Matrix(size_t row, size_t col)
 {
-    //Create a matrix with row rows and col columns and return it
+    //Create a matrix of 0 with row rows and col columns and return it
     matrix *m = malloc(sizeof(matrix));
     m->row = row;
     m->col = col;
@@ -25,6 +25,7 @@ matrix *Matrix(size_t row, size_t col)
 
 void shuffle_matrixXY(matrix *m1, matrix *m2)
 {
+	//Shuffle m1 and m2 together
     srand(time(NULL));
     for(size_t i = 0; i < m1->row; i++)
     {
@@ -46,33 +47,9 @@ void shuffle_matrixXY(matrix *m1, matrix *m2)
     }
 }
 
-
-void shuffle_matrix(matrix *m1, matrix *m2)
-{
-    srand(time(NULL));
-    for(size_t i = 0; i < m1->col; i++)
-    {
-       size_t i2 = rand() % m1->row;
-
-       double x0_temp = m1->data[i*m1->row];
-       double x1_temp = m1->data[i*m1->row+1];
-       double y_temp = m2->data[i];
-
-       m1->data[i*m1->row] = m1->data[i2*m1->row];
-       m1->data[i*m1->row+1] = m1->data[i2*m1->row+1];
-
-       m2->data[i] = m2->data[i2];
-
-       m1->data[i2*m1->row] = x0_temp;
-       m1->data[i2*m1->row+1] = x1_temp;
-
-       m2->data[i2] = y_temp;
-    }
-}
-
 matrix *MatrixOf(size_t row, size_t col, double x)
 {
-    //Create a matrix with row rows and col columns, fill it with x and return it
+    //Create a matrix of x with row rows and col columns and return it
     
     matrix *m = Matrix(row, col);
 
@@ -102,11 +79,16 @@ void m_print(const matrix *m1)
 
 void m_printSize(char name[], matrix *m1)
 {
+	//Print name[](m1->row, m1->col)
+	//ex, m_print_size("M", M) = M(3, 4) where M is a matrix of size 3x4
+	
     printf("%s(%li, %li)\n", name, m1->row, m1->col);
 }
 
 matrix *m_copy(const matrix *m1)
 {
+	//Return a copy of m1
+	
     matrix *copy = Matrix(m1->row, m1->col);
 
     for(size_t i = 0; i < m1->row * m1->col; i++)
@@ -119,19 +101,13 @@ matrix *m_add(const matrix *m1, const matrix *m2)
 {
     //Add m2 to m1 and return the result
     
-    //printf("m_add -> init result matrix\n");
-    matrix *result = Matrix(m1->row, m1->col);
-
-    //printf("m_add -> test dimensions\n");
-
     if(m1->row != m2->row || m1->col != m2->col)
     {
-        //printf("m1 : %li x %li\n", m1->row, m1->col);
-        //printf("m2 : %li x %li\n", m2->row, m2->col);
         errx(1, "Error sum: wrong dimension matrix\n");
     }
-
-    //printf("m_add -> makes sum\n");
+    
+    matrix *result = Matrix(m1->row, m1->col);
+    
     for(size_t i = 0; i < m2->row * m2->col; i++)
     {
         result->data[i] = m1->data[i] + m2->data[i];
@@ -143,14 +119,16 @@ matrix *m_add(const matrix *m1, const matrix *m2)
 
 matrix *m_addColumn(const matrix *m1, const matrix *m2)
 {
-    //Add m2 to m1 and return the result
+    //Add a column matrix m2 to m1 and return the result
+    //Each column Ci of result is the sum of the ith column of m1 with m2
     
-    //printf("m_add -> init result matrix\n");
+    if(m1->row != m2->row || m2->col != 1)
+    {
+        errx(1, "Error sum: wrong dimension matrix\n");
+    }
+    
     matrix *result = Matrix(m1->row, m1->col);
 
-    //printf("m_add -> test dimensions\n");
-
-    //printf("m_add -> makes sum\n");
     for(size_t i = 0; i < m1->row; i++)
     {
         for(size_t j = 0; j < m1->col; j++)
@@ -165,7 +143,7 @@ matrix *m_addColumn(const matrix *m1, const matrix *m2)
 
 matrix *m_scalarSum(const matrix *m1, double k)
 {
-    //Add m2 to m1 and return the result
+    //Sum all elements of m1 with k and return the result
     
     matrix *result = Matrix(m1->row, m1->col);
 
@@ -181,6 +159,7 @@ matrix *m_scalarSum(const matrix *m1, double k)
 matrix *m_sub(const matrix *m1, const matrix *m2)
 {
     //Substract m2 to m1 and return the result
+    
     matrix *result = Matrix(m1->row, m2->col);
 
     if(m1->row != m2->row || m1->col != m2->col)
@@ -224,7 +203,6 @@ matrix *m_mul(const matrix *m1, const matrix *m2)
             double sum = 0;
             for(size_t k = 0; k < m1->col; k++)
             {
-                //printf("m_mul -> calc i:%li x j:%li with %f and %f\n", i, k, m1->data[i*m1->col + k], m2->data[k*m2->col + j]);
                 sum += m1->data[i*m1->col + k] * m2->data[k*m2->col + j];
             }
             result->data[i*result->col + j] = sum;
@@ -236,8 +214,11 @@ matrix *m_mul(const matrix *m1, const matrix *m2)
 
 matrix *m_LineBLineMul(const matrix *m1, const matrix *m2)
 {
+	//Multiply m1 and m2 terms by terms and return the result
+	//For all (i, j) : result[i,j] = m1[i,j] * m2[i,j]
+	
     if(m1->row != m2->row || m1->col != m2->col)
-        errx(1, "Error prod: wrong dimension matrix");
+        errx(1, "Error LineBLineMul: wrong dimension matrix");
 
     matrix *result = Matrix(m1->row, m1->col);
 
@@ -268,7 +249,8 @@ matrix *m_transpose(const matrix *m1)
 
 matrix *m_apply(double (*f)(double), const matrix *m1)
 {
-    //Apply function f on all elements of m1 and return the resulted matrix
+    //Apply function f on all elements of m1 and return the result
+    
     matrix *result = Matrix(m1->row, m1->col);
 
     for(size_t i = 0; i < m1->row * m1->col; i++)
@@ -279,7 +261,7 @@ matrix *m_apply(double (*f)(double), const matrix *m1)
 
 matrix *m_horizontalSum(const matrix *m1)
 {
-    //Return the vertical matrix containing the sum of all the elements on each line of m1
+    //Return the column matrix containing the sum of all the elements on each line of m1
 
     matrix *result = Matrix(m1->row, 1);
 
@@ -296,31 +278,9 @@ matrix *m_horizontalSum(const matrix *m1)
     return result;
 }
 
-matrix *m_HSum_keepDim(const matrix *m1)
-{
-    //Return the vertical matrix containing the sum of all the elements on each line of m1
-
-    matrix *result = Matrix(m1->row, m1->col);
-
-    for(size_t i = 0; i < m1->row; i++)
-    {
-        double sum_line = 0;
-        for(size_t j = 0; j < m1->col; j++)
-        {
-            sum_line += m1->data[i*m1->col+j];
-        }
-        for(size_t j= 0; j < m1->col; j++)
-        {
-            result->data[i*m1->col+j] = sum_line;
-        }
-    }
-
-    return result;
-}
-
 matrix *m_verticalSum(const matrix *m1)
 {
-    //Return the vertical matrix containing the sum of all the elements on each column of m1
+    //Return the line matrix containing the sum of all the elements on each column of m1
 
     matrix *result = Matrix(1, m1->col);
 
@@ -339,7 +299,7 @@ matrix *m_verticalSum(const matrix *m1)
 
 double m_sum(const matrix *m1)
 {
-    //Return the vertical matrix containing the sum of all the elements on each column of m1
+    //Return the sum of all the elements on each column of m1
 
     double result = 0;
 
