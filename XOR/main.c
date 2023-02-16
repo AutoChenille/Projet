@@ -4,6 +4,9 @@
 #include "matrix.h"
 #include "xor.h"
 
+int epochs = 100000; //training the neural network with all the training data for a number of cycles.
+int step = 1;//a step is a single update to the model's weights based on a single batch of training data
+
 double string_to_double(char *string)
 {
     double result = 0;
@@ -43,7 +46,7 @@ int main(int argc, char **argv)
 
     //XOR TRAINING
     int show_debug = argc == 4 ? (int)string_to_double(argv[3]) : 0;
-    parameters *p = neuronal_network(X, y, 2, 1, 100000, show_debug);
+    parameters *p = neuronal_network(X, y, 2, step, epochs, show_debug);
 
     if(show_debug)
     {
