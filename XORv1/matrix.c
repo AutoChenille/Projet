@@ -14,6 +14,7 @@
 #define NumOutputs 1
 #define NumTrainingSets 4 //Can be changed
 
+int numEpochs = 1000000; //number of times the training set will be used to train the network can be changed
 
 //Recommanded video (in french): https://www.youtube.com/watch?v=VlMm4VZ6lk4&t=511s
 
@@ -102,7 +103,6 @@ int main()
 
 	int trainingSetOrder[NumTrainingSets] = { 0,1,2,3 }; //array to shuffle the training sets
 
-	int numEpochs = 10000; //number of times the training set will be used to train the network can be changed
 
 	//TRAINING
 
