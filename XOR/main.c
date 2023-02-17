@@ -5,7 +5,7 @@
 #include "xor.h"
 
 int epochs = 100000; //training the neural network with all the training data for a number of cycles.
-int step = 1;//a step is a single update to the model's weights based on a single batch of training data
+int step = 1;//not the batch size but the step on the "function"
 
 double string_to_double(char *string)
 {
