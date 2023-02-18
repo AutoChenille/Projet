@@ -331,6 +331,80 @@ void find_corners_of_rectangle(struct list* point_x, struct list* point_y, doubl
     dest_y[3] = bottom_left_y;
 }
 
+
+// tmp
+void TMP_extremes_lines_and_cell_extraction(SDL_Surface* surf, double corners_x[], double corners_y[])
+{
+    double point_top_left_x = corners_x[0];
+    double point_top_left_y = corners_y[0];
+    double point_top_right_x = corners_x[1];
+    double point_top_right_y = corners_y[1];
+    double point_bottom_left_x = corners_x[3];
+    double point_bottom_left_y = corners_y[3];
+    // double point_bottom_right_x = corners_x[3];
+    // double point_bottom_right_y = corners_y[3];
+
+    struct list* coordinates_x = list_new();
+    struct list* coordinates_y = list_new();
+
+    double step_h = sqrt((point_top_left_x - point_top_right_x) * (point_top_left_x - point_top_right_x)
+                         + (point_top_left_y - point_top_right_y) * (point_top_left_y - point_top_right_y)) / 9;
+    double step_v = sqrt((point_top_left_x - point_bottom_left_x) * (point_top_left_x - point_bottom_left_x)
+                         + (point_top_left_y - point_bottom_left_y) * (point_top_left_y - point_bottom_left_y)) / 9;
+
+    double tmp_x = point_top_left_x;
+    for (int i = 0; i < 9; i++)
+    {
+        coordinates_x = list_insert_head(coordinates_x, tmp_x);
+        tmp_x += step_h;
+    }
+
+    double tmp_y = point_top_left_y;
+    for (int i = 0; i < 9; i++)
+    {
+        coordinates_y = list_insert_head(coordinates_y, tmp_y);
+        tmp_y += step_v;
+    }
+
+    int cpt_y = 0;
+
+    // Creates surfaces.
+    struct list* y_tmp = coordinates_y;
+
+    while (y_tmp)
+    {
+        struct list* x_tmp = coordinates_x;
+        int cpt_x = 0;
+
+        while (x_tmp)
+        {
+            SDL_Rect rect;
+            rect.h = step_h;
+            rect.w = step_v;
+            rect.x = x_tmp->value;
+            rect.y = y_tmp->value;
+
+            SDL_Surface* new_surf = SDL_CreateRGBSurfaceWithFormat(0, step_h, step_v, 32, SDL_PIXELFORMAT_RGBA32);
+            SDL_BlitSurface(surf, &rect, new_surf, NULL);
+
+            char filepath[100];
+            snprintf(filepath, sizeof(filepath), "img/%i%i.png", cpt_x, cpt_y);
+            IMG_SavePNG(new_surf, filepath);
+
+            cpt_x++;
+            x_tmp = x_tmp->next;
+            SDL_FreeSurface(new_surf);
+        }
+
+        cpt_y++;
+        y_tmp = y_tmp->next;
+    }
+
+    // Frees memory.
+    list_destroy(coordinates_y);
+    list_destroy(coordinates_x);
+}
+
 /// @brief Main function to detect the coordinates of the four corners of sudoku
 ///
 /// @param surf Initial surface processed.
@@ -356,18 +430,23 @@ void get_max_points_rect(SDL_Surface* surf, double *corners_x, double *corners_y
     find_corners_of_rectangle(shape_point_x, shape_point_y, corners_x, corners_y);
     // ======================================
 
+    // TMP - Cell extraction
+    TMP_extremes_lines_and_cell_extraction(surf, corners_x, corners_y);
+
     // DEBUG
-    // struct list* point_x = list_new();
-    // struct list* point_y = list_new();
-    // point_x = list_insert_head(point_x, corners_x[0]);
-    // point_x = list_insert_head(point_x, corners_x[1]);
-    // point_x = list_insert_head(point_x, corners_x[2]);
-    // point_x = list_insert_head(point_x, corners_x[3]);
-    // point_y = list_insert_head(point_y, corners_y[0]);
-    // point_y = list_insert_head(point_y, corners_y[1]);
-    // point_y = list_insert_head(point_y, corners_y[2]);
-    // point_y = list_insert_head(point_y, corners_y[3]);
-    // draw_points_on_window(point_x, point_y, surf);
+    /*
+    struct list* point_x = list_new();
+    struct list* point_y = list_new();
+    point_x = list_insert_head(point_x, corners_x[0]);
+    point_x = list_insert_head(point_x, corners_x[1]);
+    point_x = list_insert_head(point_x, corners_x[2]);
+    point_x = list_insert_head(point_x, corners_x[3]);
+    point_y = list_insert_head(point_y, corners_y[0]);
+    point_y = list_insert_head(point_y, corners_y[1]);
+    point_y = list_insert_head(point_y, corners_y[2]);
+    point_y = list_insert_head(point_y, corners_y[3]);
+    draw_points_on_window(point_x, point_y, surf);
+    */
 
     // Frees memory.
     list_destroy(shape_point_x);
