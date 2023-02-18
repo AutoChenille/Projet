@@ -28,7 +28,7 @@ double ceil_prob(double x)
     return x;
 }
 
-parameters *InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2)
+parameters *InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output)
 {
     //Initialize network's parameters (W1, b1, W2, b2)
     //nb_entry	-> number of entries taken by the network
@@ -60,6 +60,15 @@ parameters *InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2)
     //Initialize b2 of size sizeC2 * 1 with 0
     p->b2 = Matrix(sizeC2, 1);
 
+    //Initialize W3
+	//W2 is a sizeC2 * sizeC1 matrix
+    p->W3 = Matrix(nb_output, sizeC2);
+    //Set random values to it
+    for(size_t i = 0; i < p->W3->col*p->W3->row; i++)
+        p->W3->data[i] = random11();
+    //Initialize b2 of size sizeC2 * 1 with 0
+    p->b3 = Matrix(nb_output, 1);
+
     return p;
 }
 
@@ -80,11 +89,18 @@ activations *forward_propagation(matrix *X, parameters *p)
     matrix *Z2 = m_addColumn(W2A1, p->b2);
     A->A2 = m_apply(sigmoid, Z2);
 
+    //Calcul of A->A3 (ie neuronal network's output)
+    matrix *W3A2 = m_mul(p->W3, A->A2);
+    matrix *Z3 = m_addColumn(W3A2, p->b3);
+    A->A3 = m_apply(sigmoid, Z3);
+
 	//free all used matrix (m_free defined in matrix.h)
     m_free(W1X);
     m_free(Z1);
     m_free(W2A1);
     m_free(Z2);
+    m_free(W3A2);
+    m_free(Z3);
 
     return A;
 }
@@ -96,15 +112,29 @@ parameters *back_propagation(matrix *X, matrix *y, parameters *p, activations *A
 	//return parameters dp wich contains all thoses gradients
 	
 	//Initialize dp
-    parameters *dp = InitParam(X->col, p->b1->row, p->b2->row);
+    parameters *dp = InitParam(X->col, p->b1->row, p->b2->row, p->b3->row);
 
 	//m = number of training data
     double m = y->col;
 
+	//##### THIRD LAYER #####
+	//Calcul of dZ3
+    matrix *dZ3 = m_sub(A->A3, y);
+    //calcul of dW3 and db3
+    matrix *tA2 = m_transpose(A->A2);
+    matrix *dZ3A2 = m_mul(dZ3, tA2);
+    dp->W3 = m_scalarProd(dZ3A2, 1/m);
+    matrix *sumdZ3 = m_horizontalSum(dZ3);
+    dp->b3 = m_scalarProd(sumdZ3, 1/m);
+
 	//##### SECOND LAYER #####
 	//Calcul of dZ2
-    matrix *dZ2 = m_sub(A->A2, y);
-    //calcul of dW2 and db2
+    matrix *oneLessA2 = m_apply(oneLessX, A->A2);
+    matrix *A2A2 = m_LineBLineMul(A->A2, oneLessA2);
+    matrix *tW3 = m_transpose(p->W3);
+    matrix *tW3dZ3 = m_mul(tW3, dZ3);
+    matrix *dZ2 = m_LineBLineMul(tW3dZ3, A2A2);
+	//Calcul of dW2 and db2
     matrix *tA1 = m_transpose(A->A1);
     matrix *dZ2A1 = m_mul(dZ2, tA1);
     dp->W2 = m_scalarProd(dZ2A1, 1/m);
@@ -118,7 +148,7 @@ parameters *back_propagation(matrix *X, matrix *y, parameters *p, activations *A
     matrix *tW2 = m_transpose(p->W2);
     matrix *tW2dZ2 = m_mul(tW2, dZ2);
     matrix *dZ1 = m_LineBLineMul(tW2dZ2, A1A1);
-	//Calcul of dW1 and db2
+	//Calcul of dW1 and db1
     matrix *tX = m_transpose(X);
     matrix *dZ1X = m_mul(dZ1, tX);
     dp->W1 = m_scalarProd(dZ1X, 1/m);
@@ -126,7 +156,17 @@ parameters *back_propagation(matrix *X, matrix *y, parameters *p, activations *A
     dp->b1 = m_scalarProd(sumdZ1, 1/m);
     
 	//Free all
+    m_free(dZ3);
+    m_free(tA2);
+    m_free(dZ3A2);
+    m_free(sumdZ3);
+
+    m_free(oneLessA2);
+    m_free(A2A2);
+    m_free(tW3);
+    m_free(tW3dZ3);
     m_free(dZ2);
+
     m_free(tA1);
     m_free(dZ2A1);
     m_free(sumdZ2);
@@ -161,6 +201,12 @@ void update(parameters *p, parameters *dp, double learning_rate)
 
     matrix *db2 = m_scalarProd(dp->b2, learning_rate);
     p->b2 = m_sub(p->b2, db2);
+
+    matrix *dW3 = m_scalarProd(dp->W3, learning_rate);
+    p->W3 = m_sub(p->W3, dW3);
+
+    matrix *db3 = m_scalarProd(dp->b3, learning_rate);
+    p->b3 = m_sub(p->b3, db3);
 }
 
 matrix *predict(matrix *X, parameters *p)
@@ -169,12 +215,12 @@ matrix *predict(matrix *X, parameters *p)
 	//return the matrix of outputs
 	
     activations *A = forward_propagation(X, p);
-    matrix *A2 = m_apply(ceil_prob, A->A2);
+    matrix *A3 = m_apply(ceil_prob, A->A3);
     free(A);
-    return A2;
+    return A3;
 }
 
-parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learning_rate, size_t nb_iter, int show_debug)
+parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC1, size_t sizeSC2, double learning_rate, size_t nb_iter, int show_debug)
 {
 	//Main funtion of the neuronal network
 	//X -> training inputs
@@ -186,7 +232,7 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learnin
 	//Return final parameters
 	
 	//Init parameters
-    parameters *p = InitParam(X->row, sizeSC, y->row);
+    parameters *p = InitParam(X->row, sizeSC1, sizeSC2, y->row);
 
 	//Iterations loop
     for(size_t i = 0; i < nb_iter; i++)
@@ -207,7 +253,7 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC, double learnin
             printf("\nWaited results :\n");
             m_print(y);
             printf("\nPrediction result :\n");
-            m_print(A->A2);
+            m_print(A->A3);
             printf("\n");
         }
 
