@@ -4,7 +4,7 @@
 #include "matrix.h"
 #include "xor.h"
 
-double epochs = 600000;
+double epochs = 500000;
 double step = 2;
 
 double string_to_double(char *string)
