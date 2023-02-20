@@ -1,7 +1,10 @@
 #include "BuildDataImage.h"
+#include "matrix.h"
 #include <SDL2/SDL_surface.h>
 #include <stddef.h>
 #include <stdlib.h>
+
+#include <string.h>
 
 #include<unistd.h> 
 
@@ -13,7 +16,7 @@ SDL_Surface* load_image(const char* path)
 {
     SDL_Surface *tmp = IMG_Load(path);
     SDL_Surface *img = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_RGB888, 0);
-    free(tmp);
+    SDL_FreeSurface(tmp);
     return img;
 }
 
@@ -75,50 +78,44 @@ matrix *get_imgList(const char* dirpath)
     // will store pointer to each entry in the directory
     struct dirent *entry;
   
-    // attempt to open the current working directory, opendir() returns NULL 
-    // on failure
+    // attempt to open the directory
     directory = opendir(dirpath);
   
     // if opening the directory fails, exit with an error message and status
     if (directory == NULL)
         errx(EXIT_FAILURE, "Unfound directory %s", dirpath);
 
-    
-    chdir(dirpath);
-
     size_t h = 92, w = 92;
     matrix *dataList = Matrix(3235, h*w);
-  
-    // Read each entry in the directory with readdir() and store the pointer to 
-    // the struct dirent into entry... when there are no more entries in the 
-    // directory readdir() will return NULL and terminate the loop at that point.
+
+    // Loop through each entry in the directory
     size_t i = 0;
+    chdir(dirpath);
     while ((entry = readdir(directory)) != NULL)
     {
-        // If the entry is a regular file, output the filename prepended with 
-        // "File: " so we know it is a file when examining the program output
+        // If the entry is a regular file, load the image and add its data to dataList
         if (entry->d_type == DT_REG)
         {
-            printf("open %s\n", entry->d_name);
-            for(size_t j = 0; j < h*w; j++)
+            printf("%s/%s\n", dirpath, entry->d_name);
+            for (size_t j = 0; j < h*w; j++)
             {
                 matrix *imgData = imageToMatrix(entry->d_name);
-                dataList->data[i*dataList->col+j] = imgData->data[j];
-                m_free(imgData);
-            }
-            i ++;
-        }
 
-        // Otherwise if the entry is a directory, output the directory name 
-        // prepended with "dir: " again so we know what what it is when looking 
-        // at the program output.
-        //else if (entry->d_type == DT_DIR)
-        //    printf(" dir: %s\n", entry->d_name);
+                dataList->data[i*dataList->col+j] = imgData->data[j];
+                freeMatrix(imgData);
+            }
+
+            i++;
+        }
     }
-  
-    // close the directory... if closedir() fails it will return -1
+
+    // Close the directory
     if (closedir(directory) == -1)
         errx(EXIT_FAILURE, "Failed to close directory.");
-  
+
     return dataList;
 }
+
+
+
+

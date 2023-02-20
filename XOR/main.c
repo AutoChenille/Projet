@@ -4,8 +4,8 @@
 #include "matrix.h"
 #include "xor.h"
 
-double epochs = 400000;
-double step = 2;
+double epochs = 1000;
+double step = 3;
 
 double string_to_double(char *string)
 {
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
         printf("\n#############################################\n\n");
     }
 
-    parameters *p = neuronal_network(X, y, 5, 5,step, epochs, show_debug);
+    parameters *p = neuronal_network(X, y, 500, 500,step, epochs, show_debug);
 
     if(show_debug)
     {
@@ -88,14 +88,6 @@ int main(int argc, char **argv)
     }
     else
         printf("XOR(%i, %i) = %f (~%i)\n", (int) x0, (int) x1, prob, prob >= 0.5);
-
-
-    //FREE MATRIX
-    //m_free(X);
-    //m_free(y);
-    free(p);
-    m_free(Xentry);
-    m_free(result);
 
     //return
     return prob >= 0.5;

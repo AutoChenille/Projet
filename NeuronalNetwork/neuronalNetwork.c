@@ -3,7 +3,31 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include "matrix.h"
 #include "neuronalNetwork.h"
+
+void FreeParameters(parameters *p)
+{
+    //Free all memory allocated for parameters
+    freeMatrix(p->W1);
+    freeMatrix(p->W2);
+    freeMatrix(p->W3);
+    freeMatrix(p->b1);
+    freeMatrix(p->b2);
+    freeMatrix(p->b3);
+
+    free(p);
+}
+
+void FreeActivations(activations *a)
+{
+    //Free all memory allocated for activations
+    freeMatrix(a->A1);
+    freeMatrix(a->A2);
+    freeMatrix(a->A3);
+
+    free(a);
+}
 
 double sigmoid(double x)
 {
@@ -28,46 +52,91 @@ double ceil_prob(double x)
     return x;
 }
 
-parameters *InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output)
-{
-    //Initialize network's parameters (W1, b1, W2, b2)
-    //nb_entry	-> number of entries taken by the network
-    //sizeC1	-> number of neurons in input layer
-    //sizeC2	-> number of neurons in output layer 
-    //return initialized parameters
+parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output) {
+    // Initialize network's parameters (W1, b1, W2, b2)
+    // nb_entry  -> number of entries taken by the network
+    // sizeC1    -> number of neurons in input layer
+    // sizeC2    -> number of neurons in output layer
+    // return initialized parameters
 
-	//random initialization
+    // random initialization
     srand(time(NULL));
-    
-    //Creates empty parameters
-    parameters *p = malloc(sizeof(parameters));
 
-	//Initialize W1
-	//W1 is a sizeC1 * nb_entry matrix
+    // Creates empty parameters
+    parameters* p = malloc(sizeof(parameters));
+    if (!p) {
+        return NULL;  // failed to allocate memory
+    }
+
+    // Initialize W1
+    // W1 is a sizeC1 * nb_entry matrix
     p->W1 = Matrix(sizeC1, nb_entry);
-    //Set random values to it
-    for(size_t i = 0; i < p->W1->col*p->W1->row; i++)
+    if (!p->W1) {
+        free(p);
+        return NULL;  // failed to allocate memory
+    }
+    // Set random values to it
+    for (size_t i = 0; i < p->W1->col * p->W1->row; i++) {
         p->W1->data[i] = random11();
-    //Initialize b1 of size sizeC1 * 1 with 0
+    }
+    
+    // Initialize b1 of size sizeC1 * 1 with 0
     p->b1 = Matrix(sizeC1, 1);
+    if (!p->b1) {
+        freeMatrix(p->W1);  // free allocated memory before returning NULL
+        free(p);
+        return NULL;  // failed to allocate memory
+    }
 
-	//Initialize W2
-	//W2 is a sizeC2 * sizeC1 matrix
+    // Initialize W2
+    // W2 is a sizeC2 * sizeC1 matrix
     p->W2 = Matrix(sizeC2, sizeC1);
-    //Set random values to it
-    for(size_t i = 0; i < p->W2->col*p->W2->row; i++)
+    if (!p->W2) {
+        freeMatrix(p->b1);  // free allocated memory before returning NULL
+        freeMatrix(p->W1);
+        free(p);
+        return NULL;  // failed to allocate memory
+    }
+    // Set random values to it
+    for (size_t i = 0; i < p->W2->col * p->W2->row; i++) {
         p->W2->data[i] = random11();
-    //Initialize b2 of size sizeC2 * 1 with 0
+    }
+    
+    // Initialize b2 of size sizeC2 * 1 with 0
     p->b2 = Matrix(sizeC2, 1);
+    if (!p->b2) {
+        freeMatrix(p->W2);  // free allocated memory before returning NULL
+        freeMatrix(p->b1);
+        freeMatrix(p->W1);
+        free(p);
+        return NULL;  // failed to allocate memory
+    }
 
-    //Initialize W3
-	//W2 is a sizeC2 * sizeC1 matrix
+    // Initialize W3
+    // W3 is a nb_output * sizeC2 matrix
     p->W3 = Matrix(nb_output, sizeC2);
-    //Set random values to it
-    for(size_t i = 0; i < p->W3->col*p->W3->row; i++)
+    if (!p->W3) {
+        freeMatrix(p->b2);  // free allocated memory before returning NULL
+        freeMatrix(p->W2);
+        freeMatrix(p->b1);
+        freeMatrix(p->W1);
+        free(p);
+        return NULL;  // failed to allocate memory
+    }
+    // Set random values to it
+    for (size_t i = 0; i < p->W3->col * p->W3->row; i++) {
         p->W3->data[i] = random11();
-    //Initialize b2 of size sizeC2 * 1 with 0
+    }
+
+    // Initialize b3 of size nb_output * 1 with 0
     p->b3 = Matrix(nb_output, 1);
+    if (!p->b3) {
+        freeMatrix(p->W3);  // free allocated memory before returning NULL
+        freeMatrix(p->b2);
+        freeMatrix(p->W2);
+        free(p);
+        return NULL;  // failed to allocate memory
+    }
 
     return p;
 }
@@ -94,13 +163,13 @@ activations *forward_propagation(matrix *X, parameters *p)
     matrix *Z3 = m_addColumn(W3A2, p->b3);
     A->A3 = m_apply(sigmoid, Z3);
 
-	//free all used matrix (m_free defined in matrix.h)
-    m_free(W1X);
-    m_free(Z1);
-    m_free(W2A1);
-    m_free(Z2);
-    m_free(W3A2);
-    m_free(Z3);
+	//free all used matrix (freeMatrix defined in matrix.h)
+    freeMatrix(W1X);
+    freeMatrix(Z1);
+    freeMatrix(W2A1);
+    freeMatrix(Z2);
+    freeMatrix(W3A2);
+    freeMatrix(Z3);
 
     return A;
 }
@@ -156,30 +225,30 @@ parameters *back_propagation(matrix *X, matrix *y, parameters *p, activations *A
     dp->b1 = m_scalarProd(sumdZ1, 1/m);
     
 	//Free all
-    m_free(dZ3);
-    m_free(tA2);
-    m_free(dZ3A2);
-    m_free(sumdZ3);
+    freeMatrix(dZ3);
+    freeMatrix(tA2);
+    freeMatrix(dZ3A2);
+    freeMatrix(sumdZ3);
 
-    m_free(oneLessA2);
-    m_free(A2A2);
-    m_free(tW3);
-    m_free(tW3dZ3);
-    m_free(dZ2);
+    freeMatrix(oneLessA2);
+    freeMatrix(A2A2);
+    freeMatrix(tW3);
+    freeMatrix(tW3dZ3);
+    freeMatrix(dZ2);
 
-    m_free(tA1);
-    m_free(dZ2A1);
-    m_free(sumdZ2);
+    freeMatrix(tA1);
+    freeMatrix(dZ2A1);
+    freeMatrix(sumdZ2);
 
-    m_free(oneLessA);
-    m_free(A1A1);
-    m_free(tW2);
-    m_free(tW2dZ2);
-    m_free(dZ1);
+    freeMatrix(oneLessA);
+    freeMatrix(A1A1);
+    freeMatrix(tW2);
+    freeMatrix(tW2dZ2);
+    freeMatrix(dZ1);
 
-    m_free(tX);
-    m_free(dZ1X);
-    m_free(sumdZ1);
+    freeMatrix(tX);
+    freeMatrix(dZ1X);
+    freeMatrix(sumdZ1);
 
 	//Return gradients
     return dp;
@@ -216,7 +285,7 @@ matrix *predict(matrix *X, parameters *p)
 	
     activations *A = forward_propagation(X, p);
     matrix *A3 = m_apply(ceil_prob, A->A3);
-    free(A);
+    FreeActivations(A);
     return A3;
 }
 
@@ -258,8 +327,8 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC1, size_t sizeSC
         }
 
 		//free matrix
-        free(A);
-        free(dp);
+        FreeActivations(A);
+        FreeParameters(dp);
     }
 
     if(show_debug)

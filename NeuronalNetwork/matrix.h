@@ -11,14 +11,9 @@ typedef struct
     double *data;
 }matrix;
 
-typedef struct
-{
-    matrix *m1;
-    matrix *m2;
-}matrix_tuple;
 
 //free m1
-void m_free(matrix *m1);
+void freeMatrix(matrix *m1);
 
 //Create a matrix of 0 with row rows and col columns and return it
 matrix *Matrix(size_t row, size_t col);

@@ -4,28 +4,30 @@
 #include <err.h>
 #include "matrix.h"
 
-
-void m_free(matrix *m1)
+void freeMatrix(matrix *m1)
 {
     free(m1->data);
     free(m1);
+    m1 = NULL;
 }
+
 
 matrix *Matrix(size_t row, size_t col)
 {
-    //Create a matrix of 0 with row rows and col columns and return it
     matrix *m = malloc(sizeof(matrix));
     m->row = row;
     m->col = col;
-    m->data = malloc(sizeof(double) * m->col * m->row);
+    m->data = calloc(m->row * m->col, sizeof(double));
+    if (!m->data) {
+        free(m);
+        return NULL;
+    }
 
     return m;
 }
 
-
 void shuffle_matrixXY(matrix *m1, matrix *m2)
 {
-	//Shuffle m1 and m2 together
     srand(time(NULL));
     for(size_t i = 0; i < m1->row; i++)
     {
@@ -49,8 +51,6 @@ void shuffle_matrixXY(matrix *m1, matrix *m2)
 
 matrix *MatrixOf(size_t row, size_t col, double x)
 {
-    //Create a matrix of x with row rows and col columns and return it
-    
     matrix *m = Matrix(row, col);
 
     for(size_t i = 0; i < m->row * m->col; i++)
@@ -59,11 +59,8 @@ matrix *MatrixOf(size_t row, size_t col, double x)
     return m;
 }
 
-
 void m_print(const matrix *m1)
 {
-    //Print matrix m1
-
     for(size_t i = 0; i < m1->row; i++)
     {
         printf("|");
@@ -79,17 +76,15 @@ void m_print(const matrix *m1)
 
 void m_printSize(char name[], matrix *m1)
 {
-	//Print name[](m1->row, m1->col)
-	//ex, m_print_size("M", M) = M(3, 4) where M is a matrix of size 3x4
-	
-    printf("%s(%li, %li)\n", name, m1->row, m1->col);
+    printf("%s(%zu, %zu)\n", name, m1->row, m1->col);
 }
 
 matrix *m_copy(const matrix *m1)
 {
-	//Return a copy of m1
-	
     matrix *copy = Matrix(m1->row, m1->col);
+    if (!copy) {
+        return NULL;
+    }
 
     for(size_t i = 0; i < m1->row * m1->col; i++)
         copy->data[i] = m1->data[i];
@@ -114,7 +109,6 @@ matrix *m_add(const matrix *m1, const matrix *m2)
     }
 
     return result;
-
 }
 
 matrix *m_addColumn(const matrix *m1, const matrix *m2)
@@ -138,7 +132,6 @@ matrix *m_addColumn(const matrix *m1, const matrix *m2)
     }
 
     return result;
-
 }
 
 matrix *m_scalarSum(const matrix *m1, double k)
@@ -153,7 +146,6 @@ matrix *m_scalarSum(const matrix *m1, double k)
     }
 
     return result;
-
 }
 
 matrix *m_sub(const matrix *m1, const matrix *m2)
@@ -185,7 +177,6 @@ matrix *m_scalarProd(const matrix *m1, double k)
 
     return result;
 }
-
 
 matrix *m_mul(const matrix *m1, const matrix *m2)
 {
