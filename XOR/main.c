@@ -4,8 +4,8 @@
 #include "matrix.h"
 #include "xor.h"
 
-int epochs = 100000; //training the neural network with all the training data for a number of cycles.
-int step = 1;//not the batch size but the step on the "function"
+double epochs = 600000;
+double step = 2;
 
 double string_to_double(char *string)
 {
@@ -46,7 +46,15 @@ int main(int argc, char **argv)
 
     //XOR TRAINING
     int show_debug = argc == 4 ? (int)string_to_double(argv[3]) : 0;
-    parameters *p = neuronal_network(X, y, 2, step, epochs, show_debug);
+
+    if(show_debug)
+    {
+        printf("#############################################\n");
+        printf(  "########### TRAINING BEGINNING ##############");
+        printf("\n#############################################\n\n");
+    }
+
+    parameters *p = neuronal_network(X, y, 5, 5,step, epochs, show_debug);
 
     if(show_debug)
     {
@@ -75,19 +83,10 @@ int main(int argc, char **argv)
         printf("Prediction result : ");
         printf("XOR(%i, %i) = %f\n", (int) x0, (int) x1, prob);
         printf("Return result : ");
-        printf("XOR(%i, %i) = %i\n", (int) x0, (int) x1, prob >= 0.5);
-
+        printf("XOR(%i, %i) = %f (~%i)\n", (int) x0, (int) x1, prob, prob >= 0.5);
     }
     else
-        printf("XOR(%i, %i) = %i\n", (int) x0, (int) x1, prob >= 0.5);
-
-
-    //FREE MATRIX
-    //m_free(X);
-    //m_free(y);
-    free(p);
-    m_free(Xentry);
-    m_free(result);
+        printf("XOR(%i, %i) = %f (~%i)\n", (int) x0, (int) x1, prob, prob >= 0.5);
 
     //return
     return prob >= 0.5;

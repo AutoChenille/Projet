@@ -39,8 +39,19 @@ int main()
         {0, 0, 0, 0, 8, 0, 0, 7, 9}
     };
 
-    print_matrix(matrix);
+
     solve(tsolve);
+
+    for(size_t i = 0; i < 9; i++)
+    {
+        for(size_t j = 0; j < 9; j++)
+        {
+            printf("%i ", tsolve[i][j]);
+        }
+        printf("\n");
+    }
+
+
     print_matrix(matrix);
 
     return 0;
