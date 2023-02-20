@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     // ====================================================
 
 
-    // PREPROCESSING IMAGE
+    // PREPROCESSING IMAGE BY OLEG
     // ====================================================
     // ...
     // Coming soon...
@@ -46,11 +46,14 @@ int main(int argc, char** argv)
     double corners_x[4];
     double corners_y[4];
     // Gets the coordinates of the four corners of sudoku.
-    get_max_points_rect(surf, corners_x, corners_y);
+    get_max_points_rect(surf_wait, corners_x, corners_y);
     // ====================================================
 
+    // tmp
+    return 0;
 
     // ROTATION AND NEW SQUARED SURFACE WITH ONLY SUDOKU
+    // ONLY FOR ORIENTED SUDOKU
     // ====================================================
     // ...
     // Coming soon...
@@ -63,7 +66,7 @@ int main(int argc, char** argv)
     struct list* list_rho = list_new();
     struct list* list_theta = list_new();
     // Performs Hough Transform Algorithm.
-    hough_transform(surf, &list_theta, &list_rho);
+    hough_transform(surf, &list_theta, &list_rho, 2.1);
     // ====================================================
 
 

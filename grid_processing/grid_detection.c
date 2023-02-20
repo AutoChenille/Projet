@@ -376,7 +376,7 @@ void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf
 
             char filepath[100];
             snprintf(filepath, sizeof(filepath), "img/%i_%i.png", 8 - y, 8 - x);
-            IMG_SavePNG(new_surf, filepath);
+            // IMG_SavePNG(new_surf, filepath);
 
             SDL_FreeSurface(new_surf);
         }

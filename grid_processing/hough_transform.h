@@ -24,6 +24,6 @@
 #define ANSI_COLOR_RESET  "\x1b[0m"
 // ========================
 
-void hough_transform(SDL_Surface* surf, struct list** list_theta, struct list** list_rho);
+void hough_transform(SDL_Surface* surf, struct list** list_theta, struct list** list_rho, const double THRESHOLD_PICK_LINES);
 
 #endif

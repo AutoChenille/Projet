@@ -1,4 +1,5 @@
 #include "contour_manager.h"
+#include <float.h>
 
 /// @brief Gets the polygon area from a set of points.
 ///
@@ -231,14 +232,9 @@ void get_points_max_shape(int width, int height, int *pixels, struct list** save
 /// @param point_y Initial set of the y coordinates of the points.
 /// @param dest_x Destination set of the x coordinates of the points.
 /// @param dest_y Destination set of the x coordinates of the points.
-void find_corners_of_rectangle(struct list* point_x, struct list* point_y, double *dest_x, double *dest_y)
+/// @param size Size of arrays
+void find_corners_of_rectangle(double* arr_x, double* arr_y, double *dest_x, double *dest_y, double size)
 {
-    // Transforms lists into array. It will be easier to work with.
-    // I know I could do everything another way... for the next time.
-    double size = list_len(point_x);
-    double* arr_x = list_to_array(point_x);
-    double* arr_y = list_to_array(point_y);
-
     // Inits the corners.
     double top_left_x = 0;
     double top_left_y = 0;
@@ -331,6 +327,161 @@ void find_corners_of_rectangle(struct list* point_x, struct list* point_y, doubl
     dest_y[3] = bottom_left_y;
 }
 
+
+
+// tmp
+void TMP_extremes_lines_and_cell_extraction(SDL_Surface* surf, double corners_x[], double corners_y[])
+{
+    double point_top_left_x = corners_x[0];
+    double point_top_left_y = corners_y[0];
+    double point_top_right_x = corners_x[1];
+    double point_top_right_y = corners_y[1];
+    double point_bottom_left_x = corners_x[3];
+    double point_bottom_left_y = corners_y[3];
+    // double point_bottom_right_x = corners_x[3];
+    // double point_bottom_right_y = corners_y[3];
+
+    struct list* coordinates_x = list_new();
+    struct list* coordinates_y = list_new();
+
+    double step_h = sqrt((point_top_left_x - point_top_right_x) * (point_top_left_x - point_top_right_x)
+                         + (point_top_left_y - point_top_right_y) * (point_top_left_y - point_top_right_y)) / 9;
+    double step_v = sqrt((point_top_left_x - point_bottom_left_x) * (point_top_left_x - point_bottom_left_x)
+                         + (point_top_left_y - point_bottom_left_y) * (point_top_left_y - point_bottom_left_y)) / 9;
+
+    double tmp_x = point_top_left_x;
+    for (int i = 0; i < 9; i++)
+    {
+        coordinates_x = list_insert_head(coordinates_x, tmp_x);
+        tmp_x += step_h;
+    }
+
+    double tmp_y = point_top_left_y;
+    for (int i = 0; i < 9; i++)
+    {
+        coordinates_y = list_insert_head(coordinates_y, tmp_y);
+        tmp_y += step_v;
+    }
+
+    int cpt_y = 0;
+
+    // Creates surfaces.
+    struct list* y_tmp = coordinates_y;
+
+    while (y_tmp)
+    {
+        struct list* x_tmp = coordinates_x;
+        int cpt_x = 0;
+
+        while (x_tmp)
+        {
+            SDL_Rect rect;
+            rect.h = step_h;
+            rect.w = step_v;
+            rect.x = x_tmp->value;
+            rect.y = y_tmp->value;
+
+            SDL_Surface* new_surf = SDL_CreateRGBSurfaceWithFormat(0, step_h, step_v, 32, SDL_PIXELFORMAT_RGBA32);
+            SDL_BlitSurface(surf, &rect, new_surf, NULL);
+
+            char filepath[100];
+            snprintf(filepath, sizeof(filepath), "img/%i%i.png", cpt_x, cpt_y);
+            IMG_SavePNG(new_surf, filepath);
+
+            cpt_x++;
+            x_tmp = x_tmp->next;
+            SDL_FreeSurface(new_surf);
+        }
+
+        cpt_y++;
+        y_tmp = y_tmp->next;
+    }
+
+    // Frees memory.
+    list_destroy(coordinates_y);
+    list_destroy(coordinates_x);
+}
+
+//
+//
+//
+//
+void four_points(double arr_x[], double arr_y[], double dest_x[], double dest_y[], int size)
+{
+    // Compute the convex hull using the Graham scan algorithm
+    // and store the result in the arr_x and arr_y arrays
+    // (implementation of this step is not shown here)
+
+    // Initialize variables to hold the four extreme points
+    double p1_x = 0, p1_y = 0;
+    double p2_x = 0, p2_y = 0;
+    double p3_x = 0, p3_y = 0;
+    double p4_x = 0, p4_y = 0;
+
+    // Find the two points that are farthest apart on the convex hull
+    double max_dist = 0;
+    for (int i = 0; i < size; i++) {
+        for (int j = i + 1; j < size; j++) {
+            double dist = sqrt(pow(arr_x[i] - arr_x[j], 2) + pow(arr_y[i] - arr_y[j], 2));
+            if (dist > max_dist) {
+                max_dist = dist;
+                p1_x = arr_x[i];
+                p1_y = arr_y[i];
+                p2_x = arr_x[j];
+                p2_y = arr_y[j];
+            }
+        }
+    }
+
+    // Find the point that is farthest away from the line connecting p1 and p2
+    double max_dist_1 = 0;
+    double line_slope = (p2_y - p1_y) / (p2_x - p1_x);
+    double line_intercept = p1_y - line_slope * p1_x;
+    for (int i = 0; i < size; i++) {
+        double dist = fabs((arr_y[i] - line_slope * arr_x[i] - line_intercept) / sqrt(pow(line_slope, 2) + 1));
+        if (dist > max_dist_1) {
+            max_dist_1 = dist;
+            p3_x = arr_x[i];
+            p3_y = arr_y[i];
+        }
+    }
+
+    // Find the point that is farthest away from both line segments p1-p3 and p2-p3
+    double max_dist_2 = 0;
+    for (int i = 0; i < size; i++) {
+        // double dist1 = fabs((arr_y[i] - line_slope * arr_x[i] - line_intercept) / sqrt(pow(line_slope, 2) + 1));
+        // double dist2 = 0;
+        for (int j = 0; j < size; j++) {
+            if ((arr_x[j] == p1_x && arr_y[j] == p1_y) || (arr_x[j] == p2_x && arr_y[j] == p2_y)) {
+                continue;
+            }
+            double line1_slope = (p3_y - p1_y) / (p3_x - p1_x);
+            double line1_intercept = p3_y - line1_slope * p3_x;
+            double dist_line1 = fabs((arr_y[i] - line1_slope * arr_x[i] - line1_intercept) / sqrt(pow(line1_slope, 2) + 1));
+
+            double line2_slope = (p3_y - p2_y) / (p3_x - p2_x);
+            double line2_intercept = p3_y - line2_slope * p3_x;
+            double dist_line2 = fabs((arr_y[i] - line2_slope * arr_x[i] - line2_intercept) / sqrt(pow(line2_slope, 2) + 1));
+            double dist = fmin(dist_line1, dist_line2);
+            if (dist > max_dist_2) {
+                max_dist_2 = dist;
+                p4_x = arr_x[i];
+                p4_y = arr_y[i];
+            }
+        }
+    }
+
+    // Copy the x and y coordinates of the four extreme points into the dest_x and dest_y arrays
+    dest_x[0] = p1_x;
+    dest_y[0] = p1_y;
+    dest_x[1] = p2_x;
+    dest_y[1] = p2_y;
+    dest_x[2] = p3_x;
+    dest_y[2] = p3_y;
+    dest_x[3] = p4_x;
+    dest_y[3] = p4_y;
+}
+
 /// @brief Main function to detect the coordinates of the four corners of sudoku
 ///
 /// @param surf Initial surface processed.
@@ -343,9 +494,10 @@ void get_max_points_rect(SDL_Surface* surf, double *corners_x, double *corners_y
     int height = surf->h;
     int arr_pixels[width * height];
     get_array_of_pixels(surf, arr_pixels);
+    // double diag = sqrt(width * width + height * height);
 
     // FIND COORDINATES OF MAX SHAPE IN IMAGE
-    // ======================================m
+    // ======================================
     struct list* shape_point_x = list_new();
     struct list* shape_point_y = list_new();
     get_points_max_shape(width, height, arr_pixels, &shape_point_x, &shape_point_y);
@@ -353,21 +505,56 @@ void get_max_points_rect(SDL_Surface* surf, double *corners_x, double *corners_y
 
     // FIND COORDINATES OF CORNERS
     // ======================================
-    find_corners_of_rectangle(shape_point_x, shape_point_y, corners_x, corners_y);
+    double dest_x[4];
+    double dest_y[4];
+    double *arr_x = list_to_array(shape_point_x);
+    double *arr_y = list_to_array(shape_point_y);
+    four_points(arr_x, arr_y, dest_x, dest_y, list_len(shape_point_x));
+    free(arr_x);
+    free(arr_y);
     // ======================================
 
+    // SORT CORNERS
+    // ======================================
+    find_corners_of_rectangle(dest_x, dest_y, corners_x, corners_y, 4);
+    // ======================================
+
+    /*
+    for (int i = 0; i < 4; i++)
+    {
+        printf("%f,%f\n", dest_x[i], dest_y[i]);
+    }
+    */
+    /*
+    struct list* point_x = list_new();
+    struct list* point_y = list_new();
+    point_x = list_insert_head(point_x, dest_x[0]);
+    point_x = list_insert_head(point_x, dest_x[1]);
+    point_x = list_insert_head(point_x, dest_x[2]);
+    point_x = list_insert_head(point_x, dest_x[3]);
+    point_y = list_insert_head(point_y, dest_y[0]);
+    point_y = list_insert_head(point_y, dest_y[1]);
+    point_y = list_insert_head(point_y, dest_y[2]);
+    point_y = list_insert_head(point_y, dest_y[3]);
+    draw_points_on_window(point_x, point_y, surf);
+    */
+    // TMP - Cell extraction
+    TMP_extremes_lines_and_cell_extraction(surf, corners_x, corners_y);
+
     // DEBUG
-    // struct list* point_x = list_new();
-    // struct list* point_y = list_new();
-    // point_x = list_insert_head(point_x, corners_x[0]);
-    // point_x = list_insert_head(point_x, corners_x[1]);
-    // point_x = list_insert_head(point_x, corners_x[2]);
-    // point_x = list_insert_head(point_x, corners_x[3]);
-    // point_y = list_insert_head(point_y, corners_y[0]);
-    // point_y = list_insert_head(point_y, corners_y[1]);
-    // point_y = list_insert_head(point_y, corners_y[2]);
-    // point_y = list_insert_head(point_y, corners_y[3]);
-    // draw_points_on_window(point_x, point_y, surf);
+    /*
+    struct list* point_x = list_new();
+    struct list* point_y = list_new();
+    point_x = list_insert_head(point_x, corners_x[0]);
+    point_x = list_insert_head(point_x, corners_x[1]);
+    point_x = list_insert_head(point_x, corners_x[2]);
+    point_x = list_insert_head(point_x, corners_x[3]);
+    point_y = list_insert_head(point_y, corners_y[0]);
+    point_y = list_insert_head(point_y, corners_y[1]);
+    point_y = list_insert_head(point_y, corners_y[2]);
+    point_y = list_insert_head(point_y, corners_y[3]);
+    draw_points_on_window(point_x, point_y, surf);
+    */
 
     // Frees memory.
     list_destroy(shape_point_x);

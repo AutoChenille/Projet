@@ -2,7 +2,6 @@
 
 // Number of theta for each pixel.
 const double MAX_THETA = 360;
-const double THRESHOLD_PICK_LINES = 2.1;
 
 /// @brief Main function to perform the algorithm of Hough.
 ///
@@ -10,7 +9,7 @@ const double THRESHOLD_PICK_LINES = 2.1;
 /// @param list_theta Destination list for lines detected.
 /// @param list_rho Destination list for lines detected.
 /// @return nothing but fills list_theta and list_rho with the coordinates of all lines detected.
-void hough_transform(SDL_Surface* surf, struct list** list_theta, struct list** list_rho)
+void hough_transform(SDL_Surface* surf, struct list** list_theta, struct list** list_rho, const double THRESHOLD_PICK_LINES)
 {
     // Gets the length and the width of the surface.
     int width = surf->w;
