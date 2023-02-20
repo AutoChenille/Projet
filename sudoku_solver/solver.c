@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <err.h>
 #include <string.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 // Global variable to deal with sudoku and hexadoku.
 const size_t GRID_DIMENSION = 9;
@@ -184,6 +186,54 @@ int solve(char grid[9][9], size_t pos)
     return 0;
 }
 
+
+void draw_image(char grid[9][9], char filepath[])
+{
+    // Load the blank grid image
+    SDL_Surface* grid_surface = IMG_Load("blank-grid.png");
+
+    // Load the digit images
+    SDL_Surface* digit_surfaces[9];
+    for (int i = 1; i <= 9; i++) {
+        char filename[10];
+        sprintf(filename, "%d.png", i);
+        digit_surfaces[i-1] = IMG_Load(filename);
+    }
+
+    // Create a surface to draw on
+    SDL_Surface* draw_surface = SDL_CreateRGBSurface(0, grid_surface->w, grid_surface->h, 32, 0, 0, 0, 0);
+
+    // Iterate through the grid and draw the digits
+    for (int row = 0; row < 9; row++) {
+        for (int col = 0; col < 9; col++) {
+            // Calculate the position of the cell in the image
+            int x = col * digit_surfaces[0]->w;
+            int y = row * digit_surfaces[0]->h;
+
+            // Get the digit to draw
+            int digit = grid[row][col] - '0';
+
+            // Blit the digit image onto the surface
+            SDL_Rect src_rect = {15, 15, digit_surfaces[digit-1]->w - 30, digit_surfaces[digit-1]->h - 30};
+            SDL_Rect dest_rect = {x + 10, y + 10, digit_surfaces[digit-1]->w - 20, digit_surfaces[digit-1]->h - 20};
+            SDL_BlitSurface(digit_surfaces[digit-1], &src_rect, grid_surface, &dest_rect);
+        }
+    }
+
+    // Save the surface as a PNG image
+    char result_filepath[strlen(filepath) + 12];
+    sprintf(result_filepath, "%s-result.png", filepath);
+    IMG_SavePNG(grid_surface, result_filepath);
+
+    // Clean up
+    SDL_FreeSurface(grid_surface);
+    for (int i = 0; i < 9; i++)
+    {
+        SDL_FreeSurface(digit_surfaces[i]);
+    }
+    SDL_FreeSurface(draw_surface);
+}
+
 // Main function.
 int main(int argc, char *argv[])
 {
@@ -203,6 +253,8 @@ int main(int argc, char *argv[])
    
     // Saves the result in a new file.
     write_grid_in_file(grid, argv[1]);
+
+    draw_image(grid, argv[1]);
 
     // Exits program with success.
     return EXIT_SUCCESS;

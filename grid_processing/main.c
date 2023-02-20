@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     struct list* list_rho = list_new();
     struct list* list_theta = list_new();
     // Performs Hough Transform Algorithm.
-    hough_transform(surf, &list_theta, &list_rho);
+    hough_transform(surf, &list_theta, &list_rho, 2.1);
     // ====================================================
 
 
