@@ -15,7 +15,7 @@ def resize_and_normalize_image(src_path, dest_path):
     Fonction pour redimensionner et normaliser une image de 92x92 à 28x28.
     """
     img = Image.open(src_path)
-    img = img.resize((4, 4), resample=Image.LANCZOS)
+    img = img.resize((3, 3), resample=Image.LANCZOS)
     img = np.array(img) / 255.0
     img = normalize_image(img)
     img = (img * 255).astype(np.uint8)

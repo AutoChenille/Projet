@@ -426,13 +426,13 @@ void m_normalize(matrix *m1)
     {
         float max = m1->data[m1->col+ j];
 
-        for(size_t i = 1; i < m1->col; i++)
+        for(size_t i = 1; i < m1->row; i++)
         {
             if(m1->data[i*m1->col+j] > max)
                 max = m1->data[i*m1->col+j];
         }
 
-        for(size_t i = 0; i < m1->col; i++)
+        for(size_t i = 0; i < m1->row; i++)
             m1->data[i*m1->col+j] -= max;
     }
 }

@@ -11,7 +11,7 @@
 #include <unistd.h> 
 
 size_t size = 3;
-size_t nb = 10;
+size_t nb = 10;//3235;
 //size = 2;
 //nb = 3;
 
@@ -97,7 +97,7 @@ datas *get_imgList(const char* dirpath)
     size_t h = size, w = size;
     datas *loaded = malloc(sizeof(datas));
     loaded->input = Matrix(h*w, nb);
-    loaded->output = Matrix(10, nb);
+    loaded->output = MatrixOf(10, nb, 0);
 
     // Loop through each entry in the directory
     size_t i = 0;
@@ -113,7 +113,7 @@ datas *get_imgList(const char* dirpath)
             {
                 loaded->input->data[j*loaded->input->col+i] = imgData->data[j];
             }
-            loaded->output->data[(entry->d_name[0] - 48)*loaded->output->col+i] = 1;
+            loaded->output->data[(entry->d_name[0] - (char)48)*loaded->output->col+i] = 1;
             freeMatrix(imgData);
 
             i++;

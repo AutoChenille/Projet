@@ -29,10 +29,13 @@ int main(int argc, char** argv)
 
     datas *data = get_imgList(training_src);
 
+    //m_print(data->input);
 
-    parameters *p = neuronal_network(data->input, data->output, 100, 100, 0.1, 1000, 1);
 
-    matrix *img = imageToMatrix("1.png");
+    parameters *p = neuronal_network(data->input, data->output, 100, 100, 0.1, 1000, 9, 1);
+
+    //matrix *img = imageToMatrix("9_1548354109.3305757.png");
+    matrix *img = imageToMatrix("9.png");
     matrix *result = predict(img, p);
     m_print(result);
 

@@ -54,28 +54,54 @@ matrix *apply_softmax(matrix *input)
 
     for(size_t j = 0; j < input->col; j ++)
     {
+        //Find the max for each vect
+        float max = input->data[input->col+j];
+        for(size_t i = 1; i < input->col; i++)
+        {
+            if(input->data[i*input->col+j] > max)
+                max = input->data[i*input->col+j];
+        }
+
+        //Compute the exponential sum
         float sum = 0;
         for(size_t i = 0; i < input->row; i++)
         {
-            sum += SDL_expf(input->data[i*input->col+j]);
+            sum += expf(input->data[i*input->col+j] - max);
         }
+
+        //Compute the probabilities
         for(size_t i = 0; i < input->row; i++)
         {
-            result->data[i*result->col+j] = SDL_expf(input->data[i*result->col+j])/sum;
+                result->data[i*result->col+j] = expf(input->data[i*result->col+j] - max)/sum;
         }
     }
 
     return result;
 }
 
-float absf(float x)
+void m_normalDiv(matrix *result)
 {
-    return x > 0 ? x : -x;
+    for(size_t i = 0; i < result->row; i ++)
+    {
+        float max = fabsf(result->data[i*result->col]);
+        for(size_t j = 0; j < result->col; j++)
+        {  
+            if(fabsf(result->data[i*result->col]) > max)
+                max = fabsf(result->data[i*result->col+j]);
+        }
+
+        if(max > 1)
+        {
+            for(size_t j = 0; j < result->col; j++)
+                result->data[i*result->col+j] /= max;
+        }
+    }
 }
 
 matrix *apply_relu(matrix *input)
 {
 
+    m_normalDiv(input);
     matrix *result = m_copy(input);
 
     for(size_t i = 0; i < input->row*input->col; i++)
@@ -85,21 +111,7 @@ matrix *apply_relu(matrix *input)
 
     //m_print(result);
 
-    for(size_t i = 0; i < result->row; i ++)
-    {
-        float max = absf(result->data[i*result->col]);
-        for(size_t j = 0; j < result->col; j++)
-        {  
-            if(absf(result->data[i*result->col]) > max)
-                max = absf(result->data[i*result->col+j]);
-        }
-
-        if(max > 1)
-        {
-            for(size_t j = 0; j < result->col; j++)
-                result->data[i*result->col+j] /= max;
-        }
-    }
+    m_normalDiv(result);
 
     return result;
 }
@@ -107,7 +119,7 @@ matrix *apply_relu(matrix *input)
 float random11()
 {
 	//Return a float between -1 and 1
-    return  (0.5 - (float)(rand()%10)/10);
+    return  (0.5 - (float)(rand()%100)/100);
 }
 
 float ceil_prob(float x)
@@ -144,7 +156,7 @@ parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_o
     }
     
     // Initialize b1 of size sizeC1 * 1 with 0
-    p->b1 = Matrix(sizeC1, 1);
+    p->b1 = MatrixOf(sizeC1, 1, 0);
     if (!p->b1) {
         FreeParameters(p);
         return NULL;  // failed to allocate memory
@@ -163,7 +175,7 @@ parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_o
     }
     
     // Initialize b2 of size sizeC2 * 1 with 0
-    p->b2 = Matrix(sizeC2, 1);
+    p->b2 = MatrixOf(sizeC2, 1, 0);
     if (!p->b2) {
         free(p);
         return NULL;  // failed to allocate memory
@@ -182,7 +194,7 @@ parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_o
     }
 
     // Initialize b3 of size nb_output * 1 with 0
-    p->b3 = Matrix(nb_output, 1);
+    p->b3 = MatrixOf(nb_output, 1, 0);
     if (!p->b3) {
         FreeParameters(p);
         return NULL;  // failed to allocate memory
@@ -203,7 +215,6 @@ void forward_propagation(matrix *X, parameters *p, activations *A)
     //m_print(X);
     //m_printSize("W1X", W1X);
     //m_print(W1X);
-    printf("\n\n ");
     matrix *Z1 = m_addColumn(W1X, p->b1);
     //m_normalize(Z1);
     matrix *Z1S = apply_relu(Z1);
@@ -295,6 +306,13 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     //m_printSize("SP1", SP1);
     //m_printSize("dp->b1", dp->b1);
     m_copyTo(SP1, dp->b1);
+
+    m_normalDiv(dp->b1);
+    m_normalDiv(dp->W1);
+    m_normalDiv(dp->b2);
+    m_normalDiv(dp->W2);
+    m_normalDiv(dp->b3);
+    m_normalDiv(dp->W3);
     
 	//Free all
     freeMatrix(dZ3);
@@ -369,7 +387,7 @@ matrix *predict(matrix *X, parameters *p)
     return A3;
 }
 
-parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, int show_debug)
+parameters *neuronal_network(matrix *data_entry, matrix *data_output, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, size_t buffer_size, int show_debug)
 {
 	//Main funtion of the neuronal network
 	//X -> training inputs
@@ -379,6 +397,17 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC1, size_t sizeSC
 	//nb_iter -> number of training iterations
 	//show_debug (boolean) -> if != 0 then print training results
 	//Return final parameters
+
+
+    srand(time(NULL));
+
+    m_printSize("entry", data_entry);
+    m_print(data_entry);
+    m_printSize("ouput", data_output);
+    m_print(data_output);
+
+    matrix *X = Matrix(data_entry->row, buffer_size);
+    matrix *y = Matrix(data_output->row, buffer_size);
 	
 	//Init parameters
     parameters *p = InitParam(X->row, sizeSC1, sizeSC2, y->row);
@@ -393,6 +422,25 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC1, size_t sizeSC
 	//Iterations loop
     for(size_t i = 0; i < nb_iter; i++)
     {
+        //Pickup random data
+        for(size_t k = 0; k < buffer_size; k++)
+        {
+            int pickedup = rand() % data_entry->col;
+            pickedup = k;
+            printf("pickedup : %i\n", pickedup);
+            for(size_t x = 0; x < data_entry->row; x++)
+                X->data[x*X->col+k] = data_entry->data[x*data_entry->col+pickedup];
+            for(size_t x = 0; x < data_output->row; x++)
+                y->data[x*y->col+k] = data_output->data[x*data_output->col+pickedup];
+        }
+
+        m_printSize("DATABUFFERED", X);
+        m_print(X);
+        m_printSize("OUTPUTBUFFERED", y);
+        m_print(y);
+        printf("\n");
+
+
         shuffle(X, y);
     	//Calcul of activations -> forward propagation
         //printf("forward\n");
@@ -404,10 +452,10 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC1, size_t sizeSC
         //printf("update\n");
         update(p, dp, learning_rate);
 
+        printf("\n\nEpoch n°%li\n", i);
 		//If show_debug != 0
         if(show_debug)
         {
-            printf("\n\nEpoch n°%li\n", i);
             float acc = 0;
             for(size_t i = 0; i < y->col; i ++)
             {
@@ -419,6 +467,10 @@ parameters *neuronal_network(matrix *X, matrix *y, size_t sizeSC1, size_t sizeSC
             printf("acc : %f\n", acc);
             //m_print(y);
             printf("\n\n");
+            m_print(A->A1);
+            printf("\n");
+            m_print(A->A2);
+            printf("\n");
             m_print(A->A3);
             printf("\n");
             m_print(y);
