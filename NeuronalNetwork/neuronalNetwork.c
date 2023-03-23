@@ -119,7 +119,7 @@ matrix *apply_relu(matrix *input)
 float random11()
 {
 	//Return a float between -1 and 1
-    return  (0.5 - (float)(rand()%100)/100);
+    return  (0.5 - (float)(rand()%100)/100)/2;
 }
 
 float ceil_prob(float x)
@@ -348,6 +348,13 @@ void update(parameters *p, parameters *dp, float learning_rate)
 {
 	//Update (in place) parameters p using dp and lerning_rate
 	//Formula p = p - learning_rate*dp
+
+    /*m_normalizeLine(dp->W1);
+    m_normalizeCol(dp->b1);
+    m_normalizeLine(dp->W2);
+    m_normalizeCol(dp->b2);
+    m_normalizeLine(dp->W3);
+    m_normalizeCol(dp->b3);*/
 	
     m_scalarProd_Place(dp->W1, learning_rate);
     m_sub_Place(p->W1, dp->W1);
@@ -387,7 +394,7 @@ matrix *predict(matrix *X, parameters *p)
     return A3;
 }
 
-parameters *neuronal_network(matrix *data_entry, matrix *data_output, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, size_t buffer_size, int show_debug)
+parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, int show_debug)
 {
 	//Main funtion of the neuronal network
 	//X -> training inputs
@@ -401,13 +408,8 @@ parameters *neuronal_network(matrix *data_entry, matrix *data_output, size_t siz
 
     srand(time(NULL));
 
-    m_printSize("entry", data_entry);
-    m_print(data_entry);
-    m_printSize("ouput", data_output);
-    m_print(data_output);
-
-    matrix *X = Matrix(data_entry->row, buffer_size);
-    matrix *y = Matrix(data_output->row, buffer_size);
+    matrix *X = Matrix(data[0]->input->row, 10);
+    matrix *y = Matrix(data[0]->output->row, 10);
 	
 	//Init parameters
     parameters *p = InitParam(X->row, sizeSC1, sizeSC2, y->row);
@@ -423,22 +425,14 @@ parameters *neuronal_network(matrix *data_entry, matrix *data_output, size_t siz
     for(size_t i = 0; i < nb_iter; i++)
     {
         //Pickup random data
-        for(size_t k = 0; k < buffer_size; k++)
+        for(size_t k = 0; k < 10; k++)
         {
-            int pickedup = rand() % data_entry->col;
-            pickedup = k;
-            printf("pickedup : %i\n", pickedup);
-            for(size_t x = 0; x < data_entry->row; x++)
-                X->data[x*X->col+k] = data_entry->data[x*data_entry->col+pickedup];
-            for(size_t x = 0; x < data_output->row; x++)
-                y->data[x*y->col+k] = data_output->data[x*data_output->col+pickedup];
+            int pickedup = rand() % 300;
+            for(size_t x = 0; x < X->row; x++)
+                X->data[x*X->col+k] = data[k]->input->data[x*data[k]->input->col+pickedup];
+            for(size_t x = 0; x < y->row; x++)
+                y->data[x*X->col+k] = data[k]->output->data[x*data[k]->output->col+pickedup];
         }
-
-        m_printSize("DATABUFFERED", X);
-        m_print(X);
-        m_printSize("OUTPUTBUFFERED", y);
-        m_print(y);
-        printf("\n");
 
 
         shuffle(X, y);
@@ -452,9 +446,29 @@ parameters *neuronal_network(matrix *data_entry, matrix *data_output, size_t siz
         //printf("update\n");
         update(p, dp, learning_rate);
 
-        printf("\n\nEpoch n°%li\n", i);
+        float acc = 0;
+        for(size_t i = 0; i < y->col; i ++)
+        {
+            size_t k = 0;
+            while(y->data[k*y->col+i] != 1)
+                k++;
+            acc += A->A3->data[k*y->col+i]>=0.5;
+        }
+        
+        float max = A->A3->data[0];
+        for(size_t k = 1; k < A->A3->row; k++)
+        {
+            if(A->A3->data[k*A->A3->col] > max)
+                max = A->A3->data[k*A->A3->col];
+        }
+
+        learning_rate = 1 - max + 1e-6;
+        
+
+        if(i%100 == 0)
+            printf("Epoch n°%li\n", i);
 		//If show_debug != 0
-        if(show_debug)
+        if(show_debug && i%100 == 0)
         {
             float acc = 0;
             for(size_t i = 0; i < y->col; i ++)
@@ -465,17 +479,15 @@ parameters *neuronal_network(matrix *data_entry, matrix *data_output, size_t siz
                 acc += A->A3->data[k*y->col+i]>=0.5;
             }
             printf("acc : %f\n", acc);
+            printf("learning rate : %f\n", learning_rate);
             //m_print(y);
             printf("\n\n");
-            m_print(A->A1);
-            printf("\n");
-            m_print(A->A2);
-            printf("\n");
             m_print(A->A3);
-            printf("\n");
-            m_print(y);
             printf("\n\n");
         }
+
+        if(i == nb_iter - 1 && acc != 10)
+            nb_iter++;
     }
 
     FreeParameters(dp);

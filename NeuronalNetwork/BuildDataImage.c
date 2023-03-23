@@ -10,8 +10,8 @@
 
 #include <unistd.h> 
 
-size_t size = 3;
-size_t nb = 10;//3235;
+size_t size = 24;
+size_t nb = 400;
 //size = 2;
 //nb = 3;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "matrix.h"
+#include "BuildDataImage.h"
 
 typedef struct
 {
@@ -37,4 +38,4 @@ parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_o
 matrix *predict(matrix *X, parameters *p);
 
 //Main funtion of the neuronal network
-parameters *neuronal_network(matrix *data_entry, matrix *data_output, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, size_t buffer_size, int show_debug);
+parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, int show_debug);

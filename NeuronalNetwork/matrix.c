@@ -417,22 +417,52 @@ float m_sum(matrix *m1)
     return result;
 }
 
-void m_normalize(matrix *m1)
+void m_normalizeCol(matrix *m1)
 {
-    if(m1->row * m1->col == 0)
-        return;
 
     for(size_t j = 0; j < m1->col; j++)
     {
-        float max = m1->data[m1->col+ j];
+        float magnitude = 0;
 
         for(size_t i = 1; i < m1->row; i++)
         {
-            if(m1->data[i*m1->col+j] > max)
-                max = m1->data[i*m1->col+j];
+            magnitude += m1->data[i*m1->col+j] * m1->data[i*m1->col+j];
         }
 
-        for(size_t i = 0; i < m1->row; i++)
-            m1->data[i*m1->col+j] -= max;
+        magnitude = sqrtf(magnitude);
+
+
+        if(magnitude > 1)
+        {
+            for(size_t i = 1; i < m1->row; i++)
+            {
+                m1->data[i*m1->col+j] /= magnitude;
+            }
+        }
+    }
+}
+
+void m_normalizeLine(matrix *m1)
+{
+
+    for(size_t i = 0; i < m1->row; i++)
+    {
+        float magnitude = 0;
+
+        for(size_t j = 1; j < m1->col; j++)
+        {
+            magnitude += m1->data[i*m1->col+j] * m1->data[i*m1->col+j];
+        }
+
+        magnitude = sqrtf(magnitude);
+
+        if(magnitude > 1)
+        {
+            for(size_t j = 1; j < m1->col; j++)
+            {
+                m1->data[i*m1->col+j] /= magnitude;
+            }
+        }
+
     }
 }

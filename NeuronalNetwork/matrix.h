@@ -77,4 +77,5 @@ matrix *m_verticalSum(matrix *m1);
 //Return the sum of all the elements on each column of m1
 float m_sum(matrix *m1);
 
-void m_normalize(matrix *m1);
+void m_normalizeCol(matrix *m1);
+void m_normalizeLine(matrix *m1);

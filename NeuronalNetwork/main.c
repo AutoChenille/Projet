@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <err.h>
 #include "matrix.h"
 #include "neuronalNetwork.h"
-#include "BuildDataImage.h"
 
-//char training_src[] = "./dataset/normalizedSACHA/";
-char training_src[] = "./dataset/TEST/";
+char training_src[] = "/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/";
+//char training_src[] = "./dataset/TEST/";
 
 double string_to_double(char *string)
 {
@@ -27,15 +27,32 @@ int main(int argc, char** argv)
     if (argc != 2)
         errx(EXIT_FAILURE, "Usage: image-file");
 
-    datas *data = get_imgList(training_src);
+    /*datas **inputs = malloc(sizeof(datas) * 10);
+    for(char n = 0; n < 10; n++)
+    {
+        char *src = training_src;
+        strcat(src, &n);
+        inputs[n] = get_imgList(src);
+    }*/
 
-    //m_print(data->input);
+    datas **inputs = malloc(sizeof(datas) * 10);
+    inputs[0] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/0/");
+    inputs[1] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/1/");
+    inputs[2] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/2/");
+    inputs[3] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/3/");
+    inputs[4] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/4/");
+    inputs[5] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/5/");
+    inputs[6] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/6/");
+    inputs[7] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/7/");
+    inputs[8] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/8/");
+    inputs[9] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/9/");
 
 
-    parameters *p = neuronal_network(data->input, data->output, 100, 100, 0.1, 1000, 9, 1);
+    //parameters *p = neuronal_network(inputs, 350, 350, 0.1, 1200, 0);
+    parameters *p = neuronal_network(inputs, 150, 150, 0.1, 100, 1);
 
-    //matrix *img = imageToMatrix("9_1548354109.3305757.png");
-    matrix *img = imageToMatrix("9.png");
+    matrix *img = imageToMatrix("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/8/8_310.png");
+    //matrix *img = imageToMatrix("9.png");
     matrix *result = predict(img, p);
     m_print(result);
 
