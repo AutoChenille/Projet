@@ -2,16 +2,24 @@
 #include "matrix.h"
 #include <SDL2/SDL_surface.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <SDL2/SDL_image.h>
 
 #include <string.h>
 
-#include<unistd.h> 
+#include <unistd.h> 
+
+size_t size = 3;
+size_t nb = 10;
+//size = 2;
+//nb = 3;
 
 // Loads an image in a surface.
 // The format of the surface is SDL_PIXELFORMAT_RGB888.
 //
 // path: Path of the image.
+
 SDL_Surface* load_image(const char* path)
 {
     SDL_Surface *tmp = IMG_Load(path);
@@ -54,13 +62,14 @@ matrix *imageToMatrix(const char* path)
     int len = surface->w * surface->h;
     SDL_PixelFormat* format = surface->format;
 
-    matrix *dataImage = Matrix(1, len);
+    matrix *dataImage = Matrix(len, 1);
     
     SDL_LockSurface(surface);
     
     for(int i = 0; i < len; i++)
     {
-        dataImage->data[i] = pixel_to_grayscale(pixels[i], format);
+        dataImage->data[i] = pixel_to_grayscale(pixels[i], format)/255;
+        //dataImage->data[i] = pixels[i];
     }
 
     SDL_UnlockSurface(surface);
@@ -70,7 +79,7 @@ matrix *imageToMatrix(const char* path)
     return dataImage;
 }
 
-matrix *get_imgList(const char* dirpath)
+datas *get_imgList(const char* dirpath)
 {
     // directory stream variable for accessing the directory
     DIR *directory;
@@ -85,8 +94,10 @@ matrix *get_imgList(const char* dirpath)
     if (directory == NULL)
         errx(EXIT_FAILURE, "Unfound directory %s", dirpath);
 
-    size_t h = 92, w = 92;
-    matrix *dataList = Matrix(3235, h*w);
+    size_t h = size, w = size;
+    datas *loaded = malloc(sizeof(datas));
+    loaded->input = Matrix(h*w, nb);
+    loaded->output = Matrix(10, nb);
 
     // Loop through each entry in the directory
     size_t i = 0;
@@ -96,14 +107,14 @@ matrix *get_imgList(const char* dirpath)
         // If the entry is a regular file, load the image and add its data to dataList
         if (entry->d_type == DT_REG)
         {
-            printf("%s/%s\n", dirpath, entry->d_name);
+            //printf("%s%s\n", dirpath, entry->d_name);
+            matrix *imgData = imageToMatrix(entry->d_name);
             for (size_t j = 0; j < h*w; j++)
             {
-                matrix *imgData = imageToMatrix(entry->d_name);
-
-                dataList->data[i*dataList->col+j] = imgData->data[j];
-                freeMatrix(imgData);
+                loaded->input->data[j*loaded->input->col+i] = imgData->data[j];
             }
+            loaded->output->data[(entry->d_name[0] - 48)*loaded->output->col+i] = 1;
+            freeMatrix(imgData);
 
             i++;
         }
@@ -113,7 +124,7 @@ matrix *get_imgList(const char* dirpath)
     if (closedir(directory) == -1)
         errx(EXIT_FAILURE, "Failed to close directory.");
 
-    return dataList;
+    return loaded;
 }
 
 

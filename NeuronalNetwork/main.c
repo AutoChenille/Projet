@@ -5,6 +5,9 @@
 #include "neuronalNetwork.h"
 #include "BuildDataImage.h"
 
+//char training_src[] = "./dataset/normalizedSACHA/";
+char training_src[] = "./dataset/TEST/";
+
 double string_to_double(char *string)
 {
     double result = 0;
@@ -24,9 +27,14 @@ int main(int argc, char** argv)
     if (argc != 2)
         errx(EXIT_FAILURE, "Usage: image-file");
 
-    matrix *data = get_imgList(argv[1]);
-    m_print(data);
+    datas *data = get_imgList(training_src);
 
 
-    return EXIT_SUCCESS;
+    parameters *p = neuronal_network(data->input, data->output, 100, 100, 0.1, 1000, 1);
+
+    matrix *img = imageToMatrix("1.png");
+    matrix *result = predict(img, p);
+    m_print(result);
+
+    return 0;
 }
