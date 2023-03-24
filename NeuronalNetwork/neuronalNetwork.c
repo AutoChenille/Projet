@@ -1,9 +1,12 @@
 #include <SDL2/SDL_stdinc.h>
+#include <err.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "matrix.h"
 #include "neuronalNetwork.h"
 
@@ -30,101 +33,16 @@ void FreeActivations(activations *a)
     free(a);
 }
 
-float sigmoid(float x)
-{
-    //sigmoid function
-    return 1 / (1 + exp(-x));
-}
-
-float relu(float x)
-{
-    //sigmoid function
-    return x > 0 ? x : 1e-6;
-}
-
 float oneLessX(float x)
 {
     //return 1 - x (used to be combined with m_apply_Place_Place in matrix.h)
     return 1 - x;
 }
 
-matrix *apply_softmax(matrix *input)
-{
-    matrix *result = Matrix(input->row, input->col);
-
-    for(size_t j = 0; j < input->col; j ++)
-    {
-        //Find the max for each vect
-        float max = input->data[input->col+j];
-        for(size_t i = 1; i < input->col; i++)
-        {
-            if(input->data[i*input->col+j] > max)
-                max = input->data[i*input->col+j];
-        }
-
-        //Compute the exponential sum
-        float sum = 0;
-        for(size_t i = 0; i < input->row; i++)
-        {
-            sum += expf(input->data[i*input->col+j] - max);
-        }
-
-        //Compute the probabilities
-        for(size_t i = 0; i < input->row; i++)
-        {
-                result->data[i*result->col+j] = expf(input->data[i*result->col+j] - max)/sum;
-        }
-    }
-
-    return result;
-}
-
-void m_normalDiv(matrix *result)
-{
-    for(size_t i = 0; i < result->row; i ++)
-    {
-        float max = fabsf(result->data[i*result->col]);
-        for(size_t j = 0; j < result->col; j++)
-        {  
-            if(fabsf(result->data[i*result->col]) > max)
-                max = fabsf(result->data[i*result->col+j]);
-        }
-
-        if(max > 1)
-        {
-            for(size_t j = 0; j < result->col; j++)
-                result->data[i*result->col+j] /= max;
-        }
-    }
-}
-
-matrix *apply_relu(matrix *input)
-{
-
-    m_normalDiv(input);
-    matrix *result = m_copy(input);
-
-    for(size_t i = 0; i < input->row*input->col; i++)
-    {
-        result->data[i] = input->data[i] > 0 ? input->data[i] : 0;
-    }
-
-    //m_print(result);
-
-    m_normalDiv(result);
-
-    return result;
-}
-
 float random11()
 {
 	//Return a float between -1 and 1
     return  (0.5 - (float)(rand()%100)/100)/2;
-}
-
-float ceil_prob(float x)
-{
-    return x;
 }
 
 parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output) {
@@ -269,8 +187,6 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     dp->W3 = m_scalarProd(dZ3A2, 1/m);
     matrix *sumdZ3 = m_horizontalSum(dZ3);
     matrix *SP3 = m_scalarProd(sumdZ3, 1/m);
-    //m_printSize("SP3", SP3);
-    //m_printSize("dp->b3", dp->b3);
     m_copyTo(SP3, dp->b3);
 
 	//##### SECOND LAYER #####
@@ -286,8 +202,6 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     dp->W2 = m_scalarProd(dZ2A1, 1/m);
     matrix *sumdZ2 = m_horizontalSum(dZ2);
     matrix *SP2 = m_scalarProd(sumdZ2, 1/m);
-    //m_printSize("SP2", SP2);
-    //m_printSize("dp->b2", dp->b2);
     m_copyTo(SP2, dp->b2);
 
 	//##### FIRST LAYER #####
@@ -303,8 +217,6 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     dp->W1 = m_scalarProd(dZ1X, 1/m);
     matrix *sumdZ1 = m_horizontalSum(dZ1);
     matrix *SP1 = m_scalarProd(sumdZ1, 1/m);
-    //m_printSize("SP1", SP1);
-    //m_printSize("dp->b1", dp->b1);
     m_copyTo(SP1, dp->b1);
 
     m_normalDiv(dp->b1);
@@ -348,13 +260,6 @@ void update(parameters *p, parameters *dp, float learning_rate)
 {
 	//Update (in place) parameters p using dp and lerning_rate
 	//Formula p = p - learning_rate*dp
-
-    /*m_normalizeLine(dp->W1);
-    m_normalizeCol(dp->b1);
-    m_normalizeLine(dp->W2);
-    m_normalizeCol(dp->b2);
-    m_normalizeLine(dp->W3);
-    m_normalizeCol(dp->b3);*/
 	
     m_scalarProd_Place(dp->W1, learning_rate);
     m_sub_Place(p->W1, dp->W1);
@@ -387,7 +292,7 @@ matrix *predict(matrix *X, parameters *p)
 
     forward_propagation(X, p, A);
 
-    matrix *A3 = m_apply(ceil_prob, A->A3);
+    matrix *A3 = m_copy(A->A3);
 
     FreeActivations(A);
 
@@ -437,13 +342,10 @@ parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float
 
         shuffle(X, y);
     	//Calcul of activations -> forward propagation
-        //printf("forward\n");
         forward_propagation(X, p, A);
 		//Calcul of gradients -> back propagation
-        //printf("back\n");
         back_propagation(X, y, p, A, dp);
         //Update parameters
-        //printf("update\n");
         update(p, dp, learning_rate);
 
         float acc = 0;
@@ -496,4 +398,3 @@ parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float
 	//Return parameters
     return p;
 }
-

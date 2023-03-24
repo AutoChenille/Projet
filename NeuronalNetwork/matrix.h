@@ -77,5 +77,11 @@ matrix *m_verticalSum(matrix *m1);
 //Return the sum of all the elements on each column of m1
 float m_sum(matrix *m1);
 
-void m_normalizeCol(matrix *m1);
-void m_normalizeLine(matrix *m1);
+//Return the softmaxed vector computed with m1
+matrix *apply_softmax(matrix *m1);
+
+//Divide in place all datas in m1 by the biggest one
+void m_normalDiv(matrix *m1);
+
+//Return the relued matrix computed with m1
+matrix *apply_relu(matrix *m1);

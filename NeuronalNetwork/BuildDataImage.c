@@ -1,19 +1,12 @@
 #include "BuildDataImage.h"
-#include "matrix.h"
 #include <SDL2/SDL_surface.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <SDL2/SDL_image.h>
-
-#include <string.h>
-
+#include <err.h>
+#include <dirent.h>
 #include <unistd.h> 
 
+//Images size
 size_t size = 24;
-size_t nb = 400;
-//size = 2;
-//nb = 3;
 
 // Loads an image in a surface.
 // The format of the surface is SDL_PIXELFORMAT_RGB888.
@@ -79,8 +72,40 @@ matrix *imageToMatrix(const char* path)
     return dataImage;
 }
 
-datas *get_imgList(const char* dirpath)
+size_t count_png_files(const char *path) {
+    size_t count = 0;
+    struct dirent *entry;
+    DIR *dir = opendir(path);
+
+    if (dir == NULL) {
+        fprintf(stderr, "Error opening directory %s\n", path);
+        exit(EXIT_FAILURE);
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG && strstr(entry->d_name, ".png") != NULL) {
+            count++;
+        } else if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            char subdir_path[1024];
+            snprintf(subdir_path, sizeof(subdir_path), "%s/%s", path, entry->d_name);
+            count += count_png_files(subdir_path);
+        }
+    }
+
+    closedir(dir);
+
+    return count;
+}
+
+datas *get_imgList(const char *path)
 {
+    //Get current repo
+    char current_repo[1024];
+    getcwd(current_repo, sizeof(current_repo));
+
+    //total number of png to compute
+    size_t nb = count_png_files(path);
+
     // directory stream variable for accessing the directory
     DIR *directory;
 
@@ -88,11 +113,11 @@ datas *get_imgList(const char* dirpath)
     struct dirent *entry;
   
     // attempt to open the directory
-    directory = opendir(dirpath);
+    directory = opendir(path);
   
     // if opening the directory fails, exit with an error message and status
     if (directory == NULL)
-        errx(EXIT_FAILURE, "Unfound directory %s", dirpath);
+        errx(EXIT_FAILURE, "Unfound directory %s", path);
 
     size_t h = size, w = size;
     datas *loaded = malloc(sizeof(datas));
@@ -101,13 +126,13 @@ datas *get_imgList(const char* dirpath)
 
     // Loop through each entry in the directory
     size_t i = 0;
-    chdir(dirpath);
+    chdir(path);
     while ((entry = readdir(directory)) != NULL)
     {
         // If the entry is a regular file, load the image and add its data to dataList
         if (entry->d_type == DT_REG)
         {
-            //printf("%s%s\n", dirpath, entry->d_name);
+            //printf("%s%s\n", path, entry->d_name);
             matrix *imgData = imageToMatrix(entry->d_name);
             for (size_t j = 0; j < h*w; j++)
             {
@@ -123,6 +148,9 @@ datas *get_imgList(const char* dirpath)
     // Close the directory
     if (closedir(directory) == -1)
         errx(EXIT_FAILURE, "Failed to close directory.");
+
+    //Return in origin repo
+    chdir(current_repo);
 
     return loaded;
 }

@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra
 LDFLAGS =
 LDLIBS = `pkg-config --libs sdl2 SDL2_image` -lm
 
-SRC = main.c matrix.c neuronalNetwork.c BuildDataImage.c
+SRC = main.c matrix.c neuronalNetwork.c BuildDataImage.c saveParams.c
 OBJ = ${SRC:.c=.o}
 DEP = ${SRC:.c=.d}
 

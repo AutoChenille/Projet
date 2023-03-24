@@ -417,52 +417,74 @@ float m_sum(matrix *m1)
     return result;
 }
 
-void m_normalizeCol(matrix *m1)
+matrix *apply_softmax(matrix *m1)
 {
+    //Return the softmaxed vector computed with m1 
 
-    for(size_t j = 0; j < m1->col; j++)
+    matrix *result = Matrix(m1->row, m1->col);
+
+    for(size_t j = 0; j < m1->col; j ++)
     {
-        float magnitude = 0;
-
-        for(size_t i = 1; i < m1->row; i++)
+        //Find the max for each vect
+        float max = m1->data[m1->col+j];
+        for(size_t i = 1; i < m1->col; i++)
         {
-            magnitude += m1->data[i*m1->col+j] * m1->data[i*m1->col+j];
+            if(m1->data[i*m1->col+j] > max)
+                max = m1->data[i*m1->col+j];
         }
 
-        magnitude = sqrtf(magnitude);
-
-
-        if(magnitude > 1)
+        //Compute the exponential sum
+        float sum = 0;
+        for(size_t i = 0; i < m1->row; i++)
         {
-            for(size_t i = 1; i < m1->row; i++)
-            {
-                m1->data[i*m1->col+j] /= magnitude;
-            }
+            sum += expf(m1->data[i*m1->col+j] - max);
+        }
+
+        //Compute the probabilities
+        for(size_t i = 0; i < m1->row; i++)
+        {
+                result->data[i*result->col+j] = expf(m1->data[i*result->col+j] - max)/sum;
+        }
+    }
+
+    return result;
+}
+
+void m_normalDiv(matrix *m1)
+{
+    //Divide in place all datas in m1 by the biggest one
+    for(size_t i = 0; i < m1->row; i ++)
+    {
+        float max = fabsf(m1->data[i*m1->col]);
+        for(size_t j = 0; j < m1->col; j++)
+        {  
+            if(fabsf(m1->data[i*m1->col]) > max)
+                max = fabsf(m1->data[i*m1->col+j]);
+        }
+
+        if(max > 1)
+        {
+            for(size_t j = 0; j < m1->col; j++)
+                m1->data[i*m1->col+j] /= max;
         }
     }
 }
 
-void m_normalizeLine(matrix *m1)
+matrix *apply_relu(matrix *m1)
 {
+    //Return the relued matrix computed with m1
+    
+    m_normalDiv(m1);
+    matrix *result = m_copy(m1);
 
-    for(size_t i = 0; i < m1->row; i++)
+    for(size_t i = 0; i < m1->row*m1->col; i++)
     {
-        float magnitude = 0;
-
-        for(size_t j = 1; j < m1->col; j++)
-        {
-            magnitude += m1->data[i*m1->col+j] * m1->data[i*m1->col+j];
-        }
-
-        magnitude = sqrtf(magnitude);
-
-        if(magnitude > 1)
-        {
-            for(size_t j = 1; j < m1->col; j++)
-            {
-                m1->data[i*m1->col+j] /= magnitude;
-            }
-        }
-
+        result->data[i] = m1->data[i] > 0 ? m1->data[i] : 0;
     }
+
+    //m_print(result);
+
+    m_normalDiv(result);
+
+    return result;
 }

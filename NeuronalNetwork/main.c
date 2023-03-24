@@ -4,6 +4,7 @@
 #include <err.h>
 #include "matrix.h"
 #include "neuronalNetwork.h"
+#include "saveParams.h"
 
 char training_src[] = "/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/";
 //char training_src[] = "./dataset/TEST/";
@@ -49,11 +50,20 @@ int main(int argc, char** argv)
 
 
     //parameters *p = neuronal_network(inputs, 350, 350, 0.1, 1200, 0);
-    parameters *p = neuronal_network(inputs, 150, 150, 0.1, 100, 1);
+    parameters *p = neuronal_network(inputs, 150, 150, 0.1, 0, 1);
 
-    matrix *img = imageToMatrix("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/8/8_310.png");
-    //matrix *img = imageToMatrix("9.png");
+    matrix *img = imageToMatrix("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/1/1_310.png");
+
+    printf("\n\n");
     matrix *result = predict(img, p);
+    m_print(result);
+    
+    SaveParameters(p, "./SAVED_PARAM/");
+    p = LoadParameters("./SAVED_PARAM/");
+    SaveParameters(p, "./SAVED_PARAM2/");
+
+    printf("\n\n");
+    result = predict(img, p);
     m_print(result);
 
     return 0;
