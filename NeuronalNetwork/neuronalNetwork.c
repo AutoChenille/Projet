@@ -280,7 +280,7 @@ void update(parameters *p, parameters *dp, float learning_rate)
     m_sub_Place(p->b3, dp->b3);
 }
 
-matrix *predict(matrix *X, parameters *p)
+matrix *predictionVector(matrix *X, parameters *p)
 {
 	//Predict result for entries contained in X with parameters P
 	//return the matrix of outputs
@@ -297,6 +297,17 @@ matrix *predict(matrix *X, parameters *p)
     FreeActivations(A);
 
     return A3;
+}
+
+int predict(matrix *X, parameters *p)
+{
+    matrix *vector = predictionVector(X, p);
+
+    int imax = 0;
+    for(size_t i = 1; i < vector->row; i++)
+        imax = vector->data[imax] > vector->data[i] ? imax : (int)i;
+
+    return imax;
 }
 
 parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, int show_debug)

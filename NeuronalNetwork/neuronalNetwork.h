@@ -35,7 +35,9 @@ void FreeActivations(activations *a);
 parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output);
 
 //Predict result for entries contained in X with parameters P
-matrix *predict(matrix *X, parameters *p);
+matrix *predictionVector(matrix *X, parameters *p);
+
+int predict(matrix *X, parameters *p);
 
 //Main funtion of the neuronal network
 parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, int show_debug);

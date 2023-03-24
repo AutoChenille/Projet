@@ -13,7 +13,7 @@ size_t size = 24;
 //
 // path: Path of the image.
 
-SDL_Surface* load_image(const char* path)
+SDL_Surface* load_image(char* path)
 {
     SDL_Surface *tmp = IMG_Load(path);
     SDL_Surface *img = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_RGB888, 0);
@@ -46,7 +46,7 @@ void surface_to_grayscale(SDL_Surface* surface)
     SDL_UnlockSurface(surface);
 }
 
-matrix *imageToMatrix(const char* path)
+matrix *imageToMatrix(char* path)
 {
     // - Create a surface from the colored image.
     SDL_Surface *surface = load_image(path);
@@ -72,7 +72,7 @@ matrix *imageToMatrix(const char* path)
     return dataImage;
 }
 
-size_t count_png_files(const char *path) {
+size_t count_png_files(char *path) {
     size_t count = 0;
     struct dirent *entry;
     DIR *dir = opendir(path);
@@ -97,7 +97,7 @@ size_t count_png_files(const char *path) {
     return count;
 }
 
-datas *get_imgList(const char *path)
+datas *get_imgList(char *path)
 {
     //Get current repo
     char current_repo[1024];
