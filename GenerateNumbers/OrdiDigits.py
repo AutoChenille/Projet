@@ -38,4 +38,4 @@ def main(num_nbr):
             cv2.imwrite("GeneratedDigits/" + str(i) + "_" + str(num_nbr) + ".jpg", img)
         num_nbr -= 1
 
-main(10)
+main()
