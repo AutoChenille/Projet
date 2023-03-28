@@ -24,11 +24,11 @@ def main(num_nbr):
 
 
             #add some noise
-            for t in range(50):
+            for t in range(30):
                 img[random.randint(0,47)][random.randint(0,47)] = 255
 
             #add some lines
-            for t in range(3):
+            for t in range(2):
                 cv2.line(img, (random.randint(0,47), random.randint(0,47)), (random.randint(0,47), random.randint(0,47)), (255,255,255), 1)            
             
             #resize the image
