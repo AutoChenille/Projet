@@ -106,7 +106,7 @@ datas *get_imgList(char *path)
     //total number of png to compute
     size_t nb = count_png_files(path);
 
-    // directory stream variable for accessing the directory
+    // directory stream variable for accessing the directoryw
     DIR *directory;
 
     // will store pointer to each entry in the directory

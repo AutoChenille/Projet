@@ -8,8 +8,8 @@
 #include "neuronalNetwork.h"
 #include "saveParams.h"
 
-size_t layerSize = 150;
-size_t nb_iter = 1000;
+size_t layerSize = 400;
+size_t nb_iter = 3000;
 
 double string_to_double(char *string)
 {
@@ -63,7 +63,10 @@ int Predict(char *img, char *params)
 {
     parameters *p = LoadParameters(params);
     matrix *m = imageToMatrix(img);
-    return predict(m, p);
+    int i = predict(m, p);
+    matrix *v = predictionVector(m, p);
+    m_print(v);
+    return i;
 }
 
 

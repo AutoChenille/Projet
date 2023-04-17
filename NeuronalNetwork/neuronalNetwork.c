@@ -343,7 +343,7 @@ parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float
         //Pickup random data
         for(size_t k = 0; k < 10; k++)
         {
-            int pickedup = rand() % 300;
+            int pickedup = rand() % 290;
             for(size_t x = 0; x < X->row; x++)
                 X->data[x*X->col+k] = data[k]->input->data[x*data[k]->input->col+pickedup];
             for(size_t x = 0; x < y->row; x++)
@@ -375,7 +375,7 @@ parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float
                 max = A->A3->data[k*A->A3->col];
         }
 
-        learning_rate = 1 - max + 1e-6;
+        //learning_rate = 1 - max + 1e-6;
         
 
         if(i%100 == 0)
