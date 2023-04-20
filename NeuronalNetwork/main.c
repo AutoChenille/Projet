@@ -8,8 +8,8 @@
 #include "neuronalNetwork.h"
 #include "saveParams.h"
 
-size_t layerSize = 200;
-size_t nb_iter = 10000;
+size_t layerSize = 300;
+size_t nb_iter = 20000;
 
 double string_to_double(char *string)
 {
@@ -49,7 +49,7 @@ void TrainNetwork(char *data, char *savepath)
     chdir(current_dir);
 
     //Train network
-    parameters *p = neuronal_network(inputs, layerSize, layerSize, 1, nb_iter, 1);
+    parameters *p = neuronal_network(inputs, layerSize, layerSize, 0.1, nb_iter, 1);
     //Save parameters to savepath
     SaveParameters(p, savepath);
 
@@ -78,8 +78,6 @@ int Predict(char *img, char *params)
     matrix *v = predictionVector(m, p);
     m_print(v);
     return i;*/
-
-    size_t *nbData = malloc(sizeof(size_t));
     datas *topredict = get_imgList(img);
 
     matrix *v = predictionVector(topredict->input, p);

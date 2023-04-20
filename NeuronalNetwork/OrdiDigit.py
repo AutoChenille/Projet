@@ -22,13 +22,13 @@ def main(num_nbr):
             img = np.zeros((s1,s1), np.uint8)
             #draw the digit on the image with random font
             font = random.choice([cv2.FONT_HERSHEY_SIMPLEX, cv2.FONT_HERSHEY_DUPLEX, cv2.FONT_HERSHEY_COMPLEX, cv2.FONT_HERSHEY_TRIPLEX, cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, cv2.FONT_HERSHEY_SCRIPT_COMPLEX])
-            font_scale = random.uniform(0.6, 1.7)
+            font_scale = random.uniform(0.7, 1.7)
             thickness = random.randint(1, 4)
             cv2.putText(img, str(i), (14,38), font, font_scale, (255,255,255), thickness)
 
 
             #add some noise
-            for t in range(random.randint(0, 100)):
+            for t in range(0):
                 img[random.randint(0,s1-1)][random.randint(0,s1-1)] = random.randint(0, 255)
 
             #add some lines
@@ -42,7 +42,7 @@ def main(num_nbr):
 
 
             #save the image
-            cv2.imwrite(PATH + str(i) + "_" + str(num_nbr) + ".png", img)
+            cv2.imwrite(PATH + str(i) + "_s" + str(num_nbr) + ".png", img)
         num_nbr -= 1
 
-main(4000)
+main(264)

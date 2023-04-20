@@ -59,12 +59,14 @@ void shuffle(matrix *m1, matrix *m2)
     for (size_t i = m1->col - 1; i > 0; i--) {
         size_t j = rand() % (i + 1);
         if (i != j) {
-            for (size_t k = 0; k < m1->row; k++) {
+            for (size_t k = 0; k < m1->row; k++)
+            {
                 float temp = m1->data[k * m1->col + i];
                 m1->data[k * m1->col + i] = m1->data[k * m1->col + j];
                 m1->data[k * m1->col + j] = temp;
             }
-            for (size_t k = 0; k < m2->row; k++) {
+            for (size_t k = 0; k < m2->row; k++)
+            {
                 float temp = m2->data[k * m2->col + i];
                 m2->data[k * m2->col + i] = m2->data[k * m2->col + j];
                 m2->data[k * m2->col + j] = temp;
@@ -123,6 +125,16 @@ void m_copyTo(matrix *src, matrix *dest)
 
     for(size_t i = 0; i < src->row * src->col; i++)
         dest->data[i] = src->data[i];
+}
+
+void m_copyTo_destroy(matrix *src, matrix *dest)
+{
+    if(src->col != dest->col || src->row != dest->row)
+        errx(1, "copy_to : src and dest does not have the same sizes.");
+
+    free(dest->data);
+    dest->data = src->data;
+    src->data = NULL;
 }
 
 matrix *m_add(matrix *m1, matrix *m2)
@@ -448,26 +460,6 @@ matrix *apply_softmax(matrix *m1)
     }
 
     return result;
-}
-
-void m_normalDivFABS(matrix *m1)
-{
-    //Divide in place all datas in m1 by the biggest one
-    for(size_t i = 0; i < m1->row; i ++)
-    {
-        float max = fabsf(m1->data[i*m1->col]);
-        for(size_t j = 0; j < m1->col; j++)
-        {  
-            if(fabsf(m1->data[i*m1->col]) > max)
-                max = fabsf(m1->data[i*m1->col+j]);
-        }
-
-        if(max > 1)
-        {
-            for(size_t j = 0; j < m1->col; j++)
-                m1->data[i*m1->col+j] /= max;
-        }
-    }
 }
 
 void m_normalDiv(matrix *m1)

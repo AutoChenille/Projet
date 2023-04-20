@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include "matrix.h"
 #include "neuronalNetwork.h"
+#include "saveParams.h"
 
 void FreeParameters(parameters *p)
 {
@@ -42,10 +43,11 @@ float oneLessX(float x)
 float random11()
 {
 	//Return a float between -1 and 1
-    return  (0.5f - (float)(rand()%1000000)/1000000) / 2;
+    return  (0.5f - (float)(rand()%1000000)/1000000) / 100;
 }
 
-parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output) {
+parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output)
+{
     // Initialize network's parameters (W1, b1, W2, b2)
     // nb_entry  -> number of entries taken by the network
     // sizeC1    -> number of neurons in input layer
@@ -170,10 +172,11 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     //calcul of dW3 and db3
     matrix *tA2 = m_transpose(A->A2);
     matrix *dZ3A2 = m_mul(dZ3, tA2);
-    dp->W3 = m_scalarProd(dZ3A2, 1/m);
+    m_scalarProd_Place(dZ3A2, 1./m);
+    m_copyTo(dZ3A2, dp->W3);
     matrix *sumdZ3 = m_horizontalSum(dZ3);
-    matrix *SP3 = m_scalarProd(sumdZ3, 1/m);
-    m_copyTo(SP3, dp->b3);
+    m_scalarProd_Place(sumdZ3, 1./m);
+    m_copyTo(sumdZ3, dp->b3);
 
 	//##### SECOND LAYER #####
 	//Calcul of dZ2
@@ -185,10 +188,11 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
 	//Calcul of dW2 and db2
     matrix *tA1 = m_transpose(A->A1);
     matrix *dZ2A1 = m_mul(dZ2, tA1);
-    dp->W2 = m_scalarProd(dZ2A1, 1/m);
+    m_scalarProd_Place(dZ2A1, 1./m);
+    m_copyTo(dZ2A1, dp->W2);
     matrix *sumdZ2 = m_horizontalSum(dZ2);
-    matrix *SP2 = m_scalarProd(sumdZ2, 1/m);
-    m_copyTo(SP2, dp->b2);
+    m_scalarProd_Place(sumdZ2, 1./m);
+    m_copyTo(sumdZ2, dp->b2);
 
 	//##### FIRST LAYER #####
 	//Calcul of dZ1
@@ -200,24 +204,24 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
 	//Calcul of dW1 and db1
     matrix *tX = m_transpose(X);
     matrix *dZ1X = m_mul(dZ1, tX);
-    dp->W1 = m_scalarProd(dZ1X, 1/m);
+    m_scalarProd_Place(dZ1X, 1./m);
+    m_copyTo(dZ1X, dp->W1);
     matrix *sumdZ1 = m_horizontalSum(dZ1);
-    matrix *SP1 = m_scalarProd(sumdZ1, 1/m);
-    m_copyTo(SP1, dp->b1);
+    m_scalarProd_Place(sumdZ1, 1./m);
+    m_copyTo(sumdZ1, dp->b1);
 
-    m_normalDiv(dp->b1);
+    /*m_normalDiv(dp->b1);
     m_normalDiv(dp->W1);
     m_normalDiv(dp->b2);
     m_normalDiv(dp->W2);
     m_normalDiv(dp->b3);
-    m_normalDiv(dp->W3);
+    m_normalDiv(dp->W3);*/
     
 	//Free all
     freeMatrix(dZ3);
     freeMatrix(tA2);
     freeMatrix(dZ3A2);
     freeMatrix(sumdZ3);
-    freeMatrix(SP3);
 
     freeMatrix(oneLessA2);
     freeMatrix(A2A2);
@@ -228,7 +232,6 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     freeMatrix(tA1);
     freeMatrix(dZ2A1);
     freeMatrix(sumdZ2);
-    freeMatrix(SP2);
 
     freeMatrix(oneLessA);
     freeMatrix(A1A1);
@@ -239,14 +242,35 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     freeMatrix(tX);
     freeMatrix(dZ1X);
     freeMatrix(sumdZ1);
-    freeMatrix(SP1);
 }
 
 void update(parameters *p, parameters *dp, float learning_rate)
 {
 	//Update (in place) parameters p using dp and lerning_rate
 	//Formula p = p - learning_rate*dp
-	
+
+    matrix **current = malloc(sizeof(matrix)*12);
+    current[0] = p->W1;
+    current[1] = dp->W1;
+    current[2] = p->b1;
+    current[3] = dp->b1;
+    current[4] = p->W2;
+    current[5] = dp->W2;
+    current[6] = p->b2;
+    current[7] = dp->b2;
+    current[8] = p->W3;
+    current[9] = dp->W3;
+    current[10] = p->b3;
+    current[11] = dp->b3;
+
+    for(size_t id = 0; id < 12; id+=2)
+    {
+        for(size_t i = 0; i < current[id]->row*current[id]->col; i++)
+        {
+            current[id]->data[i] -= current[id+1]->data[i] * learning_rate;
+        }
+    }
+    /*
     m_scalarProd_Place(dp->W1, learning_rate);
     m_sub_Place(p->W1, dp->W1);
 
@@ -264,6 +288,7 @@ void update(parameters *p, parameters *dp, float learning_rate)
 
     m_scalarProd_Place(dp->b3, learning_rate);
     m_sub_Place(p->b3, dp->b3);
+    */
 }
 
 matrix *predictionVector(matrix *X, parameters *p)
@@ -310,7 +335,7 @@ parameters *neuronal_network(datas *data, size_t sizeSC1, size_t sizeSC2, float 
 
     srand(time(NULL));
 
-    size_t NBI = 50;
+    size_t NBI = 10;
 
     matrix *X = Matrix(data->input->row, NBI);
     matrix *y = Matrix(data->output->row, NBI);
@@ -338,7 +363,7 @@ parameters *neuronal_network(datas *data, size_t sizeSC1, size_t sizeSC2, float 
                 y->data[x*X->col+i] = data->output->data[x*data->output->col+pickedup];
         }
         
-        shuffle(X, y);
+        //shuffle(X, y);
     	//Calcul of activations -> forward propagation
         forward_propagation(X, p, A);
 		//Calcul of gradients -> back propagation
@@ -346,46 +371,33 @@ parameters *neuronal_network(datas *data, size_t sizeSC1, size_t sizeSC2, float 
         //Update parameters
         update(p, dp, learning_rate);
 
-        float acc = 0;
-        for(size_t i = 0; i < y->col; i ++)
-        {
-            size_t k = 0;
-            while(y->data[k*y->col+i] != 1)
-                k++;
-            acc += A->A3->data[k*y->col+i]>=0.5;
-        }
-        
-        float max = A->A3->data[0];
-        for(size_t k = 1; k < A->A3->row; k++)
-        {
-            if(A->A3->data[k*A->A3->col] > max)
-                max = A->A3->data[k*A->A3->col];
-        }
-
-        //learning_rate = 1 - max + 1e-6;
-        
-
         if(i%100 == 0)
-            printf("Epoch n°%li\n", i);
-		//If show_debug != 0
-        if(show_debug && i%100 == 0)
         {
-            float acc = 0;
-            for(size_t i = 0; i < y->col; i ++)
+            printf("Epoch n°%li\n", i);
+
+            if(i%500 == 0)
+                SaveParameters(p, "./BACKUP_SAVED");
+
+            //If show_debug != 0
+            if(show_debug)
             {
-                size_t k = 0;
-                while(y->data[k*y->col+i] != 1)
-                    k++;
-                acc += A->A3->data[k*y->col+i]>=0.5;
+                float acc = 0;
+                for(size_t i = 0; i < y->col; i ++)
+                {
+                    size_t k = 0;
+                    while(y->data[k*y->col+i] != 1)
+                        k++;
+                    acc += A->A3->data[k*y->col+i]>=0.5;
+                }
+                printf("acc : %f\n", acc);
+                printf("learning rate : %f\n", learning_rate);
+                //m_print(y);
+                printf("\n\n");
+                m_print(A->A3);
+                printf("\n");
+                //m_print(y);
+                printf("\n\n");
             }
-            printf("acc : %f\n", acc);
-            printf("learning rate : %f\n", learning_rate);
-            //m_print(y);
-            printf("\n\n");
-            m_print(A->A3);
-            printf("\n");
-            m_print(y);
-            printf("\n\n");
         }
     }
 
