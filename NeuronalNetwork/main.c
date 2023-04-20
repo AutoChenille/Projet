@@ -8,8 +8,8 @@
 #include "neuronalNetwork.h"
 #include "saveParams.h"
 
-size_t layerSize = 400;
-size_t nb_iter = 3000;
+size_t layerSize = 200;
+size_t nb_iter = 10000;
 
 double string_to_double(char *string)
 {
@@ -43,30 +43,62 @@ void TrainNetwork(char *data, char *savepath)
     }
 
     //Go to data dir
-    chdir(data);
-
-    datas **inputs = malloc(sizeof(datas) * 10);
-    for(size_t i = 0; i < 10; i++)
-        inputs[i] = get_imgList(sizeTToPath(i));
+    datas *inputs = get_imgList(data);
 
     //Come back to normal repo
     chdir(current_dir);
 
     //Train network
-    parameters *p = neuronal_network(inputs, layerSize, layerSize, 0.1, nb_iter, 1);
-
-    //Save parameters to savepth
+    parameters *p = neuronal_network(inputs, layerSize, layerSize, 1, nb_iter, 1);
+    //Save parameters to savepath
     SaveParameters(p, savepath);
+
+    datas *topredict = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/Predict/");
+    matrix *v = predictionVector(topredict->input, p);
+    int result = 0;
+    for(size_t j = 1; j < v->col; j++)
+    {
+        size_t max = 0;
+        for(size_t i = 1; i < 10; i++)
+        {
+            if(v->data[i*v->col+j] > v->data[max*v->col+j])
+                max = i;
+        }
+        if(topredict->output->data[max*topredict->output->col+j] == 1)
+            result++;
+    }
+    printf("accuracy : %i/%li\n", result, topredict->input->col);
 }
 
 int Predict(char *img, char *params)
 {
     parameters *p = LoadParameters(params);
-    matrix *m = imageToMatrix(img);
+    /*matrix *m = imageToMatrix(img);
     int i = predict(m, p);
     matrix *v = predictionVector(m, p);
     m_print(v);
-    return i;
+    return i;*/
+
+    size_t *nbData = malloc(sizeof(size_t));
+    datas *topredict = get_imgList(img);
+
+    matrix *v = predictionVector(topredict->input, p);
+
+    int result = 0;
+    for(size_t j = 1; j < v->col; j++)
+    {
+        size_t max = 0;
+        for(size_t i = 1; i < 10; i++)
+        {
+            if(v->data[i*v->col+j] > v->data[max*v->col+j])
+                max = i;
+        }
+        if(topredict->output->data[max*topredict->output->col+j] == 1)
+            result++;
+    }
+    printf("accuracy : %i/%li\n", result, topredict->input->col);
+
+    return 0;
 }
 
 

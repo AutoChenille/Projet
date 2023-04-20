@@ -35,6 +35,7 @@ def main(src_dir, dest_dir):
             dest_path = os.path.join(dest_dir, filename)
             resize_and_normalize_image(src_path, dest_path)
 
+    """
     # Parcours de tous les fichiers du répertoire
     for nom_fichier in os.listdir(dest_dir):
         # On ne traite que les fichiers (pas les sous-répertoires)
@@ -66,7 +67,7 @@ def main(src_dir, dest_dir):
             # Renommage du fichier
             os.rename(chemin_fichier_source, chemin_fichier_destination)
             # Incrémentation du compteur pour le numéro séquentiel
-            compteur += 1
+            compteur += 1"""
 
 if __name__ == '__main__':
     src_dir = './dataset/SACHA/'

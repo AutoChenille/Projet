@@ -61,8 +61,9 @@ matrix *imageToMatrix(char* path)
     
     for(int i = 0; i < len; i++)
     {
-        dataImage->data[i] = pixel_to_grayscale(pixels[i], format)/255;
-        //dataImage->data[i] = pixels[i];
+        dataImage->data[i] = pixel_to_grayscale(pixels[i], format)/255.;
+        //dataImage->data[i] = dataImage->data[i] > 127. ? 1 : 0;
+        //dataImage->data[i] = pixels[i]/255.;
     }
 
     SDL_UnlockSurface(surface);
@@ -104,9 +105,9 @@ datas *get_imgList(char *path)
     getcwd(current_repo, sizeof(current_repo));
 
     //total number of png to compute
-    size_t nb = count_png_files(path);
+    size_t nbData = count_png_files(path);
 
-    // directory stream variable for accessing the directoryw
+    // directory stream variable for accessing the directory
     DIR *directory;
 
     // will store pointer to each entry in the directory
@@ -121,8 +122,8 @@ datas *get_imgList(char *path)
 
     size_t h = size, w = size;
     datas *loaded = malloc(sizeof(datas));
-    loaded->input = Matrix(h*w, nb);
-    loaded->output = MatrixOf(10, nb, 0);
+    loaded->input = Matrix(h*w, nbData);
+    loaded->output = MatrixOf(10, nbData, 0);
 
     // Loop through each entry in the directory
     size_t i = 0;

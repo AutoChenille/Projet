@@ -42,7 +42,7 @@ float oneLessX(float x)
 float random11()
 {
 	//Return a float between -1 and 1
-    return  (0.5 - (float)(rand()%100)/100)/2;
+    return  (0.5f - (float)(rand()%1000000)/1000000) / 2;
 }
 
 parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output) {
@@ -127,34 +127,20 @@ void forward_propagation(matrix *X, parameters *p, activations *A)
        
     //Calcul of A->A1 (ie first layer's output)
     matrix *W1X = m_mul(p->W1, X);
-    //m_printSize("W1", p->W1);
-    //m_print(p->W1);
-    //m_printSize("X", X);
-    //m_print(X);
-    //m_printSize("W1X", W1X);
-    //m_print(W1X);
     matrix *Z1 = m_addColumn(W1X, p->b1);
-    //m_normalize(Z1);
     matrix *Z1S = apply_relu(Z1);
-    //m_printSize("Z1S", Z1S);
-    //m_printSize("A1", A->A1);
     m_copyTo(Z1S, A->A1);
 
 	//Calcul of A->A2 (ie neuronal network's output)
     matrix *W2A1 = m_mul(p->W2, A->A1);
     matrix *Z2 = m_addColumn(W2A1, p->b2);
-    //m_normalize(Z2);
     matrix *Z2S = apply_relu(Z2);
-    //m_printSize("Z2S", Z2S);
-    //m_printSize("A2", A->A2);
     m_copyTo(Z2S, A->A2);
 
     //Calcul of A->A3 (ie neuronal network's output)
     matrix *W3A2 = m_mul(p->W3, A->A2);
     matrix *Z3 = m_addColumn(W3A2, p->b3);
     matrix *Z3S = apply_softmax(Z3);
-    //m_printSize("Z3S", Z3S);
-    //m_printSize("A3", A->A3);
     m_copyTo(Z3S, A->A3);
 
 	//free all used matrix (freeMatrix defined in matrix.h)
@@ -310,7 +296,7 @@ int predict(matrix *X, parameters *p)
     return imax;
 }
 
-parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, int show_debug)
+parameters *neuronal_network(datas *data, size_t sizeSC1, size_t sizeSC2, float learning_rate, size_t nb_iter, int show_debug)
 {
 	//Main funtion of the neuronal network
 	//X -> training inputs
@@ -324,8 +310,10 @@ parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float
 
     srand(time(NULL));
 
-    matrix *X = Matrix(data[0]->input->row, 10);
-    matrix *y = Matrix(data[0]->output->row, 10);
+    size_t NBI = 50;
+
+    matrix *X = Matrix(data->input->row, NBI);
+    matrix *y = Matrix(data->output->row, NBI);
 	
 	//Init parameters
     parameters *p = InitParam(X->row, sizeSC1, sizeSC2, y->row);
@@ -341,16 +329,15 @@ parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float
     for(size_t i = 0; i < nb_iter; i++)
     {
         //Pickup random data
-        for(size_t k = 0; k < 10; k++)
+        for(size_t i = 0; i < NBI; i++)
         {
-            int pickedup = rand() % 290;
+            int pickedup = rand() % data->input->col;
             for(size_t x = 0; x < X->row; x++)
-                X->data[x*X->col+k] = data[k]->input->data[x*data[k]->input->col+pickedup];
+                X->data[x*X->col+i] = data->input->data[x*data->input->col+pickedup];
             for(size_t x = 0; x < y->row; x++)
-                y->data[x*X->col+k] = data[k]->output->data[x*data[k]->output->col+pickedup];
+                y->data[x*X->col+i] = data->output->data[x*data->output->col+pickedup];
         }
-
-
+        
         shuffle(X, y);
     	//Calcul of activations -> forward propagation
         forward_propagation(X, p, A);
@@ -396,13 +383,14 @@ parameters *neuronal_network(datas **data, size_t sizeSC1, size_t sizeSC2, float
             //m_print(y);
             printf("\n\n");
             m_print(A->A3);
+            printf("\n");
+            m_print(y);
             printf("\n\n");
         }
-
-        if(i == nb_iter - 1 && acc != 10)
-            nb_iter++;
     }
 
+    freeMatrix(X);
+    freeMatrix(y);
     FreeParameters(dp);
     FreeActivations(A);
 

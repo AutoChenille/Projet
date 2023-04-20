@@ -427,7 +427,7 @@ matrix *apply_softmax(matrix *m1)
     {
         //Find the max for each vect
         float max = m1->data[m1->col+j];
-        for(size_t i = 1; i < m1->col; i++)
+        for(size_t i = 1; i < m1->row; i++)
         {
             if(m1->data[i*m1->col+j] > max)
                 max = m1->data[i*m1->col+j];
@@ -450,7 +450,7 @@ matrix *apply_softmax(matrix *m1)
     return result;
 }
 
-void m_normalDiv(matrix *m1)
+void m_normalDivFABS(matrix *m1)
 {
     //Divide in place all datas in m1 by the biggest one
     for(size_t i = 0; i < m1->row; i ++)
@@ -470,16 +470,43 @@ void m_normalDiv(matrix *m1)
     }
 }
 
+void m_normalDiv(matrix *m1)
+{
+    //Divide in place all datas in m1 by the biggest one
+    for(size_t j = 0; j < m1->col; j ++)
+    {
+        float max = m1->data[m1->col + j];
+        for(size_t i = 0; i < m1->row; i++)
+        {  
+            if(m1->data[i*m1->col+j] > max)
+                max = m1->data[i*m1->col+j];
+        }
+
+        if(max > 1)
+        {
+            for(size_t i = 0; i < m1->row; i++)
+                m1->data[i*m1->col+j] /= max;
+        }
+    }
+}
+
+float maxf(float x, float y)
+{
+    if(x > y)
+        return x;
+    return y;
+}
+
 matrix *apply_relu(matrix *m1)
 {
     //Return the relued matrix computed with m1
     
-    m_normalDiv(m1);
+    //m_normalDiv(m1);
     matrix *result = m_copy(m1);
 
     for(size_t i = 0; i < m1->row*m1->col; i++)
     {
-        result->data[i] = m1->data[i] > 0 ? m1->data[i] : 0;
+        result->data[i] = maxf(m1->data[i], 0);
     }
 
     //m_print(result);

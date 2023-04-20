@@ -125,7 +125,7 @@ matrix *fileToMatrix(char *path)
     //Open file at path
     FILE *file = fopen(path, "r");
     if (file == NULL) {
-        perror("Error while opening file");
+        errx(0, "Error while opening file");
         return NULL;
     }
 
