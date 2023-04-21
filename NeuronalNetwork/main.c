@@ -4,12 +4,13 @@
 #include <string.h>
 #include <err.h>
 #include <unistd.h>
+#include <time.h>
 #include "matrix.h"
 #include "neuronalNetwork.h"
 #include "saveParams.h"
 
-size_t layerSize = 300;
-size_t nb_iter = 20000;
+size_t layerSize = 00;
+size_t nb_iter = 10000;
 
 double string_to_double(char *string)
 {
@@ -32,6 +33,37 @@ char *sizeTToPath(size_t num)
     return result;
 }
 
+int Predict(char *img, char *params)
+{
+    parameters *p = LoadParameters(params);
+    /*matrix *m = imageToMatrix(img);
+    int i = predict(m, p);
+    matrix *v = predictionVector(m, p);
+    m_print(v);
+    return i;*/
+    datas *topredict = get_imgList(img);
+
+    matrix *v = predictionVector(topredict->input, p);
+
+    float *result = calloc(sizeof(int), 10);
+    float *attended = calloc(sizeof(int), 10);
+    for(size_t j = 1; j < v->col; j++)
+    {
+        size_t i = 0;
+        while(topredict->output->data[i*topredict->output->col+j] != 1)
+            i++;
+        result[i] += v->data[i*v->col+j] >= 0.5;
+        attended[i] += 1;
+    }
+    printf("##### ACCURACY #####\n");
+    for(size_t i = 0; i < 10; i++)
+    {
+        printf("-> %li : %f%%\n", i, maxf(result[i]/attended[i]*100, 0));
+    }
+
+    return 0;
+}
+
 void TrainNetwork(char *data, char *savepath)
 {
     //Data must contain 10 repo : one for each to treat
@@ -49,59 +81,18 @@ void TrainNetwork(char *data, char *savepath)
     chdir(current_dir);
 
     //Train network
-    parameters *p = neuronal_network(inputs, layerSize, layerSize, 0.1, nb_iter, 1);
+    parameters *p = neuronal_network(inputs, layerSize, layerSize, 1, nb_iter, 1);
     //Save parameters to savepath
     SaveParameters(p, savepath);
 
-    datas *topredict = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/Predict/");
-    matrix *v = predictionVector(topredict->input, p);
-    int result = 0;
-    for(size_t j = 1; j < v->col; j++)
-    {
-        size_t max = 0;
-        for(size_t i = 1; i < 10; i++)
-        {
-            if(v->data[i*v->col+j] > v->data[max*v->col+j])
-                max = i;
-        }
-        if(topredict->output->data[max*topredict->output->col+j] == 1)
-            result++;
-    }
-    printf("accuracy : %i/%li\n", result, topredict->input->col);
-}
-
-int Predict(char *img, char *params)
-{
-    parameters *p = LoadParameters(params);
-    /*matrix *m = imageToMatrix(img);
-    int i = predict(m, p);
-    matrix *v = predictionVector(m, p);
-    m_print(v);
-    return i;*/
-    datas *topredict = get_imgList(img);
-
-    matrix *v = predictionVector(topredict->input, p);
-
-    int result = 0;
-    for(size_t j = 1; j < v->col; j++)
-    {
-        size_t max = 0;
-        for(size_t i = 1; i < 10; i++)
-        {
-            if(v->data[i*v->col+j] > v->data[max*v->col+j])
-                max = i;
-        }
-        if(topredict->output->data[max*topredict->output->col+j] == 1)
-            result++;
-    }
-    printf("accuracy : %i/%li\n", result, topredict->input->col);
-
-    return 0;
+    Predict("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/mnist_images/test", savepath);
+   
 }
 
 
 int main(int argc, char** argv)
 {
+    clock_t start = clock();
     // Checks the number of arguments.
     if (argc != 4)
         errx(EXIT_FAILURE, "Usage: image-file");
@@ -113,9 +104,11 @@ int main(int argc, char** argv)
 
     else if(!strcmp(argv[1], "-predict"))
     {
-        int result = Predict(argv[2], argv[3]);
-        printf("%i\n", result);
+        Predict(argv[2], argv[3]);
     }
 
+    clock_t end = clock();
+    double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("execution time : %fs\n", cpu_time_used);
     return 0;
 }

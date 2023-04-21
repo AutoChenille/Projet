@@ -40,10 +40,15 @@ float oneLessX(float x)
     return 1 - x;
 }
 
+float derivative_relu(float x)
+{
+    return x > 0 ? 1 : 0;
+}
+
 float random11()
 {
 	//Return a float between -1 and 1
-    return  (0.5f - (float)(rand()%1000000)/1000000) / 100;
+    return  (0.5f - (float)(rand()%1000000)/1000000) / 10;
 }
 
 parameters* InitParam(size_t nb_entry, size_t sizeC1, size_t sizeC2, size_t nb_output)
@@ -174,48 +179,49 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     matrix *dZ3A2 = m_mul(dZ3, tA2);
     m_scalarProd_Place(dZ3A2, 1./m);
     m_copyTo(dZ3A2, dp->W3);
+
     matrix *sumdZ3 = m_horizontalSum(dZ3);
     m_scalarProd_Place(sumdZ3, 1./m);
     m_copyTo(sumdZ3, dp->b3);
 
 	//##### SECOND LAYER #####
 	//Calcul of dZ2
-    matrix *oneLessA2 = m_apply(oneLessX,  A->A2);
-    matrix *A2A2 = m_LineBLineMul(A->A2, oneLessA2);
+    //matrix *oneLessA2 = m_apply(oneLessX,  A->A2);
+    //matrix *A2A2 = m_LineBLineMul(A->A2, oneLessA2);
     matrix *tW3 = m_transpose(p->W3);
     matrix *tW3dZ3 = m_mul(tW3, dZ3);
-    matrix *dZ2 = m_LineBLineMul(tW3dZ3, A2A2);
+    matrix *dA2 = m_apply(derivative_relu, A->A2);
+    matrix *dZ2 = m_LineBLineMul(tW3dZ3, dA2);
+    m_scalarProd_Place(dZ2, 1./m);
+    //matrix *dZ2 = m_LineBLineMul(tW3dZ3, A2A2);
 	//Calcul of dW2 and db2
     matrix *tA1 = m_transpose(A->A1);
     matrix *dZ2A1 = m_mul(dZ2, tA1);
     m_scalarProd_Place(dZ2A1, 1./m);
     m_copyTo(dZ2A1, dp->W2);
+
     matrix *sumdZ2 = m_horizontalSum(dZ2);
     m_scalarProd_Place(sumdZ2, 1./m);
     m_copyTo(sumdZ2, dp->b2);
 
 	//##### FIRST LAYER #####
 	//Calcul of dZ1
-    matrix *oneLessA = m_apply(oneLessX,  A->A1);
-    matrix *A1A1 = m_LineBLineMul(A->A1, oneLessA);
+    //matrix *oneLessA = m_apply(oneLessX,  A->A1);
+    //matrix *A1A1 = m_LineBLineMul(A->A1, oneLessA);
     matrix *tW2 = m_transpose(p->W2);
     matrix *tW2dZ2 = m_mul(tW2, dZ2);
-    matrix *dZ1 = m_LineBLineMul(tW2dZ2, A1A1);
+    matrix *dA1 = m_apply(derivative_relu, A->A1);
+    matrix *dZ1 = m_LineBLineMul(tW2dZ2, dA1);
+    m_scalarProd_Place(dZ1, 1./m);
 	//Calcul of dW1 and db1
     matrix *tX = m_transpose(X);
     matrix *dZ1X = m_mul(dZ1, tX);
     m_scalarProd_Place(dZ1X, 1./m);
     m_copyTo(dZ1X, dp->W1);
+
     matrix *sumdZ1 = m_horizontalSum(dZ1);
     m_scalarProd_Place(sumdZ1, 1./m);
     m_copyTo(sumdZ1, dp->b1);
-
-    /*m_normalDiv(dp->b1);
-    m_normalDiv(dp->W1);
-    m_normalDiv(dp->b2);
-    m_normalDiv(dp->W2);
-    m_normalDiv(dp->b3);
-    m_normalDiv(dp->W3);*/
     
 	//Free all
     freeMatrix(dZ3);
@@ -223,8 +229,8 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     freeMatrix(dZ3A2);
     freeMatrix(sumdZ3);
 
-    freeMatrix(oneLessA2);
-    freeMatrix(A2A2);
+    //freeMatrix(oneLessA2);
+    //freeMatrix(A2A2);
     freeMatrix(tW3);
     freeMatrix(tW3dZ3);
     freeMatrix(dZ2);
@@ -233,8 +239,8 @@ void back_propagation(matrix *X, matrix *y, parameters *p, activations *A, param
     freeMatrix(dZ2A1);
     freeMatrix(sumdZ2);
 
-    freeMatrix(oneLessA);
-    freeMatrix(A1A1);
+    //freeMatrix(oneLessA);
+    //freeMatrix(A1A1);
     freeMatrix(tW2);
     freeMatrix(tW2dZ2);
     freeMatrix(dZ1);
@@ -395,7 +401,7 @@ parameters *neuronal_network(datas *data, size_t sizeSC1, size_t sizeSC2, float 
                 printf("\n\n");
                 m_print(A->A3);
                 printf("\n");
-                //m_print(y);
+                m_print(y);
                 printf("\n\n");
             }
         }

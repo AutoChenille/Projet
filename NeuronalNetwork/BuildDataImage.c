@@ -62,7 +62,7 @@ matrix *imageToMatrix(char* path)
     for(int i = 0; i < len; i++)
     {
         dataImage->data[i] = pixel_to_grayscale(pixels[i], format)/255.;
-        //dataImage->data[i] = dataImage->data[i] > 127. ? 1 : 0;
+        dataImage->data[i] = dataImage->data[i] >= 0.3 ? 1 : 0;
         //dataImage->data[i] = pixels[i]/255.;
     }
 
