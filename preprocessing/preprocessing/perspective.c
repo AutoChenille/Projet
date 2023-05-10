@@ -317,7 +317,6 @@ SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2])
 	    
 	    if (x >= 0 && y >= 0 && x < surface->w && y < surface->h)
 	      {
-		printf("IF statement\n");
 		// Calculate correct pixel index
 		Uint32 src_index = y * surface->pitch/4 + x;
 		Uint32 dst_index = j * corrected_image->pitch/4 + i;
@@ -327,14 +326,13 @@ SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2])
 	      }
 	    else
 	      {
-		printf("ELSE statement\n");
 		// If out of bounds, set pixel to black
 		Uint32 dst_index = j * corrected_image->pitch/4 + i;
 		dst_pixels[dst_index] = SDL_MapRGBA(corrected_image->format, 0, 0, 0, 255);
 	      }
 	  }
       }
-    printf("Fini!\n");
+
     // Unlock surfaces
     if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
     if (SDL_MUSTLOCK(corrected_image)) SDL_UnlockSurface(corrected_image);

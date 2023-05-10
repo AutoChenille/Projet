@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     IMG_SavePNG(surf_wait, "res/invert.png");
 
     //Dilate Filter
-    surf_wait = dilate(surf_wait, 2);
+    surf_wait = dilate(surf_wait, 1);
     IMG_SavePNG(surf_wait, "res/dilate.png");
     
     /*
@@ -144,6 +144,10 @@ int main(int argc, char** argv)
     surf = perspective_transform(surf, corners);
     IMG_SavePNG(surf, "res/perspective.png");
     printf("%s\n", "coucou2");
+
+    surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
+
+    IMG_SavePNG(surf, "res/perspectiveconverted.png");
     printf("%s\n", "coucou3");
 
     // ====================================================
