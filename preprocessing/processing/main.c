@@ -43,10 +43,11 @@ int main(int argc, char** argv)
     gaussian_blur(surf_wait, 3, 1.5);
     IMG_SavePNG(surf_wait, "res/gaussian_blur.png");
 
+    /*
     //Threshold Filter
-    surf_wait = threshold(surf_wait, 90);
+    surf_wait = threshold(surf_wait, 110);
     IMG_SavePNG(surf_wait, "res/threshold.png");
-
+    */
     
     //Otsu Adaptative Filter
     otsu_adaptive_threshold(surf_wait);
@@ -128,19 +129,22 @@ int main(int argc, char** argv)
     // ONLY FOR ORIENTED SUDOKU
     // ====================================================
     printf("%s\n", "coucou1");
+    /*
     surf = cropSurface(surf, corners[0][0], corners[0][1], corners[2][0], corners[2][1]);
     IMG_SavePNG(surf, "res/crop.png");
 
-    //double angle = detect_angle((int(*)[2])corners);
     double angle = calculateSudokuRotation((int(*)[2])corners);
     printf("angle = %f\n", angle);
     printf("%s\n", "coucou2");
     //surf = rotate(surf, angle);
     //IMG_SavePNG(surf, "res/rotated.png");
     printf("%s\n", "coucou3");
+    */
 
-    //surf = perspective_correction(surf, corners);
-    //IMG_SavePNG(surf, "perspective.png");
+    surf = perspective_transform(surf, (int(*)[2])corners);
+    IMG_SavePNG(surf, "perspective.png");
+    printf("%s\n", "coucou2");
+    printf("%s\n", "coucou3");
 
     // ====================================================
 
