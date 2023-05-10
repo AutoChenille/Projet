@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <err.h>
@@ -6,12 +7,10 @@
 #include <SDL2/SDL_image.h>
 #include "useful.c"
 
-
 // Global variable to deal with sudoku and hexadoku.
 int HEXA;
 size_t GRID_DIMENSION;
 size_t BOX_DIMENSION;
-
 
 // Get grid from file and store it in an array.
 //
@@ -244,7 +243,7 @@ int solve(char grid[GRID_DIMENSION][GRID_DIMENSION], char possibilities[GRID_DIM
         return solve(grid, possibilities, pos + 1);
     
     // Tests numbers between 1 and 9 for the cell (row, col).
-    for (size_t i = 0; i < GRID_DIMENSION && possibilities[pos][i] != -1; i++)
+    for (size_t i = (HEXA?0:1); i < GRID_DIMENSION+(HEXA?0:1) && possibilities[pos][i] != -1; i++)
     {
         char possible_nb = possibilities[pos][i];
         if (number_is_valid(possible_nb, grid, row, col))
@@ -276,7 +275,7 @@ void draw_image(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
 
     // Load the digit images
     SDL_Surface* digit_surfaces[GRID_DIMENSION];
-    for (size_t i = 1; i <= GRID_DIMENSION; i++) {
+    for (size_t i = (HEXA?0:1); i <= GRID_DIMENSION; i++) {
         char filename[10];
         sprintf(filename, "%li.png", i);
         digit_surfaces[i-1] = IMG_Load(filename);
@@ -286,8 +285,8 @@ void draw_image(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
     SDL_Surface* draw_surface = SDL_CreateRGBSurface(0, grid_surface->w, grid_surface->h, 32, 0, 0, 0, 0);
 
     // Iterate through the grid and draw the digits
-    for (int row = 0; row < 9; row++) {
-        for (int col = 0; col < 9; col++) {
+    for (size_t row = 0; row < GRID_DIMENSION; row++) {
+        for (size_t col = 0; col < GRID_DIMENSION; col++) {
             // Calculate the position of the cell in the image
             int x = col * digit_surfaces[0]->w;
             int y = row * digit_surfaces[0]->h;
@@ -309,7 +308,7 @@ void draw_image(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
 
     // Clean up
     SDL_FreeSurface(grid_surface);
-    for (int i = 0; i < 9; i++)
+    for (size_t i = 0; i < GRID_DIMENSION; i++)
     {
         SDL_FreeSurface(digit_surfaces[i]);
     }
@@ -323,7 +322,7 @@ int main(int argc, char *argv[])
     if (argc != 3)
         errx(EXIT_FAILURE, "Usage: filepath + hexa");
 
-    HEXA = ((int) (*argv[2] - '0')) ? 1 : 0;
+    HEXA = (int) (*argv[2] - '0');
     GRID_DIMENSION = HEXA ? 16 : 9;
     BOX_DIMENSION = HEXA ? 4 : 3;
     
@@ -333,6 +332,7 @@ int main(int argc, char *argv[])
 
     // Get the grid from file in one array.
     get_grid_from_file(argv[1], grid);
+
     immediat_solutions(grid, possibilities);
 
     // Solves sudoku by checking if the original grid is not valid.
