@@ -8,15 +8,18 @@
 
 //Rotation
 SDL_Surface *rotate(SDL_Surface *surface, double degree);
+double calculate_rotation(SDL_Point topLeft, SDL_Point topRight);
+SDL_Surface* cropSurface(SDL_Surface* src, int x1, int y1, int x2, int y2);
+double calculateSudokuRotation(int corners[4][2]);
 
 //Perspective Transform
-SDL_Surface* perspective_correction(SDL_Surface *input, double corners[4][2]);
+SDL_Surface* perspective_transform(SDL_Surface* surface, int corners[4][2]);
 
 //Filters
 void grayscale(SDL_Surface *surface);
 void sobel_filter(SDL_Surface *surface);
 void blur(SDL_Surface *surface, int strength);
-double detect_angle(int corners[4][2]);
+//double detect_angle(int corners[4][2]);
 void gaussian_blur(SDL_Surface *surface, int radius, double sigma);
 int str_to_int(char *str);
 void median_filter(SDL_Surface *surface, int window_size);

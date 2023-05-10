@@ -65,6 +65,7 @@ SDL_Surface *rotate(SDL_Surface *surface, double degree)
   return copy;
 }
 
+/*
 double detect_angle(int corner[4][2])
 {
   // calculate the center point of the square
@@ -121,4 +122,26 @@ double detect_angle(int corner[4][2])
     angle += 180;
 
   return angle;
+}
+*/
+
+double calculateSudokuRotation(int corners[4][2])
+{
+    // Calculate deltas for top and bottom edges
+    double dxTop = corners[1][0] - corners[0][0];
+    double dyTop = corners[1][1] - corners[0][1];
+    double dxBottom = corners[3][0] - corners[2][0];
+    double dyBottom = corners[3][1] - corners[2][1];
+
+    // Calculate angles for top and bottom edges in radians
+    double angleTop = atan2(dyTop, dxTop);
+    double angleBottom = atan2(dyBottom, dxBottom);
+
+    // Convert to degrees and adjust range from -180 to 180
+    angleTop = angleTop * 180 / M_PI;
+    angleBottom = angleBottom * 180 / M_PI;
+
+    // Calculate and return average angle
+    double averageAngle = (angleTop + angleBottom) / 2;
+    return averageAngle;
 }
