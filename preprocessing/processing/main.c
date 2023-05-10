@@ -140,9 +140,9 @@ int main(int argc, char** argv)
     //IMG_SavePNG(surf, "res/rotated.png");
     printf("%s\n", "coucou3");
     */
-
-    surf = perspective_transform(surf, (int(*)[2])corners);
-    IMG_SavePNG(surf, "perspective.png");
+    surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGB888, 0);
+    surf = perspective_transform(surf, corners);
+    IMG_SavePNG(surf, "res/perspective.png");
     printf("%s\n", "coucou2");
     printf("%s\n", "coucou3");
 

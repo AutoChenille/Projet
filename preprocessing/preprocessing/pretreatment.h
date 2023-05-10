@@ -13,7 +13,7 @@ SDL_Surface* cropSurface(SDL_Surface* src, int x1, int y1, int x2, int y2);
 double calculateSudokuRotation(int corners[4][2]);
 
 //Perspective Transform
-SDL_Surface* perspective_transform(SDL_Surface* surface, int corners[4][2]);
+SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2]);
 
 //Filters
 void grayscale(SDL_Surface *surface);
