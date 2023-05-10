@@ -287,11 +287,9 @@ SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2])
     //Image corrected_image = newImage(NULL, 0, max_edge_length, max_edge_length);
     
     SDL_Surface* corrected_image = SDL_CreateRGBSurfaceWithFormat(0, max_edge_length, max_edge_length, 32, SDL_PIXELFORMAT_RGBA32);
+    corrected_image = SDL_ConvertSurfaceFormat(corrected_image, SDL_PIXELFORMAT_RGB888, 0);
     printf("corrected_image->w = %i\n", corrected_image->w);
     printf("corrected_image->h = %i\n", corrected_image->h);
-
-    SDL_PixelFormat* desired_format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
-    surface = SDL_ConvertSurface(surface, desired_format, 0);
     
     // Ensure both surfaces are locked so that we can safely access raw pixel data
     SDL_LockSurface(surface);
