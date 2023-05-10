@@ -233,7 +233,7 @@ void get_points_max_shape(int width, int height, int *pixels, struct list** save
 /// @param dest_x Destination set of the x coordinates of the points.
 /// @param dest_y Destination set of the x coordinates of the points.
 /// @param size Size of arrays
-void find_corners_of_rectangle(double* arr_x, double* arr_y, double *dest_x, double *dest_y, double size)
+void find_corners_of_rectangle2(double* arr_x, double* arr_y, double *dest_x, double *dest_y, double size)
 {
     // Inits the corners.
     double top_left_x = 0;
@@ -327,6 +327,67 @@ void find_corners_of_rectangle(double* arr_x, double* arr_y, double *dest_x, dou
     dest_y[3] = bottom_left_y;
 }
 
+void find_corners_of_rectangle(double* arr_x, double* arr_y, double* dest_x, double* dest_y, double size) {
+
+    // Find the index of the closest point to the top-left corner of the image
+    int top_left_index = 0;
+    double min_distance = arr_x[0] + arr_y[0];
+
+    for (int i = 1; i < size; i++) {
+        double distance = arr_x[i] + arr_y[i];
+        if (distance < min_distance) {
+            min_distance = distance;
+            top_left_index = i;
+        }
+    }
+
+    // Find the index of the closest point to the top-right corner of the image
+    int top_right_index = 0;
+    min_distance = -arr_x[0] + arr_y[0];
+
+    for (int i = 1; i < size; i++) {
+        double distance = -arr_x[i] + arr_y[i];
+        if (distance < min_distance) {
+            min_distance = distance;
+            top_right_index = i;
+        }
+    }
+
+    // Find the index of the closest point to the bottom-right corner of the image
+    int bottom_right_index = 0;
+    min_distance = -arr_x[0] - arr_y[0];
+
+    for (int i = 1; i < size; i++) {
+        double distance = -arr_x[i] - arr_y[i];
+        if (distance < min_distance) {
+            min_distance = distance;
+            bottom_right_index = i;
+        }
+    }
+
+    // Find the index of the closest point to the bottom-left corner of the image
+    int bottom_left_index = 0;
+    min_distance = arr_x[0] - arr_y[0];
+
+    for (int i = 1; i < size; i++) {
+        double distance = arr_x[i] - arr_y[i];
+        if (distance < min_distance) {
+            min_distance = distance;
+            bottom_left_index = i;
+        }
+    }
+
+    // Assign the corner coordinates to the dest_x and dest_y arrays
+    dest_x[0] = arr_x[top_left_index];
+    dest_y[0] = arr_y[top_left_index];
+    dest_x[1] = arr_x[top_right_index];
+    dest_y[1] = arr_y[top_right_index];
+    dest_x[2] = arr_x[bottom_right_index];
+    dest_y[2] = arr_y[bottom_right_index];
+    dest_x[3] = arr_x[bottom_left_index];
+    dest_y[3] = arr_y[bottom_left_index];
+}
+
 
 
 // tmp
@@ -402,11 +463,63 @@ void TMP_extremes_lines_and_cell_extraction(SDL_Surface* surf, double corners_x[
     list_destroy(coordinates_x);
 }
 
+double calculate_area(Point p1, Point p2, Point p3, Point p4) {
+    double area = 0.5 * fabs(p1.x * p2.y - p2.x * p1.y +
+                             p2.x * p3.y - p3.x * p2.y +
+                             p3.x * p4.y - p4.x * p3.y +
+                             p4.x * p1.y - p1.x * p4.y);
+    return area;
+}
+
+void find_largest_shape(Point arr[], int size, Point* largest_points) {
+    double max_area = 0.0;
+
+    for (int i = 0; i < size - 3; i++) {
+        for (int j = i + 1; j < size - 2; j++) {
+            for (int k = j + 1; k < size - 1; k++) {
+                for (int l = k + 1; l < size; l++) {
+
+                    double curr_area = calculate_area(arr[i], arr[j], arr[k], arr[l]);
+
+                    if (curr_area > max_area) {
+                        max_area = curr_area;
+                        largest_points[0] = arr[i];
+                        largest_points[1] = arr[j];
+                        largest_points[2] = arr[k];
+                        largest_points[3] = arr[l];
+                    }
+                }
+            }
+        }
+    }
+}
+
+void four_points(double arr_x[], double arr_y[], double dest_x[], double dest_y[], int size) {
+    // Create an array of Points from the input coordinates
+    Point arr[size];
+    for (int i = 0; i < size; i++)
+    {
+        arr[i].x = arr_x[i];
+        arr[i].y = arr_y[i];
+    }
+
+    // Find the four points forming the largest shape
+    Point largest_points[4]; // = {{1, 2}, {1, 2}, {1, 2}, {1, 2}};
+    find_largest_shape(arr, size, largest_points);
+
+    // Copy the largest points coordinates to the destination arrays
+    for (int i = 0; i < 4; i++)
+    {
+        dest_x[i] = largest_points[i].x;
+        dest_y[i] = largest_points[i].y;
+    }
+}
+
 //
 //
 //
 //
-void four_points(double arr_x[], double arr_y[], double dest_x[], double dest_y[], int size)
+void four_points2(double arr_x[], double arr_y[], double dest_x[], double dest_y[], int size)
 {
     // Compute the convex hull using the Graham scan algorithm
     // and store the result in the arr_x and arr_y arrays
@@ -492,7 +605,7 @@ void get_max_points_rect(SDL_Surface* surf, double *corners_x, double *corners_y
     // Gets parameters of surface.
     int width = surf->w;
     int height = surf->h;
-    int arr_pixels[width * height];
+    int* arr_pixels = calloc(sizeof(int), width * height);
     get_array_of_pixels(surf, arr_pixels);
     // double diag = sqrt(width * width + height * height);
 
@@ -519,12 +632,12 @@ void get_max_points_rect(SDL_Surface* surf, double *corners_x, double *corners_y
     find_corners_of_rectangle(dest_x, dest_y, corners_x, corners_y, 4);
     // ======================================
 
-    /*
+
     for (int i = 0; i < 4; i++)
     {
-        printf("%f,%f\n", dest_x[i], dest_y[i]);
+        printf("%f,%f\n", corners_x[i], corners_y[i]);
     }
-    */
+
     /*
     struct list* point_x = list_new();
     struct list* point_y = list_new();

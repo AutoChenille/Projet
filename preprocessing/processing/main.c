@@ -43,11 +43,10 @@ int main(int argc, char** argv)
     gaussian_blur(surf_wait, 3, 1.5);
     IMG_SavePNG(surf_wait, "res/gaussian_blur.png");
 
-    /*
     //Threshold Filter
-    surf_wait = threshold(surf_wait, 150);
+    surf_wait = threshold(surf_wait, 90);
     IMG_SavePNG(surf_wait, "res/threshold.png");
-    */
+
     
     //Otsu Adaptative Filter
     otsu_adaptive_threshold(surf_wait);
@@ -109,14 +108,13 @@ int main(int argc, char** argv)
     upgrade_exploitation(surf_wait, &surf);
     // ====================================================
     
-
     // CONTOURS - EDGES DETECTION
     // ====================================================
     double corners_x[4];
     double corners_y[4];
     // Gets the coordinates of the four corners of sudoku.
     get_max_points_rect(surf, corners_x, corners_y);
-    printf("%s\n", "coucou0");
+    printf("%s\n", "coucou-1");
     double corners[4][2] = {{corners_x[0], corners_y[0]},
 			    {corners_x[1], corners_y[1]},
 			    {corners_x[2], corners_y[2]},
@@ -130,14 +128,19 @@ int main(int argc, char** argv)
     // ONLY FOR ORIENTED SUDOKU
     // ====================================================
     printf("%s\n", "coucou1");
-    double angle = detect_angle((int(*)[2])corners);
+    surf = cropSurface(surf, corners[0][0], corners[0][1], corners[2][0], corners[2][1]);
+    IMG_SavePNG(surf, "res/crop.png");
+
+    //double angle = detect_angle((int(*)[2])corners);
+    double angle = calculateSudokuRotation((int(*)[2])corners);
+    printf("angle = %f\n", angle);
     printf("%s\n", "coucou2");
-    surf = rotate(surf, angle);
-    IMG_SavePNG(surf, "res/rotated.png");
+    //surf = rotate(surf, angle);
+    //IMG_SavePNG(surf, "res/rotated.png");
     printf("%s\n", "coucou3");
 
-    surf = perspective_correction(surf, corners);
-    IMG_SavePNG(surf, "perspective.png");
+    //surf = perspective_correction(surf, corners);
+    //IMG_SavePNG(surf, "perspective.png");
 
     // ====================================================
 
