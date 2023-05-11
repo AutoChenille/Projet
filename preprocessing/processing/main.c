@@ -40,31 +40,42 @@ int main(int argc, char** argv)
     IMG_SavePNG(surf_wait, "res/grayscale.png");
     
     //Gaussian Blur
-    gaussian_blur(surf_wait, 3, 1.5);
+    gaussian_blur(surf_wait, 1, 0.5);
     IMG_SavePNG(surf_wait, "res/gaussian_blur.png");
 
-    /*
+    //Median Filter
+    median_filter(surf_wait, 3);
+    IMG_SavePNG(surf_wait, "res/median.png");
+
+
     //Threshold Filter
-    surf_wait = threshold(surf_wait, 110);
+    surf_wait = threshold(surf_wait, 150);
     IMG_SavePNG(surf_wait, "res/threshold.png");
+    
+
+    //Canny Edge Detection
+    canny(surf_wait);
+    IMG_SavePNG(surf_wait, "res/canny.png");
+
+    /*
+    //Invert Filter
+    surf_wait = invert(surf_wait);
+    IMG_SavePNG(surf_wait, "res/invert.png");
     */
     
     //Otsu Adaptative Filter
     otsu_adaptive_threshold(surf_wait);
     IMG_SavePNG(surf_wait, "res/otsu.png");
+
     
     /*
     //Sauvola Filter
-    sauvola(surface, 15, 0.3);
-    IMG_SavePNG(surface, "res/sauvola.png");
+    sauvola(surf_wait, 15, 0.5);
+    IMG_SavePNG(surf_wait, "res/sauvola.png");
     */
     
-    //Invert Filter
-    surf_wait = invert(surf_wait);
-    IMG_SavePNG(surf_wait, "res/invert.png");
-
     //Dilate Filter
-    surf_wait = dilate(surf_wait, 1);
+    surf_wait = dilate(surf_wait, 10);
     IMG_SavePNG(surf_wait, "res/dilate.png");
     
     /*
@@ -115,41 +126,25 @@ int main(int argc, char** argv)
     double corners_y[4];
     // Gets the coordinates of the four corners of sudoku.
     get_max_points_rect(surf, corners_x, corners_y);
-    printf("%s\n", "coucou-1");
     double corners[4][2] = {{corners_x[0], corners_y[0]},
 			    {corners_x[1], corners_y[1]},
 			    {corners_x[2], corners_y[2]},
 			    {corners_x[3], corners_y[3]}};
-    printf("%s\n", "coucou0");
     for (int i = 0; i<4; i++)
       printf("x = %f / y = %f\n", corners[i][0], corners[i][1]);
     // ====================================================
 
+    
     // ROTATION AND NEW SQUARED SURFACE WITH ONLY SUDOKU
     // ONLY FOR ORIENTED SUDOKU
     // ====================================================
-    printf("%s\n", "coucou1");
-    /*
-    surf = cropSurface(surf, corners[0][0], corners[0][1], corners[2][0], corners[2][1]);
-    IMG_SavePNG(surf, "res/crop.png");
-
-    double angle = calculateSudokuRotation((int(*)[2])corners);
-    printf("angle = %f\n", angle);
-    printf("%s\n", "coucou2");
-    //surf = rotate(surf, angle);
-    //IMG_SavePNG(surf, "res/rotated.png");
-    printf("%s\n", "coucou3");
-    */
     surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGB888, 0);
+
     surf = perspective_transform(surf, corners);
     IMG_SavePNG(surf, "res/perspective.png");
-    printf("%s\n", "coucou2");
-
+ 
     surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
-
     IMG_SavePNG(surf, "res/perspectiveconverted.png");
-    printf("%s\n", "coucou3");
-
     // ====================================================
 
 
