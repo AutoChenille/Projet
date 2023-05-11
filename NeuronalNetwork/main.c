@@ -9,8 +9,8 @@
 #include "neuronalNetwork.h"
 #include "saveParams.h"
 
-size_t layerSize = 00;
-size_t nb_iter = 10000;
+size_t layerSize = 800;
+size_t nb_iter = 200000;
 
 double string_to_double(char *string)
 {
@@ -47,7 +47,7 @@ int Predict(char *img, char *params)
 
     float *result = calloc(sizeof(int), 10);
     float *attended = calloc(sizeof(int), 10);
-    for(size_t j = 1; j < v->col; j++)
+    for(size_t j = 0; j < v->col; j++)
     {
         size_t i = 0;
         while(topredict->output->data[i*topredict->output->col+j] != 1)
@@ -81,7 +81,32 @@ void TrainNetwork(char *data, char *savepath)
     chdir(current_dir);
 
     //Train network
-    parameters *p = neuronal_network(inputs, layerSize, layerSize, 1, nb_iter, 1);
+    parameters *p = neuronal_network(inputs, layerSize, layerSize, layerSize, 0.1, nb_iter, 1, NULL);
+    //Save parameters to savepath
+    SaveParameters(p, savepath);
+
+    Predict("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/", savepath);
+   
+}
+
+void TrainAgain(char *data, char *loadpath, char *savepath)
+{
+    //Data must contain 10 repo : one for each to treat
+
+    //Get current directory
+    char current_dir[1024];
+    if (getcwd(current_dir, sizeof(current_dir)) == NULL)
+        perror("getcwd() error");
+
+    //Go to data dir
+    datas *inputs = get_imgList(data);
+
+    //Come back to normal repo
+    chdir(current_dir);
+
+    //Train network
+    parameters *p = LoadParameters(loadpath);
+    p = neuronal_network(inputs, layerSize, layerSize, layerSize, 0.1, nb_iter, 1, p);
     //Save parameters to savepath
     SaveParameters(p, savepath);
 
@@ -94,12 +119,17 @@ int main(int argc, char** argv)
 {
     clock_t start = clock();
     // Checks the number of arguments.
-    if (argc != 4)
-        errx(EXIT_FAILURE, "Usage: image-file");
+    if (argc < 4)
+        errx(EXIT_FAILURE, "Usage: -train or -predict");
 
     if(!strcmp(argv[1], "-train"))
     {
         TrainNetwork(argv[2], argv[3]);
+    }
+
+    else if(!strcmp(argv[1], "-tA"))
+    {
+        TrainAgain(argv[2], argv[3], argv[4]);
     }
 
     else if(!strcmp(argv[1], "-predict"))
