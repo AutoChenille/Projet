@@ -11,6 +11,8 @@ typedef struct
     float *data;
 }matrix;
 
+float maxf(float a, float b);
+
 //free m1
 void freeMatrix(matrix *m1);
 

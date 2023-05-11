@@ -8,8 +8,8 @@ typedef struct
 
 }datas;
 
-SDL_Surface* load_image(const char* path);
+SDL_Surface* load_image(char* path);
 
-datas *get_imgList(const char* dirpath);
+datas *get_imgList(char* dirpath);
 
-matrix *imageToMatrix(const char* path);
+matrix *imageToMatrix(char* path);
