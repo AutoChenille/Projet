@@ -99,6 +99,8 @@ void SaveParameters(parameters *p, char *path)
     matrixToFile(p->b2, "./b2");
     matrixToFile(p->W3, "./W3");
     matrixToFile(p->b3, "./b3");
+    matrixToFile(p->W4, "./W4");
+    matrixToFile(p->b4, "./b4");
 
     //Return in origin repo
     chdir(current_repo);
@@ -125,7 +127,7 @@ matrix *fileToMatrix(char *path)
     //Open file at path
     FILE *file = fopen(path, "r");
     if (file == NULL) {
-        perror("Error while opening file");
+        errx(0, "Error while opening file");
         return NULL;
     }
 
@@ -242,6 +244,20 @@ parameters *LoadParameters(char *path)
         p->b3 = fileToMatrix("b3");
     } else {
         fprintf(stderr, "File b3 does not exist\n");
+        return NULL;
+    }
+
+    if (access("W4", F_OK) != -1) {
+        p->W4 = fileToMatrix("W4");
+    } else {
+        fprintf(stderr, "File W4 does not exist\n");
+        return NULL;
+    }
+
+    if (access("b4", F_OK) != -1) {
+        p->b4 = fileToMatrix("b4");
+    } else {
+        fprintf(stderr, "File b4 does not exist\n");
         return NULL;
     }
 
