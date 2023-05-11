@@ -1,19 +1,19 @@
 #include "pretreatment.h"
 
-void Minor(double minorMatrix[9][9], int colMatrix, int sizeMatrix, double newMinorMatrix[9][9])
+void Minor(double minorMatrix[9][9], int colMatrix, int size, double newMinorMatrix[9][9])
 {
     int col = 0;
     int row = 0;
 
-    for (int i = 1; i < sizeMatrix; i++)
+    for (int i = 1; i < size; i++)
     {
-        for (int j = 0; j < sizeMatrix; j++)
+        for (int j = 0; j < size; j++)
         {
             if (j == colMatrix)
                 continue;
             newMinorMatrix[row][col] = minorMatrix[i][j];
             col++;
-            if (col == (sizeMatrix - 1))
+            if (col == (size - 1))
             {
                 row++;
                 col = 0;
@@ -24,65 +24,60 @@ void Minor(double minorMatrix[9][9], int colMatrix, int sizeMatrix, double newMi
     return;
 }
 
-double Determinte(double minorMatrix[9][9], int sizeMatrix)
+double determining(double minorMatrix[9][9], int size)
 {
     int col;
     double sum = 0, newMinorMatrix[9][9];
-    if (sizeMatrix == 1)
-    {
+
+    if (size == 1)
         return minorMatrix[0][0];
-    }
-    else if (sizeMatrix == 2)
-    {
-        return (minorMatrix[0][0] * minorMatrix[1][1]
-                - minorMatrix[0][1] * minorMatrix[1][0]);
-    }
+    else if (size == 2)
+        return (minorMatrix[0][0] * minorMatrix[1][1] - minorMatrix[0][1] * minorMatrix[1][0]);
     else
     {
-        for (col = 0; col < sizeMatrix; col++)
+        for (col = 0; col < size; col++)
         {
-            Minor(minorMatrix, col, sizeMatrix, newMinorMatrix); // function
-            sum += (double)(minorMatrix[0][col] * pow(-1, col)
-                            * Determinte(newMinorMatrix,
-                                         (sizeMatrix - 1))); // function
+            Minor(minorMatrix, col, size, newMinorMatrix);
+            sum += (double)(minorMatrix[0][col] * pow(-1, col) * determining(newMinorMatrix, (size - 1)));
         }
     }
 
     return sum;
 }
 
-void Transpose(double cofactorMatrix[9][9], double sizeMatrix, double determinte, double coutMatrix[9][9], double transposeMatrix[9][9])
+void transpose_matrix(double cofactorMatrix[9][9], double size, double delta, double coutMatrix[9][9], double transposeMatrix[9][9])
 {
     int row, col;
-    for (row = 0; row < sizeMatrix; row++)
+    for (row = 0; row < size; row++)
     {
-        for (col = 0; col < sizeMatrix; col++)
+        for (col = 0; col < size; col++)
         {
             transposeMatrix[row][col] = cofactorMatrix[col][row];
-            coutMatrix[row][col] = cofactorMatrix[col][row] / determinte; // adjoint method
+            coutMatrix[row][col] = cofactorMatrix[col][row] / delta;
         }
     }
     return;
 }
 
-void Cofactor(double cinMatrix[9][9], double sizeMatrix, double determinte, double coutMatrix[9][9], double transposeMatrix[9][9])
+void Cofactor(double cinMatrix[9][9], double size, double determinte, double coutMatrix[9][9], double transposeMatrix[9][9])
 {
     double minorMatrix[9][9], cofactorMatrix[9][9];
     int col3, row3, row2, col2, row, col;
-    for (row3 = 0; row3 < sizeMatrix; row3++)
+
+    for (row3 = 0; row3 < size; row3++)
     {
-        for (col3 = 0; col3 < sizeMatrix; col3++)
+        for (col3 = 0; col3 < size; col3++)
         {
             row2 = 0;
             col2 = 0;
-            for (row = 0; row < sizeMatrix; row++)
+            for (row = 0; row < size; row++)
             {
-                for (col = 0; col < sizeMatrix; col++)
+                for (col = 0; col < size; col++)
                 {
                     if (row != row3 && col != col3)
                     {
                         minorMatrix[row2][col2] = cinMatrix[row][col];
-                        if (col2 < (sizeMatrix - 2))
+                        if (col2 < (size - 2))
                         {
                             col2++;
                         }
@@ -94,39 +89,32 @@ void Cofactor(double cinMatrix[9][9], double sizeMatrix, double determinte, doub
                     }
                 }
             }
-            cofactorMatrix[row3][col3] = pow(-1, (row3 + col3))
-                * Determinte(minorMatrix, (sizeMatrix - 1));
+            cofactorMatrix[row3][col3] = pow(-1, (row3 + col3)) * determining(minorMatrix, (size - 1));
         }
     }
-    Transpose(cofactorMatrix, sizeMatrix, determinte, coutMatrix, transposeMatrix);
+    transpose_matrix(cofactorMatrix, size, determinte, coutMatrix, transposeMatrix);
+
     return;
 }
 
-void inverse(double cinMatrix[9][9], int sizeMatrix, double determinte, double coutMatrix[9][9], double transposeMatrix[9][9])
+void inverse(double cinMatrix[9][9], int size, double delta, double coutMatrix[9][9], double transposeMatrix[9][9])
 {
-    if (determinte == 0)
-    {
+    if (delta == 0)
         printf("Inverse of entered matrix is not possible\n");
-    }
-    else if (sizeMatrix == 1)
-    {
+    else if (size == 1)
         coutMatrix[0][0] = 1;
-    }
     else
-    {
-        Cofactor(cinMatrix, sizeMatrix, determinte, coutMatrix,
-                 transposeMatrix); // function
-    }
+        Cofactor(cinMatrix, size, delta, coutMatrix, transposeMatrix);
+
     return;
 }
 
-void inverse_matrix(double cinMatrix[9][9], double coutMatrix[9][9], int sizeMatrix)
+void inverse_matrix(double cinMatrix[9][9], double coutMatrix[9][9], int size)
 {
-    double determinte, transposeMatrix[9][9];
+    double delta, transposeMatrix[9][9];
 
-    determinte = (double)Determinte(cinMatrix, sizeMatrix);
-
-    inverse(cinMatrix, sizeMatrix, determinte, coutMatrix, transposeMatrix);
+    delta = (double)determining(cinMatrix, size);
+    inverse(cinMatrix, size, delta, coutMatrix, transposeMatrix);
 }
 
 double** malloc_matrix(int size)
@@ -161,17 +149,16 @@ void multiplyMatStat(double M[9][9], double v[9], double v_out[9], int size)
             v_out[i] += M[i][j] * v[j];
         }
     }
+    return;
 }
 
 void multiplyMatBis(double **M, double *v, double *v_out, int size)
 {
     for (int i = 0; i < size; i++)
-    {
         for (int j = 0; j < size; j++)
-        {
             v_out[i] += M[i][j] * v[j];
-        }
-    }
+
+    return;
 }
 
 void free_matrix(double** matrix, int size)
@@ -184,21 +171,14 @@ void free_matrix(double** matrix, int size)
     free(matrix);
 }
 
-void inverse3x3Mat(double **M, double **M_inv)
+void inverse_matrix_3(double **M, double **M_inv)
 {
-    double MM = M[0][0] * M[1][1] * M[2][2] + M[0][1] * M[1][2] * M[2][0]
-        + M[0][2] * M[2][1] * M[1][0] - M[0][2] * M[1][1] * M[2][0]
-        - M[0][1] * M[1][0] * M[2][2] - M[0][0] * M[2][1] * M[1][2];
+    double MM = M[0][0] * M[1][1] * M[2][2] + M[0][1] * M[1][2] * M[2][0] + M[0][2] * M[2][1] * M[1][0] - M[0][2] * M[1][1] * M[2][0]
+      - M[0][1] * M[1][0] * M[2][2] - M[0][0] * M[2][1] * M[1][2];
 
-    double AM[3][3] = { { M[1][1] * M[2][2] - M[1][2] * M[2][1],
-                          M[0][2] * M[2][1] - M[0][1] * M[2][2],
-                          M[0][1] * M[1][2] - M[0][2] * M[1][1] },
-                        { M[1][2] * M[2][0] - M[1][0] * M[2][2],
-                          M[0][0] * M[2][2] - M[0][2] * M[2][0],
-                          M[0][2] * M[1][0] - M[0][0] * M[1][2] },
-                        { M[1][0] * M[2][1] - M[1][1] * M[2][0],
-                          M[0][1] * M[2][0] - M[0][0] * M[2][1],
-                          M[0][0] * M[1][1] - M[0][1] * M[1][0] } };
+    double AM[3][3] = {{M[1][1] * M[2][2] - M[1][2] * M[2][1], M[0][2] * M[2][1] - M[0][1] * M[2][2], M[0][1] * M[1][2] - M[0][2] * M[1][1]},
+		       {M[1][2] * M[2][0] - M[1][0] * M[2][2], M[0][0] * M[2][2] - M[0][2] * M[2][0], M[0][2] * M[1][0] - M[0][0] * M[1][2]},
+		       {M[1][0] * M[2][1] - M[1][1] * M[2][0], M[0][1] * M[2][0] - M[0][0] * M[2][1], M[0][0] * M[1][1] - M[0][1] * M[1][0]}};
 
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
@@ -244,7 +224,7 @@ void get_perspective_matrix(double src[4][2], double dst[4][2], double **transfo
         for (int j = 0; j < 3; j++, k++)
             transformation_matrix[i][j] = H[k];
 
-    inverse3x3Mat(transformation_matrix, transformation_matrix_inv);
+    inverse_matrix_3(transformation_matrix, transformation_matrix_inv);
     free(H);
 }
 

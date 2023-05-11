@@ -17,6 +17,8 @@ int main(int argc, char** argv)
     // ====================================================
     // Creates a new surface from the image in parameter.
     SDL_Surface* surf_img = load_image(argv[1]);
+    SDL_Surface* cut_img = load_image(argv[1]);
+    cut_img = SDL_ConvertSurfaceFormat(cut_img, SDL_PIXELFORMAT_RGBA32, 0);
     // Checks if there is any error with the image.
     if (surf_img == NULL)
         errx(EXIT_FAILURE, "%s", SDL_GetError());
@@ -28,9 +30,21 @@ int main(int argc, char** argv)
 
 
     // PREPROCESSING IMAGE BY OLEG
-    // ====================================================
-    
+    // ==================================================== 
     surf_wait = SDL_ConvertSurfaceFormat(surf_wait, SDL_PIXELFORMAT_RGB888, 0);
+    cut_img = SDL_ConvertSurfaceFormat(cut_img, SDL_PIXELFORMAT_RGB888, 0);
+
+    //-----CUT_IMG-----//
+	 
+    //Grayscale Filter
+    grayscale(cut_img);
+
+    //Invert Filter
+    cut_img = invert(cut_img);
+
+
+    //-----SURF_WAIT-----//
+    
     //Enhance Contrast
     enhance_contrast(surf_wait);
     IMG_SavePNG(surf_wait, "res/contrast.png");
@@ -44,15 +58,17 @@ int main(int argc, char** argv)
     IMG_SavePNG(surf_wait, "res/gaussian_blur.png");
 
     //Median Filter
-    median_filter(surf_wait, 3);
-    IMG_SavePNG(surf_wait, "res/median.png");
-
+    //median_filter(surf_wait, 5);
+    //IMG_SavePNG(surf_wait, "res/median.png");
 
     //Threshold Filter
     surf_wait = threshold(surf_wait, 150);
-    IMG_SavePNG(surf_wait, "res/threshold.png");
+    IMG_SavePNG(surf_wait, "res/threshold.png");    
     
-
+    //Otsu Adaptative Filter
+    otsu_adaptive_threshold(surf_wait);
+    IMG_SavePNG(surf_wait, "res/otsu.png");
+    
     //Canny Edge Detection
     canny(surf_wait);
     IMG_SavePNG(surf_wait, "res/canny.png");
@@ -62,11 +78,6 @@ int main(int argc, char** argv)
     surf_wait = invert(surf_wait);
     IMG_SavePNG(surf_wait, "res/invert.png");
     */
-    
-    //Otsu Adaptative Filter
-    otsu_adaptive_threshold(surf_wait);
-    IMG_SavePNG(surf_wait, "res/otsu.png");
-
     
     /*
     //Sauvola Filter
@@ -102,14 +113,6 @@ int main(int argc, char** argv)
     //Sobel Filter
     sobel_filter(surface);
     IMG_SavePNG(surface, "sobel.png");
-    
-    //Grayscale FIlter
-    grayscale(surface);
-    IMG_SavePNG(surface, "grayscale.png");
-    
-    //Canny Filter
-    canny_filter(surface, 3, 1.5, 25, 75);
-    IMG_SavePNG(surface, "canny.png");
     */
     // ====================================================
     
@@ -142,11 +145,18 @@ int main(int argc, char** argv)
 
     surf = perspective_transform(surf, corners);
     IMG_SavePNG(surf, "res/perspective.png");
- 
+
     surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
     IMG_SavePNG(surf, "res/perspectiveconverted.png");
+
+    cut_img = perspective_transform(cut_img, corners);
+    cut_img = threshold(cut_img, 150);
+    IMG_SavePNG(cut_img, "res/cut_img.png");
+
+    cut_img = SDL_ConvertSurfaceFormat(cut_img, SDL_PIXELFORMAT_RGBA32, 0);
     // ====================================================
 
+    printf("%s\n", "coucou3");
 
     // HOUGH TRANSFORM - LINES DETECTION
     // ====================================================
@@ -160,7 +170,7 @@ int main(int argc, char** argv)
 
     // MAXIMUM DETECTION - MATRIX PERSPECTIVE TRANSFORM - CELLS EXTRACTION
     // ====================================================
-    grid_detection(list_rho, list_theta, surf);
+    grid_detection(list_rho, list_theta, cut_img);
     printf("%s\n", "coucou5");
     // ====================================================
 
