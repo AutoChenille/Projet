@@ -1,8 +1,9 @@
 #Makefile
-CC := gcc
-CFLAGS := -Wall -Wextra -g
-CPPFLAGS := -MMD
-LDLIBS = 'pkg-config --libs sdl2 SDL2_image gtk+-3.0' -lm
+CC=gcc
+CPPFLAGS= -MMD -D_XOPEN_SOURCE=500 `pkg-config --cflags sdl gtk+-3.0`
+CFLAGS= -Wall -Wextra -std=c99 -g
+LDFLAGS=
+LDLIBS= `pkg-config --libs sdl gtk+-3.0` -lSDL_image -lm -export-dynamic
 
 SRCDIR := .
 BUILDDIR := ./build
