@@ -33,6 +33,29 @@ char *sizeTToPath(size_t num)
     return result;
 }
 
+int* PredictSurface(SDL_Surface **surface, size_t nbData, char *params)
+{
+    parameters *p = LoadParameters(params);
+
+    matrix* loaded = LoadFromSurface(surface, nbData);
+
+    matrix *v = predictionVector(loaded, p);
+
+    int* result = malloc(sizeof(int) * nbData);
+    for(size_t j = 0; j < v->col; j++)
+    {
+        result[j] = 0;
+        for(size_t i = 1; i < v->row; i++)
+        {
+            if(v->data[i*v->col+j] > v->data[result[j]*v->col+j])
+                result[j] = i;
+        }
+    }
+
+    return result;
+}
+
+
 int Predict(char *img, char *params)
 {
     parameters *p = LoadParameters(params);
