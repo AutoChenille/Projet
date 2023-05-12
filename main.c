@@ -2,8 +2,8 @@
 #include "Processing/main.c"
 #include "NeuronalNetwork/main.c"
 #include "NeuronalNetwork_Hexa/main.c"
-#include "sudoku_solver/solver16.c"
-#include "sudoku_solver/solver9.c"
+#include "sudoku_solver/solver16.h"
+#include "sudoku_solver/solver9.h"
 
 
 #define SwitchOn 1
