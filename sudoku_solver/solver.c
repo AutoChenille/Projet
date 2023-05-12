@@ -268,15 +268,49 @@ int solve(char grid[GRID_DIMENSION][GRID_DIMENSION], char possibilities[GRID_DIM
     return 0;
 }
 
-
-void draw_image(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
+void drawHLine(SDL_Surface* surface, int x, int y, int length, Uint32 color, int thickness)
 {
+    SDL_LockSurface(surface);
+
+    for (int i = 0; i < thickness; i++)
+    {
+        for (int j = 0; j < length; j++)
+        {
+            Uint32* pixel = (Uint32*)surface->pixels + (y + i) * surface->pitch / sizeof(Uint32) + (x + j);
+            *pixel = color;
+        }
+    }
+
+    SDL_UnlockSurface(surface);
+}
+
+void drawVLine(SDL_Surface* surface, int x, int y, int length, Uint32 color, int thickness)
+{
+    SDL_LockSurface(surface);
+
+    for (int i = 0; i < thickness; i++)
+    {
+        for (int j = 0; j < length; j++)
+        {
+            Uint32* pixel = (Uint32*)surface->pixels + (y + j) * surface->pitch / sizeof(Uint32) + (x + i);
+            *pixel = color;
+        }
+    }
+
+    SDL_UnlockSurface(surface);
+}
+
+void draw_sudoku(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
+{
+    size_t CELL_SIZE = 90;
+
     // Load the blank grid image
-    SDL_Surface* grid_surface = IMG_Load("blank-grid.png");
+    SDL_Surface* grid_surface = SDL_CreateRGBSurface(0, 800, 800, 32, 0, 0, 0, 0);
+    SDL_FillRect(grid_surface, NULL, SDL_MapRGB(grid_surface->format, 255, 255, 255)); // Fond blanc
 
     // Load the digit images
     SDL_Surface* digit_surfaces[GRID_DIMENSION];
-    for (size_t i = 1; i <= GRID_DIMENSION; i++) {
+    for (size_t i = 1; i < 10; i++) {
         char filename[10];
         sprintf(filename, "%li.png", i);
         digit_surfaces[i-1] = IMG_Load(filename);
@@ -284,6 +318,12 @@ void draw_image(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
 
     // Create a surface to draw on
     SDL_Surface* draw_surface = SDL_CreateRGBSurface(0, grid_surface->w, grid_surface->h, 32, 0, 0, 0, 0);
+    SDL_FillRect(draw_surface, NULL, SDL_MapRGB(draw_surface->format, 255, 255, 255)); // Fond blanc
+
+    for (int col = 0; col < 9; col++)
+        drawVLine(grid_surface, col*CELL_SIZE, 0, 800, SDL_MapRGB(draw_surface->format, 0, 0, 0), col%3==0?6:1);
+    for (int row = 0; row < 9; row++)
+        drawHLine(grid_surface, 0, row*CELL_SIZE, 800, SDL_MapRGB(draw_surface->format, 0, 0, 0), row%3==0?6:1);
 
     // Iterate through the grid and draw the digits
     for (int row = 0; row < 9; row++) {
@@ -299,6 +339,80 @@ void draw_image(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
             SDL_Rect src_rect = {15, 15, digit_surfaces[digit-1]->w - 30, digit_surfaces[digit-1]->h - 30};
             SDL_Rect dest_rect = {x + 10, y + 10, digit_surfaces[digit-1]->w - 20, digit_surfaces[digit-1]->h - 20};
             SDL_BlitSurface(digit_surfaces[digit-1], &src_rect, grid_surface, &dest_rect);
+        }
+    }
+
+    // Save the surface as a PNG image
+    char result_filepath[strlen(filepath) + 12];
+    sprintf(result_filepath, "%s-result.png", filepath);
+    IMG_SavePNG(grid_surface, result_filepath);
+
+    // Clean up
+    SDL_FreeSurface(grid_surface);
+    for (int i = 0; i < 9; i++)
+    {
+        SDL_FreeSurface(digit_surfaces[i]);
+    }
+    SDL_FreeSurface(draw_surface);
+}
+
+
+void draw_hexadoku(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
+{
+    size_t CELL_SIZE = 90;
+
+    // Load the blank grid image
+    SDL_Surface* grid_surface = SDL_CreateRGBSurface(0, 1440, 1440, 32, 0, 0, 0, 0);
+    SDL_FillRect(grid_surface, NULL, SDL_MapRGB(grid_surface->format, 255, 255, 255)); // Fond blanc
+
+
+    // Load the digit images
+    SDL_Surface* digit_surfaces[GRID_DIMENSION];
+    for (size_t i = 0; i < 16; i++) {
+        char filename[10];
+        sprintf(filename, "%li.png", i);
+        digit_surfaces[i] = IMG_Load(filename);
+    }
+
+    // Create a surface to draw on
+    SDL_Surface* draw_surface = SDL_CreateRGBSurface(0, grid_surface->w, grid_surface->h, 32, 0, 0, 0, 0);
+
+    SDL_FillRect(draw_surface, NULL, SDL_MapRGB(draw_surface->format, 255, 255, 255)); // Fond blanc
+
+    for (int col = 0; col < 16; col++)
+        drawVLine(grid_surface, col*CELL_SIZE, 0, 1440, SDL_MapRGB(draw_surface->format, 0, 0, 0), col%4==0?6:1);
+    for (int row = 0; row < 16; row++)
+        drawHLine(grid_surface, 0, row*CELL_SIZE, 1440, SDL_MapRGB(draw_surface->format, 0, 0, 0), row%4==0?6:1);
+
+    // Iterate through the grid and draw the digits
+    for (int row = 0; row < 16; row++) {
+        for (int col = 0; col < 16; col++) {
+            // Calculate the position of the cell in the image
+            int x = col * digit_surfaces[0]->w;
+            int y = row * digit_surfaces[0]->h;
+
+            // Get the digit to draw
+            int digit;
+            if(grid[row][col] <= '9')
+                digit = grid[row][col] - '0';
+            else if(grid[row][col] == 'A')
+                digit = 10;
+            else if(grid[row][col] == 'B')
+                digit = 11;
+            else if(grid[row][col] == 'C')
+                digit = 12;
+            else if(grid[row][col] == 'D')
+                digit = 13;
+            else if(grid[row][col] == 'E')
+                digit = 14;
+            else
+                digit = 15;
+
+
+            // Blit the digit image onto the surface
+            SDL_Rect src_rect = {15, 15, digit_surfaces[digit]->w - 30, digit_surfaces[digit-1]->h - 30};
+            SDL_Rect dest_rect = {x + 10, y + 10, digit_surfaces[digit]->w - 20, digit_surfaces[digit]->h - 20};
+            SDL_BlitSurface(digit_surfaces[digit], &src_rect, grid_surface, &dest_rect);
         }
     }
 
@@ -342,7 +456,10 @@ int main(int argc, char *argv[])
     // Saves the result in a new file.
     write_grid_in_file(grid, argv[1]);
 
-    //draw_image(grid, argv[1]);
+    if(HEXA)
+        draw_hexadoku(grid, argv[1]);
+    else
+        draw_sudoku(grid, argv[1]);
 
     // Exits program with success.
     return EXIT_SUCCESS;

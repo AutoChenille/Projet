@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/maclow/Documents/EPITA/S3#/Projet/sudoku_solver",
-      "program": "/home/maclow/Documents/EPITA/S3#/Projet/sudoku_solver/build/Debug/outDebug",
+      "cwd": "/home/maclow/Documents/EPITA/S3#/Projet.BKP/sudoku_solver",
+      "program": "/home/maclow/Documents/EPITA/S3#/Projet.BKP/sudoku_solver/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
