@@ -1,33 +1,32 @@
-#Makefile
-CC=gcc
-CPPFLAGS= -MMD -D_XOPEN_SOURCE=500 `pkg-config --cflags sdl gtk+-3.0`
-CFLAGS= -Wall -Wextra -std=c99 -g
-LDFLAGS=
-LDLIBS= `pkg-config --libs sdl gtk+-3.0` -lSDL_image -lm -export-dynamic
+# Makefile
 
-SRCDIR := .
-BUILDDIR := ./build
+CC = gcc
+CPPFLAGS = -MMD
+CFLAGS = -Wall -Wextra
+LDFLAGS =
+LDLIBS = `pkg-config --libs sdl2 SDL2_image gtk+-3.0` -lm
 
-SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
-OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%.o,$(basename $(SOURCES)))
-DEPENDENCIES := $(OBJECTS:.o=.d)
+SRC = main.c \
+	grid_processing/basic_utilities.c \
+	grid_processing/contour_manager.c \
+	grid_processing/doubles_lists.c \
+	grid_processing/grid_detection.c \
+	grid_processing/hough_transform.c \
+	grid_processing/img_upgrade.c \
+	grid_processing/SDL_utilities.c
 
-TARGET := main
+OBJ = ${SRC:.c=.o}
+DEP = ${SRC:.c=.d}
 
-all: $(TARGET)
+main: ${OBJ}
 
-$(TARGET): $(OBJECTS)
-		$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+-include ${DEP}
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c
-		@mkdir -p $(@D)
-		$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+.PHONY: clean
 
 clean:
-		rm -rf $(BUILDDIR) $(TARGET)
+	${RM} ${OBJ}
+	${RM} ${DEP}
+	${RM} main
 
--include $(DEPENDENCIES)
-
-.PHONY: all clean
-
-#End
+# END
