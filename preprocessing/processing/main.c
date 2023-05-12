@@ -84,19 +84,64 @@ void adaptive_threshold_with_noise(SDL_Surface* surface, const double t)
             sum = thresh[x2 * height + y2] - thresh[x2 * height + (y1 - 1)] - thresh[(x1 - 1) * height + y2]
 	      + thresh[(x1 - 1) * height + (y1 - 1)];
 
-            Uint32 pixel = ((Uint32*)surface->pixels)[i * width + j];
+            Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
             Uint8 r, g, b;
             SDL_GetRGB(pixel, surface->format, &r, &g, &b);
 
             if (r * count < sum * (1.0 - t))
-                ((Uint32*)surface->pixels)[i * width + j] = SDL_MapRGB(surface->format, 0, 0, 0);
+                ((Uint32*)surface->pixels)[j * width + i] = SDL_MapRGB(surface->format, 0, 0, 0);
             else
-                ((Uint32*)surface->pixels)[i * width + j] = SDL_MapRGB(surface->format, 255, 255, 255);
+                ((Uint32*)surface->pixels)[j * width + i] = SDL_MapRGB(surface->format, 255, 255, 255);
         }
     }
 
     free(thresh);
 }
+
+void dilate2(SDL_Surface* surface)
+{
+    int width = surface->w;
+    int height = surface->h;
+
+    SDL_Surface* temp = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, surface->format->format);
+
+    SDL_BlitSurface(surface, NULL, temp, NULL); // Copy original surface to temp
+
+    SDL_LockSurface(surface);
+    SDL_LockSurface(temp);
+
+    Uint32* pixels = (Uint32*)surface->pixels;
+    Uint32* tempPixels = (Uint32*)temp->pixels;
+
+    for (int y = 4; y < height - 4; ++y) {
+        for (int x = 4; x < width - 4; ++x) {
+            Uint8 r, g, b;
+
+            // Check the 9x9 neighborhood
+            for (int j = -4; j <= 4; ++j) {
+                for (int i = -4; i <= 4; ++i) {
+                    Uint32 pixel = tempPixels[(y + j) * width + (x + i)];
+                    SDL_GetRGB(pixel, temp->format, &r, &g, &b);
+
+                    // If a white pixel is found, set the current pixel to white and break the loop
+                    if (r == 255 && g == 255 && b == 255) {
+                        pixels[y * width + x] = SDL_MapRGB(surface->format, 255, 255, 255);
+                        i = 5;
+                        j = 5;
+                    }
+                }
+            }
+        }
+    }
+
+    SDL_UnlockSurface(temp);
+    SDL_UnlockSurface(surface);
+
+    SDL_FreeSurface(temp);
+}
+
+
+
 
 /// @brief Main function to test the detection of sudoku.
 int main(int argc, char** argv)
@@ -175,10 +220,16 @@ int main(int argc, char** argv)
     //Canny Edge Detection
     canny(surf_wait);
     IMG_SavePNG(surf_wait, "res/canny.png");
-    
+
+    //Dilate Filter
+    dilate2(surf_wait);
+    IMG_SavePNG(surf_wait, "res/dilate.png");
+
+    /*
     //Dilate Filter
     surf_wait = dilate(surf_wait, 10);
     IMG_SavePNG(surf_wait, "res/dilate.png");
+    */
     // ====================================================
     
 
