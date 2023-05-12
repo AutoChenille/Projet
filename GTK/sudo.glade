@@ -151,15 +151,13 @@ Image</property>
                 </child>
                 <child>
                   <object class="GtkImage" id="Logo_autochenille">
-                    <property name="width-request">100</property>
-                    <property name="height-request">100</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="pixbuf">UneChenille(3).png</property>
+                    <property name="pixbuf">uneChenille_roundRect(3).png</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
+                    <property name="expand">True</property>
+                    <property name="fill">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
