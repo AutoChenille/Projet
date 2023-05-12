@@ -13,3 +13,5 @@ SDL_Surface* load_image(char* path);
 datas *get_imgList(char* dirpath);
 
 matrix *imageToMatrix(char* path);
+
+matrix *LoadFromSurface(SDL_Surface** surface, size_t n);
