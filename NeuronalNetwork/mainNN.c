@@ -1,3 +1,4 @@
+#include <SDL2/SDL_surface.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +11,7 @@
 #include "saveParams.h"
 
 size_t layerSize = 800;
-size_t nb_iter = 60000;
+size_t nb_iter = 200000;
 
 double string_to_double(char *string)
 {
@@ -33,7 +34,7 @@ char *sizeTToPath(size_t num)
     return result;
 }
 
-int* PredictSurface(SDL_Surface **surface, size_t nbData, char *params)
+int* PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
 {
     parameters *p = LoadParameters(params);
 
@@ -55,7 +56,6 @@ int* PredictSurface(SDL_Surface **surface, size_t nbData, char *params)
     return result;
 }
 
-
 int Predict(char *img, char *params)
 {
     parameters *p = LoadParameters(params);
@@ -68,8 +68,8 @@ int Predict(char *img, char *params)
 
     matrix *v = predictionVector(topredict->input, p);
 
-    float *result = calloc(sizeof(int), 16);
-    float *attended = calloc(sizeof(int), 16);
+    float *result = calloc(sizeof(int), 10);
+    float *attended = calloc(sizeof(int), 10);
     for(size_t j = 0; j < v->col; j++)
     {
         size_t i = 0;
@@ -79,7 +79,7 @@ int Predict(char *img, char *params)
         attended[i] += 1;
     }
     printf("##### ACCURACY #####\n");
-    for(size_t i = 0; i < 16; i++)
+    for(size_t i = 0; i < 10; i++)
     {
         printf("-> %li : %f%%\n", i, maxf(result[i]/attended[i]*100, 0));
     }
@@ -138,7 +138,7 @@ void TrainAgain(char *data, char *loadpath, char *savepath)
 }
 
 
-int main_NeuronalNetwork_Hexa(int argc, char** argv)
+int main_NeuronalNetwork(int argc, char** argv)
 {
     clock_t start = clock();
     // Checks the number of arguments.
