@@ -87,9 +87,8 @@ matrix *surfaceToMatrix(SDL_Surface *surface)
     return dataImage;
 }
 
-matrix *LoadFromSurface(SDL_Surface** surface, size_t n)
+matrix *LoadFromSurface(SDL_Surface** surface, size_t nbData)
 {
-    size_t nbData = n*n;
     size_t h = size, w = size;
     matrix* loaded = Matrix(h*w, nbData);
     for(size_t j = 0; j < nbData; j++)
