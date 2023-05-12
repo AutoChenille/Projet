@@ -1,4 +1,4 @@
-#include "../preprocessing/pretreatment.h"
+#include "../Preprocessing/pretreatment.h"
 
 SDL_Surface* cropSurface(SDL_Surface* src, int x1, int y1, int x2, int y2)
 {
