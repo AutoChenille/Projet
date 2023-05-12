@@ -11,11 +11,11 @@ int main(int argc, char** argv)
     if (argc != 2)
         errx(EXIT_FAILURE, "Usage: image-path");
 
-
     // INIT - GET IMAGE
     // ====================================================
     // Creates a new surface from the image in parameter.
     SDL_Surface* surf_img = load_image(argv[1]);
+
     // Checks if there is any error with the image.
     if (surf_img == NULL)
         errx(EXIT_FAILURE, "%s", SDL_GetError());
@@ -24,7 +24,6 @@ int main(int argc, char** argv)
     // Frees initial surface.
     SDL_FreeSurface(surf_img);
     // ====================================================
-
 
     // UPGRADE IMAGE - REMOVE PARASITES
     // ====================================================
@@ -46,11 +45,9 @@ int main(int argc, char** argv)
     double corners_x[4];
     double corners_y[4];
     // Gets the coordinates of the four corners of sudoku.
-    get_max_points_rect(surf_wait, corners_x, corners_y);
-    // ====================================================
+    get_max_points_rect(surf, corners_x, corners_y);
 
-    // tmp
-    return 0;
+    // ====================================================
 
     // ROTATION AND NEW SQUARED SURFACE WITH ONLY SUDOKU
     // ONLY FOR ORIENTED SUDOKU
@@ -60,7 +57,6 @@ int main(int argc, char** argv)
     // ..
     // ====================================================
 
-
     // HOUGH TRANSFORM - LINES DETECTION
     // ====================================================
     struct list* list_rho = list_new();
@@ -69,10 +65,9 @@ int main(int argc, char** argv)
     hough_transform(surf, &list_theta, &list_rho, 2.1);
     // ====================================================
 
-
     // MAXIMUM DETECTION - MATRIX PERSPECTIVE TRANSFORM - CELLS EXTRACTION
     // ====================================================
-    grid_detection(list_rho, list_theta, surf);
+    grid_detection(list_rho, list_theta, surf, 16);
     // ====================================================
 
 

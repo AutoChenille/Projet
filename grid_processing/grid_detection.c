@@ -291,22 +291,22 @@ void get_intersections(double w, double h, double diag, struct list* list_rho,
 /// @param width Width of surface.
 /// @param height Height of surface.
 /// @return nothing.
-void get_good_points(struct list* point_x, struct list* point_y, struct list** dest_x, struct list** dest_y, double width, double height)
+void get_good_points(struct list* point_x, struct list* point_y, struct list** dest_x, struct list** dest_y, double width, double height, int NB_CELLS)
 {
-    double hypo_width_cell = width / 9;
-    double hypo_height_cell = height / 9;
+    double hypo_width_cell = width / NB_CELLS;
+    double hypo_height_cell = height / NB_CELLS;
 
     double threshold = hypo_width_cell / 3;
 
-    double hypo_grid_x[9];
-    double hypo_grid_y[9];
+    double hypo_grid_x[NB_CELLS];
+    double hypo_grid_y[NB_CELLS];
 
-    for (int j = 0; j < 9; j++)
+    for (int j = 0; j < NB_CELLS; j++)
     {
         hypo_grid_x[j] = j * hypo_width_cell;
     }
 
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < NB_CELLS; i++)
     {
         hypo_grid_y[i] = i * hypo_height_cell;
     }
@@ -316,9 +316,9 @@ void get_good_points(struct list* point_x, struct list* point_y, struct list** d
     double *real_grid_x = list_to_array(point_x);
     double *real_grid_y = list_to_array(point_y);
 
-    for (int y = 0; y < 9; y++)
+    for (int y = 0; y < NB_CELLS; y++)
     {
-        for (int x = 0; x < 9; x++)
+        for (int x = 0; x < NB_CELLS; x++)
         {
             double hypo_x = hypo_grid_x[x];
             double hypo_y = hypo_grid_y[y];
@@ -347,38 +347,65 @@ void get_good_points(struct list* point_x, struct list* point_y, struct list** d
     }
 }
 
+/// @brief Convert small squared surface to a 24x24 pixels surface
+///
+/// \param surf The surface to convert.
+/// \param dst_width The width of the destination image.
+/// \param dst_height The height of the destination image.
+/// \return The resized surface.
+SDL_Surface *convert_surface(SDL_Surface* surf, int dst_width, int dst_height)
+{
+    // Removes the contours on the image.
+    //SDL_Surface* surf_contour = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32, SDL_PIXELFORMAT_RGBA32);
+    //upgrade_exploitation(surf, &surf_contour);
+
+    // Resizes image to a new surface.
+    SDL_Surface* resized_surf = SDL_CreateRGBSurfaceWithFormat(0, dst_width, dst_height, 32, SDL_PIXELFORMAT_RGBA32);
+    SDL_BlitScaled(surf, NULL, resized_surf, NULL);
+    //SDL_FreeSurface(surf_contour);
+
+    // Returns a new created surface.
+    return resized_surf;
+}
+
 /// @brief Extracts cells and put them in files.
 ///
 /// @param list_x List of x coordinates (81 x coordinates).
 /// @param list_y List of y coordinates (81 y coordinates).
 /// @param surf Initial surface.
 /// @return nothing.
-void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf)
+void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf, int NB_CELLS)
 {
-    double width = surf->w / 9;
-    double height = surf->h / 9;
+    double width = surf->w / NB_CELLS;
+    double height = surf->h / NB_CELLS;
 
     double *arr_x = list_to_array(list_x);
     double *arr_y = list_to_array(list_y);
 
-    for (int y = 0; y < 9; y++)
+    for (int y = 0; y < NB_CELLS; y++)
     {
-        for (int x = 0; x < 9; x++)
+        for (int x = 0; x < NB_CELLS; x++)
         {
             SDL_Rect rect;
             rect.h = height;
             rect.w = width;
-            rect.x = arr_x[x + 9 * y];
-            rect.y = arr_y[x + 9 * y];
+            rect.x = arr_x[x + NB_CELLS * y];
+            rect.y = arr_y[x + NB_CELLS * y];
 
-            SDL_Surface* new_surf = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
-            SDL_BlitSurface(surf, &rect, new_surf, NULL);
+            SDL_Surface* square = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA32);
+            SDL_BlitSurface(surf, &rect, square, NULL);
+
+            // RESIZE IMAGES TO 24X24 AND REMOVES CONTOURS
+            // ==========================================
+            SDL_Surface* resized_square = convert_surface(square, 24, 24);
+            // ===========================================
 
             char filepath[100];
-            snprintf(filepath, sizeof(filepath), "img/%i_%i.png", 8 - y, 8 - x);
-            // IMG_SavePNG(new_surf, filepath);
+            snprintf(filepath, sizeof(filepath), "img/%i_%i.png", (NB_CELLS - 1) - y, (NB_CELLS - 1) - x);
+            IMG_SavePNG(resized_square, filepath);
 
-            SDL_FreeSurface(new_surf);
+            SDL_FreeSurface(square);
+            SDL_FreeSurface(resized_square);
         }
     }
 }
@@ -389,7 +416,7 @@ void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf
 /// @param list_theta Initial list of thetas.
 /// @param surf_sudoku Surface from the image
 /// @return nothing.
-void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface* surf_sudoku)
+void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface* surf_sudoku, int NB_CELLS)
 {
     // Parameters.
     double width = surf_sudoku->w;
@@ -416,13 +443,13 @@ void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface*
     // ==========================================
     struct list* final_grid_x = list_new();
     struct list* final_grid_y = list_new();
-    get_good_points(list_point_x, list_point_y, &final_grid_x, &final_grid_y, width, height);
+    get_good_points(list_point_x, list_point_y, &final_grid_x, &final_grid_y, width, height, NB_CELLS);
     // ==========================================
 
 
     // EXTRACTS CELLS - THE END
     // ==========================================
-    cell_extraction(final_grid_x, final_grid_y, surf_sudoku);
+    cell_extraction(final_grid_x, final_grid_y, surf_sudoku, NB_CELLS);
     // ==========================================
 
 
