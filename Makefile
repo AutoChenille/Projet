@@ -1,19 +1,32 @@
-# Makefile
+#Makefile
+CC := gcc
+CFLAGS := -Wall -Wextra -g
+CPPFLAGS := -MMD
+LDLIBS = pkg-config --libs sdl2 SDL2_image gtk+-3.0 -lm
 
-CC = gcc
-CFLAGS = `pkg-config --cflags gtk+-3.0` -Wall -O3
-LDLIBS = `pkg-config --libs gtk+-3.0 sdl2 SDL2_image` -lm 
+SRCDIR := .
+BUILDDIR := ./build
 
+SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
+OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%.o,$(basename $(SOURCES)))
+DEPENDENCIES := $(OBJECTS:.o=.d)
 
-EXE = main
+TARGET := main
 
-all: $(EXE)
+all: $(TARGET)
 
-$(foreach f, $(EXE), $(eval $(f):))
+$(TARGET): $(OBJECTS)
+		$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-.PHONY: clean
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c
+		@mkdir -p $(@D)
+		$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
-	${RM} $(EXE)
+		rm -rf $(BUILDDIR) $(TARGET)
 
-# END
+-include $(DEPENDENCIES)
+
+.PHONY: all clean
+
+#End
