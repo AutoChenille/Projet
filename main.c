@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include "Processing/main.c"
-#include "NeuronalNetwork/main.c"
-#include "NeuronalNetwork_Hexa/main.c"
+#include "NeuronalNetwork/mainNN.h"
+#include "NeuronalNetwork_Hexa/mainNNH.h"
 #include "sudoku_solver/solver16.h"
 #include "sudoku_solver/solver9.h"
 
