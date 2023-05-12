@@ -276,7 +276,7 @@ void on_new(GtkButton* button, gpointer user_data)
 }
 
 // Main function.
-int main (int argc, char *argv[])
+int main_game(int argc, char *argv[])
 {
     // Initializes GTK.
     gtk_init(NULL, NULL);
