@@ -231,7 +231,11 @@ void on_new(GtkButton* button, gpointer user_data)
 
     int sudoku[9][9] = {};
     generate_sudoku(sudoku);
+    upload_grid(sudoku, builder);
+}
 
+void upload_grid(int sudoku[9][9], GtkBuilder* builder)
+{
     // Set not editable cases.
     for (int i = 0; i < 9; i++)
     {
@@ -272,7 +276,6 @@ void on_new(GtkButton* button, gpointer user_data)
             gtk_entry_set_max_length(entry, 1);
 
         }
-    }
 }
 
 // Main function.
@@ -305,8 +308,12 @@ int main (int argc, char *argv[])
     g_signal_connect(new_button, "clicked", G_CALLBACK(on_new), builder);
     g_signal_connect(validate_button, "clicked", G_CALLBACK(on_validate), builder);
 
-    // Generates a new grid.
+    // -- Generates a new grid. -- //
     on_new(new_button, builder);
+
+    // --- OR use an existing grid. --- //
+    // int sudoku[9][9];
+    // upload_grid(sudoku, builder);
 
     // Runs the main loop.
     gtk_main();
