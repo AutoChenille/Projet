@@ -4,145 +4,6 @@
 #include "img_upgrade.h"
 #include "../preprocessing/pretreatment.h"
 
-double noise_level(SDL_Surface* surface)
-{
-    int width = surface->w;
-    int height = surface->h;
-
-    double count = 0.0;
-    for (int i = 1; i < width - 1; i++)
-    {
-        for (int j = 1; j < height - 1; j++)
-	{
-            double medium = 0.0;
-
-            // Calculate the average of the neighboring pixels
-            for (int ki = -1; ki <= 1; ki++)
-	    {
-                for (int kj = -1; kj <= 1; kj++)
-		{
-                    Uint32 neighborPixel = ((Uint32*)surface->pixels)[(j + kj) * width + (i + ki)];
-                    Uint8 r, g, b;
-                    SDL_GetRGB(neighborPixel, surface->format, &r, &g, &b);
-                    medium += r;
-                }
-            }
-            medium /= 9;
-
-            // Get the value of the current pixel
-            Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
-            Uint8 r, g, b;
-            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-            double val = 1 - (r / medium);
-            if (val < 0)
-                val *= -1;
-            if (val > 0.5)
-                count++;
-        }
-    }
-
-    return count;
-}
-
-void adaptive_threshold_with_noise(SDL_Surface* surface, const double t)
-{
-    int width = surface->w;
-    int height = surface->h;
-
-    int s2 = fmax(width, height) / 16;
-    unsigned long *thresh = calloc(width * height, sizeof(unsigned long));
-    long sum = 0;
-    unsigned int count = 0;
-    int x1, y1, x2, y2;
-
-    for (int y = 0; y < height; y++) {
-        Uint32 pixel = ((Uint32*)surface->pixels)[y];
-        Uint8 r, g, b;
-        SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-        sum += r;
-        thresh[y] = sum;
-    }
-
-    for (int i = 1; i < width; i++) {
-        sum = 0;
-        for (int j = 0; j < height; j++) {
-            Uint32 pixel = ((Uint32*)surface->pixels)[i * width + j];
-            Uint8 r, g, b;
-            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-            sum += r;
-            thresh[i * height + j] = thresh[(i - 1) * height + j] + sum;
-        }
-    }
-
-    for (int i = 0; i < width; i++) {
-        for (int j = 0; j < height; j++) {
-            x1 = fmax(i - s2, 1);
-            x2 = fmin(i + s2, width - 1);
-            y1 = fmax(j - s2, 1);
-            y2 = fmin(j + s2, height - 1);
-            count = (x2 - x1) * (y2 - y1);
-            sum = thresh[x2 * height + y2] - thresh[x2 * height + (y1 - 1)] - thresh[(x1 - 1) * height + y2]
-	      + thresh[(x1 - 1) * height + (y1 - 1)];
-
-            Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
-            Uint8 r, g, b;
-            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-
-            if (r * count < sum * (1.0 - t))
-                ((Uint32*)surface->pixels)[j * width + i] = SDL_MapRGB(surface->format, 0, 0, 0);
-            else
-                ((Uint32*)surface->pixels)[j * width + i] = SDL_MapRGB(surface->format, 255, 255, 255);
-        }
-    }
-
-    free(thresh);
-}
-
-void dilate2(SDL_Surface* surface)
-{
-    int width = surface->w;
-    int height = surface->h;
-
-    SDL_Surface* temp = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, surface->format->format);
-
-    SDL_BlitSurface(surface, NULL, temp, NULL); // Copy original surface to temp
-
-    SDL_LockSurface(surface);
-    SDL_LockSurface(temp);
-
-    Uint32* pixels = (Uint32*)surface->pixels;
-    Uint32* tempPixels = (Uint32*)temp->pixels;
-
-    for (int y = 4; y < height - 4; ++y) {
-        for (int x = 4; x < width - 4; ++x) {
-            Uint8 r, g, b;
-
-            // Check the 9x9 neighborhood
-            for (int j = -4; j <= 4; ++j) {
-                for (int i = -4; i <= 4; ++i) {
-                    Uint32 pixel = tempPixels[(y + j) * width + (x + i)];
-                    SDL_GetRGB(pixel, temp->format, &r, &g, &b);
-
-                    // If a white pixel is found, set the current pixel to white and break the loop
-                    if (r == 255 && g == 255 && b == 255) {
-                        pixels[y * width + x] = SDL_MapRGB(surface->format, 255, 255, 255);
-                        i = 5;
-                        j = 5;
-                    }
-                }
-            }
-        }
-    }
-
-    SDL_UnlockSurface(temp);
-    SDL_UnlockSurface(surface);
-
-    SDL_FreeSurface(temp);
-}
-
-
-
-
 /// @brief Main function to test the detection of sudoku.
 int main(int argc, char** argv)
 {
@@ -156,7 +17,6 @@ int main(int argc, char** argv)
     // Creates a new surface from the image in parameter.
     SDL_Surface* surf_img = load_image(argv[1]);
     SDL_Surface* cut_img = load_image(argv[1]);
-    cut_img = SDL_ConvertSurfaceFormat(cut_img, SDL_PIXELFORMAT_RGBA32, 0);
     // Checks if there is any error with the image.
     if (surf_img == NULL)
         errx(EXIT_FAILURE, "%s", SDL_GetError());
@@ -172,66 +32,48 @@ int main(int argc, char** argv)
     surf_wait = SDL_ConvertSurfaceFormat(surf_wait, SDL_PIXELFORMAT_RGB888, 0);
     cut_img = SDL_ConvertSurfaceFormat(cut_img, SDL_PIXELFORMAT_RGB888, 0);
 
-    //-----CUT_IMG-----//
-	 
-    //Grayscale Filter
-    grayscale(cut_img);
-
-    //Invert Filter
-    cut_img = invert(cut_img);
-
-
     //-----SURF_WAIT-----//
     
     //Enhance Contrast
     enhance_contrast(surf_wait);
-    IMG_SavePNG(surf_wait, "res/contrast.png");
     
     //Grayscale Filter
     grayscale(surf_wait);
-    IMG_SavePNG(surf_wait, "res/grayscale.png");
     
     //Gaussian Blur
     gaussian_blur(surf_wait, 1, 0.5);
-    IMG_SavePNG(surf_wait, "res/gaussian_blur.png");
 
     //Adaptive Threshold Filter
     double noise = noise_level(surf_wait);
-    if (noise > 300)
+    printf("noise = %f\n", noise);
+    if (noise > 15)
+    {
+      printf("adaptive\n");
       noise = 0.5;
+      adaptive_threshold(surf_wait, noise);
+    }
     else
-      noise = 0.15;
-    adaptive_threshold_with_noise(surf_wait, noise);
+    {
+      printf("non-adaptive\n");
+      noise = 0.2;
+      adaptive_threshold(surf_wait, noise);
+      //surf_wait = threshold(surf_wait, 150);
+    }
+    SDL_BlitSurface(surf_wait, NULL, cut_img, NULL);
     IMG_SavePNG(surf_wait, "res/adaptive_threshold.png");
 
-    /*
-    //Threshold
-    threshold(surf_wait, 100);
-    IMG_SavePNG(surf_wait, "res/thresh.png");
-    */
+    //Invert Filter
+    cut_img = invert(cut_img);
 
-    /*
-    //Otsu Adaptative Filter
-    printf("Otsu\n");
-    otsu_adaptive_threshold(surf_wait);
-    IMG_SavePNG(surf_wait, "res/otsu.png");
-    */
-    
     //Canny Edge Detection
     canny(surf_wait);
     IMG_SavePNG(surf_wait, "res/canny.png");
 
     //Dilate Filter
-    dilate2(surf_wait);
+    dilate(surf_wait);
     IMG_SavePNG(surf_wait, "res/dilate.png");
-
-    /*
-    //Dilate Filter
-    surf_wait = dilate(surf_wait, 10);
-    IMG_SavePNG(surf_wait, "res/dilate.png");
-    */
     // ====================================================
-    
+
 
     // UPGRADE IMAGE - REMOVE PARASITES
     // ====================================================
@@ -261,10 +103,8 @@ int main(int argc, char** argv)
     IMG_SavePNG(surf, "res/perspective.png");
 
     surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
-    IMG_SavePNG(surf, "res/perspectiveconverted.png");
 
     cut_img = perspective_transform(cut_img, corners);
-    cut_img = threshold(cut_img, 150);
     IMG_SavePNG(cut_img, "res/cut_img.png");
 
     cut_img = SDL_ConvertSurfaceFormat(cut_img, SDL_PIXELFORMAT_RGBA32, 0);
@@ -285,13 +125,14 @@ int main(int argc, char** argv)
     grid_detection(list_rho, list_theta, cut_img);
     // ====================================================
 
-
+    
     // Frees memory.
     SDL_FreeSurface(surf);
     SDL_FreeSurface(surf_wait);
+    SDL_FreeSurface(cut_img);
     list_destroy(list_rho);
     list_destroy(list_theta);
-
+    
     // End.
     return EXIT_SUCCESS;
 }

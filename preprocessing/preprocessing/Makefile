@@ -4,7 +4,7 @@ CFLAGS = -Wall -Wextra -O3 `pkg-config --cflags sdl2 SDL2_image`
 LDFLAGS =
 LDLIBS = `pkg-config --libs sdl2 SDL2_image` -lm
 
-SRC = main.c rotation.c filter.c gaussian_blur.c utils.c median.c perspective.c dilate.c contrast.c sauvola.c threshold.c otsu.c invert.c adaptive_threshold.c
+SRC = main.c filter.c utils.c perspective.c
 OBJ = ${SRC:.c=.o}
 DEP = ${SRC:.c=.d}
 

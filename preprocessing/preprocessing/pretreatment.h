@@ -1,4 +1,5 @@
 #pragma once
+#include <limits.h>
 #include <stdio.h>
 #include <err.h>
 #include <math.h>
@@ -6,30 +7,22 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-//Rotation
-SDL_Surface *rotate(SDL_Surface *surface, double degree);
-double calculate_rotation(SDL_Point topLeft, SDL_Point topRight);
-SDL_Surface* cropSurface(SDL_Surface* src, int x1, int y1, int x2, int y2);
-double calculateSudokuRotation(int corners[4][2]);
-
-//Perspective Transform
+// Perspective Transform
 SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2]);
 
-//Edge Detection
+// Edge Detection
 void canny(SDL_Surface* grayscaleImage);
 
-//Filters
-void grayscale(SDL_Surface *surface);
-void sobel_filter(SDL_Surface *surface);
-void blur(SDL_Surface *surface, int strength);
-//double detect_angle(int corners[4][2]);
-void gaussian_blur(SDL_Surface *surface, int radius, double sigma);
-int str_to_int(char *str);
-void median_filter(SDL_Surface *surface, int window_size);
-SDL_Surface* dilate(SDL_Surface* input, int kernel_size);
-SDL_Surface* invert(SDL_Surface *input);
-void sauvola(SDL_Surface *surface, int window_size, double k);
+// Filters
 void enhance_contrast(SDL_Surface *surface);
+void grayscale(SDL_Surface *surface);
+void gaussian_blur(SDL_Surface *surface, int radius, double sigma);
+double noise_level(SDL_Surface* surface);
+void adaptive_threshold(SDL_Surface* surface, double threshold);
+void canny(SDL_Surface* grayscaleImage);
+void dilate(SDL_Surface* input);
+SDL_Surface* invert(SDL_Surface *input);
 SDL_Surface* threshold(SDL_Surface *input, Uint8 threshold_value);
-void otsu_adaptive_threshold(SDL_Surface *surface);
-SDL_Surface* adaptive_threshold(SDL_Surface* surface, int neighborhood_size, int C);
+
+// Utils
+int str_to_int(char *str);

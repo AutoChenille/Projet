@@ -1,81 +1,60 @@
-#include <stdio.h>
-#include <math.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <limits.h>
 #include "pretreatment.h"
 
-double sobelx[3][3] = {{-1.0, 0.0, 1.0},
-		       {-2.0, 0.0, 2.0},
-		       {-1.0, 0.0, 1.0}};
-
-double sobely[3][3] = {{-1.0, -2.0, -1.0},
-		       {0.0, 0.0, 0.0},
-		       {1.0, 2.0, 1.0}};
-
-double gradient(SDL_Surface *surface, double kernel[3][3], int row, int col)
+void enhance_contrast(SDL_Surface *surface)
 {
-  int width = surface->w;
-  int height = surface->h;
-  Uint32 *pixels = surface->pixels;
-  double res = 0;
-  
-  for (int i = 0; i < 3; i++)
+    if (surface == NULL)
     {
-      for (int j = 0; j < 3; j++)
-        {
-	  int x = i + row;
-	  int y = j + col;
-	  if (x >= 0 && y >= 0 && x < width && y < height)
-            {
-	      Uint8 r,g,b;
-	      SDL_GetRGB(pixels[y*(width) + x], surface->format, &r,&g,&b);
-	      res += r * kernel[i][j];
-            }
-        }
+        printf("Invalid surface.\n");
+        return;
     }
-  
-  return res;
-}
 
-void sobel_filter(SDL_Surface *surface)
-{
-  //Lock the surface
-  SDL_LockSurface(surface);
+    SDL_LockSurface(surface);
 
-  //Get the width, heigth and pixels of the selected surface
-  int width = surface->w;
-  int height = surface->h;
-  
-  Uint32 *pixels = surface->pixels;
-  
-  //Variable for SobelX -> gx / SobelY gy / SobelX+Y -> gradient
-  double gx, gy;
-  double grad;
-  
-  //Filter all the pixels one by one
-  for (int i = 0; i < height; i++)
+    int width = surface->w;
+    int height = surface->h;
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    Uint8 min_r = 255, min_g = 255, min_b = 255;
+    Uint8 max_r = 0, max_g = 0, max_b = 0;
+
+    // Find the minimum and maximum pixel values
+    for (int y = 0; y < height; y++)
     {
-      for (int j = 0; j < width; j++)
-        {
-	  gx = gradient(surface, sobelx, j, i);
-	  gy = gradient(surface, sobely, j, i);
-	  grad = sqrt(gx * gx + gy * gy);
-	  
-	  if (grad > 128)
-	    {
-	      pixels[i*(width) + j] = SDL_MapRGB(surface->format, 255, 255, 255);
-	    }
-	  else
-	    {
-	      pixels[i*(width) + j] = SDL_MapRGB(surface->format, 0, 0, 0);
-	    }
+        for (int x = 0; x < width; x++)
+	{
+            Uint32 pixel = pixels[y * width + x];
+            Uint8 r, g, b;
+            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+
+            min_r = (r < min_r) ? r : min_r;
+            min_g = (g < min_g) ? g : min_g;
+            min_b = (b < min_b) ? b : min_b;
+
+            max_r = (r > max_r) ? r : max_r;
+            max_g = (g > max_g) ? g : max_g;
+            max_b = (b > max_b) ? b : max_b;
         }
     }
 
-  //Unlock the surface
-  SDL_UnlockSurface(surface);
+    // Apply linear contrast stretching
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+	{
+            Uint32 pixel = pixels[y * width + x];
+            Uint8 r, g, b;
+            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+
+            Uint8 new_r = 255 * (r - min_r) / (max_r - min_r);
+            Uint8 new_g = 255 * (g - min_g) / (max_g - min_g);
+            Uint8 new_b = 255 * (b - min_b) / (max_b - min_b);
+
+            pixels[y * width + x] = SDL_MapRGB(surface->format, new_r, new_g, new_b);
+        }
+    }
+
+    SDL_UnlockSurface(surface);
 }
+
 
 //Same function from the TP06.
 Uint32 pixel_to_grayscale(Uint32 pixel_color, SDL_PixelFormat *format)
@@ -114,131 +93,514 @@ void grayscale(SDL_Surface *surface)
   SDL_UnlockSurface(surface);
 }
 
-Uint32 getpixel(SDL_Surface *surface, int x, int y)
+const double PI = 3.14159265358979323846;
+
+double gaussian(double x, double sigma)
 {
-    int bpp = surface->format->BytesPerPixel;
-    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
-    switch (bpp) {
-        case 1:
-            return *p;
-        case 2:
-            return *(Uint16 *)p;
-        case 3:
-            if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-                return p[0] << 16 | p[1] << 8 | p[2];
-            else
-                return p[0] | p[1] << 8 | p[2] << 16;
-        case 4:
-            return *(Uint32 *)p;
-        default:
-            return 0;
-    }
+    return (1.0 / (sigma * sqrt(2.0 * PI))) * exp(-(x * x) / (2.0 * sigma * sigma));
 }
 
-void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
+void gaussian_blur(SDL_Surface *surface, int radius, double sigma)
 {
-    int bpp = surface->format->BytesPerPixel;
-    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
-    switch (bpp) {
-        case 1:
-            *p = pixel;
-            break;
-        case 2:
-            *(Uint16 *)p = pixel;
-            break;
-        case 3:
-            if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-                p[0] = (pixel >> 16) & 0xff;
-                p[1] = (pixel >> 8) & 0xff;
-                p[2] = pixel & 0xff;
-            } else {
-                p[0] = pixel & 0xff;
-                p[1] = (pixel >> 8) & 0xff;
-                p[2] = (pixel >> 16) & 0xff;
-            }
-            break;
-        case 4:
-            *(Uint32 *)p = pixel;
-            break;
-    }
-}
-
-void blur(SDL_Surface *surface, int strength)
-{
-  /* Blurs a surface, strength is the blur's strength */
-  
-  // Allocate a temporary surface to store the blurred version
-  SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, surface->w, surface->h, 24, 0, 0, 0, 0);
-  
-  // Loop over every pixel in the surface
-  for (int y = 0; y < surface->h; y++)
+    if (surface == NULL)
     {
-      for (int x = 0; x < surface->w; x++)
-	{
-	  // Calculate the average color of the surrounding pixels
-	  int red = 0, green = 0, blue = 0;
-	  int count = 0;
-	  for (int dy = -strength; dy <= strength; dy++)
-	    {
-	      for (int dx = -strength; dx <= strength; dx++)
-		{
-		  int nx = x + dx;
-		  int ny = y + dy;
-		  if (nx >= 0 && nx < surface->w && ny >= 0 && ny < surface->h)
-		    {
-		      Uint32 pixel = getpixel(surface, nx, ny);
-		      red += (pixel >> 16) & 0xff;
-		      green += (pixel >> 8) & 0xff;
-		      blue += pixel & 0xff;
-		      count++;
-		    }
-		}
-	    }
-	  red /= count;
-	  green /= count;
-	  blue /= count;
-	  
-	  // Set the pixel in the temporary surface
-	  Uint32 pixel = (red << 16) | (green << 8) | blue;
-	  putpixel(tempSurface, x, y, pixel);
-	}
+        printf("Invalid surface.\n");
+        return;
     }
-  
-  // Copy the blurred surface back to the original surface
-  SDL_BlitSurface(tempSurface, NULL, surface, NULL);
-  
-  // Free the temporary surface
-  SDL_FreeSurface(tempSurface);
-}
+    
+    SDL_LockSurface(surface);
 
-// calculate the mean and standard deviation of a window of pixels
-void calculate_mean_and_stddev(Uint8 *pixels, int pitch, int x, int y, int window_size, double *mean, double *stddev)
-{
-  // initialize the sum of pixel values and the sum of squared pixel values
-  double sum = 0;
-  double sum_squared = 0;
-  
-  // iterate over the pixels in the window
-  for (int i = x; i < x + window_size; i++)
-  {
-      for (int j = y; j < y + window_size; j++)
-      {
-	  // calculate the index of the pixel
-	  int index = i * pitch + j * 4;
-	  
-	  // add the pixel value to the sum
-	  sum += pixels[index];
-	  
-	  // add the squared pixel value to the sum_squared
-	  sum_squared += pow(pixels[index], 2);
+    Uint32 *pixels = (Uint32 *) surface->pixels;
+    int width = surface->w;
+    int height = surface->h;
+    //int bpp = surface->format->BytesPerPixel;
+
+    double *kernel = (double *) malloc((2 * radius + 1) * sizeof(double));
+    for (int i = 0; i < 2 * radius + 1; i++) {
+        kernel[i] = gaussian(i - radius, sigma);
+    }
+
+    Uint32 *temp = (Uint32 *) malloc(width * height * sizeof(Uint32));
+    memcpy(temp, pixels, width * height * sizeof(Uint32));
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            double r_sum = 0, g_sum = 0, b_sum = 0, k_sum = 0;
+            
+            for (int i = -radius; i <= radius; i++) {
+                int xi = x + i;
+                if (xi >= 0 && xi < width) {
+                    Uint32 pixel = temp[y * width + xi];
+                    Uint8 r, g, b;
+                    SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+
+                    double k = kernel[radius + i];
+                    r_sum += r * k;
+                    g_sum += g * k;
+                    b_sum += b * k;
+                    k_sum += k;
+                }
+            }
+
+            Uint8 r = round(r_sum / k_sum);
+            Uint8 g = round(g_sum / k_sum);
+            Uint8 b = round(b_sum / k_sum);
+            pixels[y * width + x] = SDL_MapRGB(surface->format, r, g, b);
         }
     }
-  
-  // calculate the mean of the pixel values
-  *mean = sum / (window_size * window_size);
-  
-  // calculate the standard deviation of the pixel values
-  double variance = sum_squared / (window_size * window_size) - pow(*mean, 2);
-  *stddev = sqrt(variance);
+
+    memcpy(temp, pixels, width * height * sizeof(Uint32));
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            double r_sum = 0, g_sum = 0, b_sum = 0, k_sum = 0;
+            
+            for (int i = -radius; i <= radius; i++) {
+                int yi = y + i;
+                if (yi >= 0 && yi < height) {
+                    Uint32 pixel = temp[yi * width + x];
+                    Uint8 r, g, b;
+                    SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+
+                    double k = kernel[radius + i];
+                    r_sum += r * k;
+                    g_sum += g * k;
+                    b_sum += b * k;
+                    k_sum += k;
+                }
+            }
+
+            Uint8 r = round(r_sum / k_sum);
+	    Uint8 g = round(g_sum / k_sum);
+            Uint8 b = round(b_sum / k_sum);
+            pixels[y * width + x] = SDL_MapRGB(surface->format, r, g, b);
+        }
+    }
+
+    free(temp);
+    free(kernel);
+
+    SDL_UnlockSurface(surface);
 }
 
+double noise_level(SDL_Surface* surface)
+{
+    int width = surface->w;
+    int height = surface->h;
+
+    double count = 0.0;
+    for (int i = 1; i < width - 1; i++)
+    {
+        for (int j = 1; j < height - 1; j++)
+	{
+            double medium = 0.0;
+
+            // Calculate the average of the neighboring pixels
+            for (int ki = -1; ki <= 1; ki++)
+	    {
+                for (int kj = -1; kj <= 1; kj++)
+		{
+                    Uint32 neighborPixel = ((Uint32*)surface->pixels)[(j + kj) * width + (i + ki)];
+                    Uint8 r, g, b;
+                    SDL_GetRGB(neighborPixel, surface->format, &r, &g, &b);
+                    medium += r;
+                }
+            }
+            medium /= 9;
+
+            // Get the value of the current pixel
+            Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
+            Uint8 r, g, b;
+            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+            double val = 1 - (r / medium);
+            if (val < 0)
+                val *= -1;
+            if (val > 0.5)
+                count++;
+        }
+    }
+
+    return count;
+}
+
+void adaptive_threshold(SDL_Surface* surface, double threshold)
+{
+    int width = surface->w;
+    int height = surface->h;
+
+    int s2 = fmax(width, height) / 16;
+    unsigned long *thresh = calloc(width * height, sizeof(unsigned long));
+    long sum = 0;
+    unsigned int count = 0;
+    int x1, y1, x2, y2;
+
+    for (int y = 0; y < height; y++)
+    {
+        Uint32 pixel = ((Uint32*)surface->pixels)[y];
+        Uint8 r, g, b;
+        SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+        sum += r;
+        thresh[y] = sum;
+    }
+
+    for (int i = 1; i < width; i++)
+    {
+        sum = 0;
+        for (int j = 0; j < height; j++)
+	{
+            Uint32 pixel = ((Uint32*)surface->pixels)[i * width + j];
+            Uint8 r, g, b;
+            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+            sum += r;
+            thresh[i * height + j] = thresh[(i - 1) * height + j] + sum;
+        }
+    }
+
+    for (int i = 0; i < width; i++)
+    {
+        for (int j = 0; j < height; j++)
+	{
+            x1 = fmax(i - s2, 1);
+            x2 = fmin(i + s2, width - 1);
+            y1 = fmax(j - s2, 1);
+            y2 = fmin(j + s2, height - 1);
+            count = (x2 - x1) * (y2 - y1);
+            sum = thresh[x2 * height + y2] - thresh[x2 * height + (y1 - 1)] - thresh[(x1 - 1) * height + y2]
+	      + thresh[(x1 - 1) * height + (y1 - 1)];
+
+            Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
+            Uint8 r, g, b;
+            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+
+            if (r * count < sum * (1.0 - threshold))
+                ((Uint32*)surface->pixels)[j * width + i] = SDL_MapRGB(surface->format, 0, 0, 0);
+            else
+                ((Uint32*)surface->pixels)[j * width + i] = SDL_MapRGB(surface->format, 255, 255, 255);
+        }
+    }
+
+    free(thresh);
+}
+
+/*
+void dilate(SDL_Surface* surface)
+{
+    int width = surface->w;
+    int height = surface->h;
+
+    SDL_Surface* temp = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, surface->format->format);
+
+    SDL_BlitSurface(surface, NULL, temp, NULL); // Copy original surface to temp
+
+    SDL_LockSurface(surface);
+    SDL_LockSurface(temp);
+
+    Uint32* pixels = (Uint32*)surface->pixels;
+    Uint32* tempPixels = (Uint32*)temp->pixels;
+
+    for (int y = 4; y < height - 4; ++y) {
+        for (int x = 4; x < width - 4; ++x) {
+            Uint8 r, g, b;
+
+            // Check the 9x9 neighborhood
+            for (int j = -4; j <= 4; ++j) {
+                for (int i = -4; i <= 4; ++i) {
+                    Uint32 pixel = tempPixels[(y + j) * width + (x + i)];
+                    SDL_GetRGB(pixel, temp->format, &r, &g, &b);
+
+                    // If a white pixel is found, set the current pixel to white and break the loop
+                    if (r == 255 && g == 255 && b == 255) {
+                        pixels[y * width + x] = SDL_MapRGB(surface->format, 255, 255, 255);
+                        i = 5;
+                        j = 5;
+                    }
+                }
+            }
+        }
+    }
+
+    SDL_UnlockSurface(temp);
+    SDL_UnlockSurface(surface);
+
+    SDL_FreeSurface(temp);
+}
+*/
+
+void dilate(SDL_Surface* surface)
+{
+    int width = surface->w;
+    int height = surface->h;
+
+    SDL_Surface* temp = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, surface->format->format);
+
+    SDL_BlitSurface(surface, NULL, temp, NULL); // Copy original surface to temp
+
+    SDL_LockSurface(surface);
+    SDL_LockSurface(temp);
+
+    Uint32* pixels = (Uint32*)surface->pixels;
+    Uint32* tempPixels = (Uint32*)temp->pixels;
+
+    // Horizontal dilation
+    for (int y = 0; y < height; ++y) {
+        for (int x = 5; x < width - 5; ++x) {
+            Uint8 r, g, b;
+
+            for (int i = -5; i <= 5; ++i) {
+                Uint32 pixel = tempPixels[y * width + (x + i)];
+                SDL_GetRGB(pixel, temp->format, &r, &g, &b);
+
+                if (r == 255 && g == 255 && b == 255) {
+                    pixels[y * width + x] = SDL_MapRGB(surface->format, 255, 255, 255);
+                    break;
+                }
+            }
+        }
+    }
+
+    SDL_UnlockSurface(temp);
+
+    SDL_BlitSurface(surface, NULL, temp, NULL); // Copy dilated surface to temp
+
+    // Vertical dilation
+    for (int y = 5; y < height - 5; ++y) {
+        for (int x = 0; x < width; ++x) {
+            Uint8 r, g, b;
+
+            for (int i = -5; i <= 5; ++i) {
+                Uint32 pixel = tempPixels[(y + i) * width + x];
+                SDL_GetRGB(pixel, temp->format, &r, &g, &b);
+
+                if (r == 255 && g == 255 && b == 255) {
+                    pixels[y * width + x] = SDL_MapRGB(surface->format, 255, 255, 255);
+                    break;
+                }
+            }
+        }
+    }
+
+    SDL_UnlockSurface(surface);
+    SDL_FreeSurface(temp);
+}
+
+
+SDL_Surface* invert(SDL_Surface *input)
+{
+    if (input == NULL)
+    {
+        printf("Invalid surface.\n");
+        return NULL;
+    }
+
+    SDL_Surface* output = SDL_ConvertSurfaceFormat(input, input->format->format, 0);
+    if (output == NULL)
+    {
+        printf("Failed to create output surface: %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    SDL_LockSurface(output);
+    Uint32 *pixels = (Uint32 *)output->pixels;
+
+    int width = output->w;
+    int height = output->h;
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            Uint8 r, g, b;
+            Uint32 pixel = pixels[y * width + x];
+            SDL_GetRGB(pixel, output->format, &r, &g, &b);
+
+            // Invert the color channels
+            r = 255 - r;
+            g = 255 - g;
+            b = 255 - b;
+
+            pixels[y * width + x] = SDL_MapRGB(output->format, r, g, b);
+        }
+    }
+
+    SDL_UnlockSurface(output);
+    return output;
+}
+
+#define PI 3.14159265
+#define HIGH_THRESHOLD 75
+#define LOW_THRESHOLD 30
+
+// Calculate Gradient and Direction
+void calculateGradientAndDirection(SDL_Surface* grayscaleImage, double** gradient, double** direction)
+{
+    int sobelX[3][3] = { {-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1} };
+    int sobelY[3][3] = { {-1, -2, -1}, {0, 0, 0}, {1, 2, 1} };
+
+    int width = grayscaleImage->w;
+    int height = grayscaleImage->h;
+
+    for (int y = 1; y < height - 1; y++) {
+        for (int x = 1; x < width - 1; x++) {
+            double dx = 0.0;
+            double dy = 0.0;
+
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    Uint32 pixel = ((Uint32*)grayscaleImage->pixels)[(y + i) * width + (x + j)];
+                    Uint8 r, g, b;
+                    SDL_GetRGB(pixel, grayscaleImage->format, &r, &g, &b);
+                    dx += (double)r * sobelX[i + 1][j + 1];
+                    dy += (double)r * sobelY[i + 1][j + 1];
+                }
+            }
+
+            gradient[y][x] = sqrt(dx * dx + dy * dy);
+            direction[y][x] = atan2(dy, dx) * 180 / PI;
+        }
+    }
+}
+
+// Non-Maximum Suppression
+void nonMaximumSuppression(SDL_Surface* grayscaleImage, double** gradient, double** direction)
+{
+    int width = grayscaleImage->w;
+    int height = grayscaleImage->h;
+
+    for (int y = 1; y < height - 1; y++) {
+        for (int x = 1; x < width - 1; x++) {
+            double dir = direction[y][x];
+            dir += 180;
+            dir = fmod(dir, 180);
+
+            if ((dir >= 0 && dir < 22.5) || (dir >= 157.5 && dir < 180)) {
+                if (gradient[y][x] <= gradient[y][x - 1] || gradient[y][x] <= gradient[y][x + 1])
+                    gradient[y][x] = 0;
+            } else if (dir >= 22.5 && dir < 67.5) {
+                if (gradient[y][x] <= gradient[y - 1][x + 1] || gradient[y][x] <= gradient[y + 1][x - 1])
+                    gradient[y][x] = 0;
+            } else if (dir >= 67.5 && dir < 112.5) {
+                if (gradient[y][x] <= gradient[y - 1][x] || gradient[y][x] <= gradient[y + 1][x])
+                    gradient[y][x] = 0;
+	    } else if (dir >= 112.5 && dir < 157.5) {
+                if (gradient[y][x] <= gradient[y - 1][x - 1] || gradient[y][x] <= gradient[y + 1][x + 1])
+                    gradient[y][x] = 0;
+            }
+        }
+    }
+}
+
+// Double Threshold
+void doubleThreshold(SDL_Surface* grayscaleImage, double** gradient)
+{
+    int width = grayscaleImage->w;
+    int height = grayscaleImage->h;
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            Uint8 val = (gradient[y][x] > HIGH_THRESHOLD) ? 255 : (gradient[y][x] > LOW_THRESHOLD) ? 125 : 0;
+            Uint32 newPixel = SDL_MapRGB(grayscaleImage->format, val, val, val);
+            ((Uint32*)grayscaleImage->pixels)[y * width + x] = newPixel;
+        }
+    }
+}
+
+// Edge Tracking by Hysteresis
+void edgeTracking(SDL_Surface* grayscaleImage)
+{
+    int width = grayscaleImage->w;
+    int height = grayscaleImage->h;
+
+    for (int y = 1; y < height - 1; y++) {
+        for (int x = 1; x < width - 1; x++) {
+            Uint32 pixel = ((Uint32*)grayscaleImage->pixels)[y * width + x];
+            Uint8 r, g, b;
+            SDL_GetRGB(pixel, grayscaleImage->format, &r, &g, &b);
+
+            if (r == 125) {
+                Uint8 val = 0;
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        Uint32 neighborPixel = ((Uint32*)grayscaleImage->pixels)[(y + i) * width + (x + j)];
+                        Uint8 nr, ng, nb;
+                        SDL_GetRGB(neighborPixel, grayscaleImage->format, &nr, &ng, &nb);
+                        if (nr == 255) {
+                            val = 255;
+                            break;
+                        }
+                    }
+                    if (val == 255) break;
+                }
+
+                Uint32 newPixel = SDL_MapRGB(grayscaleImage->format, val, val, val);
+                ((Uint32*)grayscaleImage->pixels)[y * width + x] = newPixel;
+            }
+        }
+    }
+}
+
+// Canny Edge Detection
+void canny(SDL_Surface* grayscaleImage)
+{
+    int width = grayscaleImage->w;
+    int height = grayscaleImage->h;
+
+    // Initialize gradient and direction matrices
+    double** gradient = (double**)malloc(height * sizeof(double*));
+    double** direction = (double**)malloc(height * sizeof(double*));
+    for (int i = 0; i < height; i++) {
+        gradient[i] = (double*)malloc(width * sizeof(double));
+        direction[i] = (double*)malloc(width * sizeof(double));
+    }
+
+    calculateGradientAndDirection(grayscaleImage, gradient, direction);
+    nonMaximumSuppression(grayscaleImage, gradient, direction);
+    doubleThreshold(grayscaleImage, gradient);
+    edgeTracking(grayscaleImage);
+
+    // Free the gradient and direction matrices
+    for (int i = 0; i < height; i++) {
+        free(gradient[i]);
+        free(direction[i]);
+    }
+    free(gradient);
+    free(direction);
+}
+
+SDL_Surface* threshold(SDL_Surface *input, Uint8 threshold_value)
+{
+    if (input == NULL) {
+        printf("Invalid surface.\n");
+        return NULL;
+    }
+
+    SDL_Surface* output = SDL_ConvertSurfaceFormat(input, input->format->format, 0);
+    if (output == NULL) {
+        printf("Failed to create output surface: %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    SDL_LockSurface(output);
+    Uint32 *pixels = (Uint32 *)output->pixels;
+
+    int width = output->w;
+    int height = output->h;
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            Uint8 r, g, b;
+            Uint32 pixel = pixels[y * width + x];
+            SDL_GetRGB(pixel, output->format, &r, &g, &b);
+
+            // Convert to grayscale using the average of the three color channels
+            Uint8 grayscale = (r + g + b) / 3;
+            
+            // Thresholding
+            if (grayscale > threshold_value) {
+                pixels[y * width + x] = SDL_MapRGB(output->format, 255, 255, 255);
+            } else {
+                pixels[y * width + x] = SDL_MapRGB(output->format, 0, 0, 0);
+            }
+        }
+    }
+
+    SDL_UnlockSurface(output);
+    return output;
+}
