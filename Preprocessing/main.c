@@ -155,10 +155,10 @@ SDL_Surface* reduce_noise(SDL_Surface* surface, int size)
 int main_Preprocessing(int argc, char** argv)
 {
     if (argc > 3)
-    errx(EXIT_FAILURE, "Usage: image-file");
+        errx(EXIT_FAILURE, "Usage: image-file");
 
     // Initialise SDL2
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if(SDL_Init(SDL_INIT_VIDEO) < 0)
       { 
         printf("Error initializing SDL2: %s\n", SDL_GetError());
         return 1;

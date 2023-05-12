@@ -398,10 +398,10 @@ int main_solver9(int argc, char *argv[])
     // Saves the result in a new file.
     write_grid_in_file(grid, argv[1]);
 
-    if(HEXA)
+    /*if(HEXA)
         draw_hexadoku(grid, argv[1]);
     else
-        draw_sudoku(grid, argv[1]);
+        draw_sudoku(grid, argv[1]);*/
 
     // Exits program with success.
     return EXIT_SUCCESS;
