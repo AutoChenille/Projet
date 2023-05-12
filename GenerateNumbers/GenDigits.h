@@ -1,1 +1,0 @@
-void generate_images();
