@@ -17,7 +17,7 @@ void hough_transform(SDL_Surface* surf, struct list** list_theta, struct list** 
 
     // Initializes a new matrix of bits (0 or 1).
     // And gets array of 0 and 1 from a surface.
-    int pixel_array[width * height];
+    int *pixel_array = calloc(width * height, sizeof(int));
 
     // Gets the array of pixels from the surface.
     get_array_of_pixels(surf, pixel_array);
@@ -115,4 +115,5 @@ void hough_transform(SDL_Surface* surf, struct list** list_theta, struct list** 
 
     // Frees memory.
     free(accumulator);
+    free(pixel_array);
 }

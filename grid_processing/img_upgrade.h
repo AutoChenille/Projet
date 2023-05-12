@@ -23,7 +23,7 @@
 int fill_left(int width, int height, int* pixels);
 int fill_right(int width, int height, int* pixels);
 int fill_top(int width, int height, int* pixels);
-int fill_bottom(int width, int height, int* pixels);
+void fill_bottom(int width, int height, int* pixels);
 void upgrade_exploitation(SDL_Surface* surf, SDL_Surface** dest);
 
 #endif

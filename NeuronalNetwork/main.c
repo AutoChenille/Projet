@@ -1,13 +1,17 @@
+#include <SDL2/SDL_surface.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <err.h>
+#include <unistd.h>
+#include <time.h>
 #include "matrix.h"
 #include "neuronalNetwork.h"
 #include "saveParams.h"
 
-char training_src[] = "/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/";
-//char training_src[] = "./dataset/TEST/";
+size_t layerSize = 800;
+size_t nb_iter = 200000;
 
 double string_to_double(char *string)
 {
@@ -22,49 +26,142 @@ double string_to_double(char *string)
     return result;
 }
 
+char *sizeTToPath(size_t num)
+{
+    //Convert a size_t num to char './num/
+    char *result = malloc(sizeof(char) * 20); // Assumes a maximum size_t of 20 digits
+    sprintf(result, "./%zu/", num);
+    return result;
+}
+
+int* PredictSurface(SDL_Surface **surface, size_t nbData, char *params)
+{
+    parameters *p = LoadParameters(params);
+
+    matrix* loaded = LoadFromSurface(surface, nbData);
+
+    matrix *v = predictionVector(loaded, p);
+
+    int* result = malloc(sizeof(int) * nbData);
+    for(size_t j = 0; j < v->col; j++)
+    {
+        result[j] = 0;
+        for(size_t i = 1; i < v->row; i++)
+        {
+            if(v->data[i*v->col+j] > v->data[result[j]*v->col+j])
+                result[j] = i;
+        }
+    }
+
+    return result;
+}
+
+int Predict(char *img, char *params)
+{
+    parameters *p = LoadParameters(params);
+    /*matrix *m = imageToMatrix(img);
+    int i = predict(m, p);
+    matrix *v = predictionVector(m, p);
+    m_print(v);
+    return i;*/
+    datas *topredict = get_imgList(img);
+
+    matrix *v = predictionVector(topredict->input, p);
+
+    float *result = calloc(sizeof(int), 10);
+    float *attended = calloc(sizeof(int), 10);
+    for(size_t j = 0; j < v->col; j++)
+    {
+        size_t i = 0;
+        while(topredict->output->data[i*topredict->output->col+j] != 1)
+            i++;
+        result[i] += v->data[i*v->col+j] >= 0.5;
+        attended[i] += 1;
+    }
+    printf("##### ACCURACY #####\n");
+    for(size_t i = 0; i < 10; i++)
+    {
+        printf("-> %li : %f%%\n", i, maxf(result[i]/attended[i]*100, 0));
+    }
+
+    return 0;
+}
+
+void TrainNetwork(char *data, char *savepath)
+{
+    //Data must contain 10 repo : one for each to treat
+
+    //Get current directory
+    char current_dir[1024];
+    if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
+        perror("getcwd() error");
+    }
+
+    //Go to data dir
+    datas *inputs = get_imgList(data);
+
+    //Come back to normal repo
+    chdir(current_dir);
+
+    //Train network
+    parameters *p = neuronal_network(inputs, layerSize, layerSize, layerSize, 0.1, nb_iter, 1, NULL);
+    //Save parameters to savepath
+    SaveParameters(p, savepath);
+
+    Predict("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/", savepath);
+   
+}
+
+void TrainAgain(char *data, char *loadpath, char *savepath)
+{
+    //Data must contain 10 repo : one for each to treat
+
+    //Get current directory
+    char current_dir[1024];
+    if (getcwd(current_dir, sizeof(current_dir)) == NULL)
+        perror("getcwd() error");
+
+    //Go to data dir
+    datas *inputs = get_imgList(data);
+
+    //Come back to normal repo
+    chdir(current_dir);
+
+    //Train network
+    parameters *p = LoadParameters(loadpath);
+    p = neuronal_network(inputs, layerSize, layerSize, layerSize, 0.1, nb_iter, 1, p);
+    //Save parameters to savepath
+    SaveParameters(p, savepath);
+
+    Predict("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/mnist_images/test", savepath);
+   
+}
+
+
 int main(int argc, char** argv)
 {
+    clock_t start = clock();
     // Checks the number of arguments.
-    if (argc != 2)
-        errx(EXIT_FAILURE, "Usage: image-file");
+    if (argc < 4)
+        errx(EXIT_FAILURE, "Usage: -train or -predict");
 
-    /*datas **inputs = malloc(sizeof(datas) * 10);
-    for(char n = 0; n < 10; n++)
+    if(!strcmp(argv[1], "-train"))
     {
-        char *src = training_src;
-        strcat(src, &n);
-        inputs[n] = get_imgList(src);
-    }*/
+        TrainNetwork(argv[2], argv[3]);
+    }
 
-    datas **inputs = malloc(sizeof(datas) * 10);
-    inputs[0] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/0/");
-    inputs[1] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/1/");
-    inputs[2] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/2/");
-    inputs[3] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/3/");
-    inputs[4] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/4/");
-    inputs[5] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/5/");
-    inputs[6] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/6/");
-    inputs[7] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/7/");
-    inputs[8] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/8/");
-    inputs[9] = get_imgList("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/9/");
+    else if(!strcmp(argv[1], "-tA"))
+    {
+        TrainAgain(argv[2], argv[3], argv[4]);
+    }
 
+    else if(!strcmp(argv[1], "-predict"))
+    {
+        Predict(argv[2], argv[3]);
+    }
 
-    //parameters *p = neuronal_network(inputs, 350, 350, 0.1, 1200, 0);
-    parameters *p = neuronal_network(inputs, 150, 150, 0.1, 0, 1);
-
-    matrix *img = imageToMatrix("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/1/1_310.png");
-
-    printf("\n\n");
-    matrix *result = predict(img, p);
-    m_print(result);
-    
-    SaveParameters(p, "./SAVED_PARAM/");
-    p = LoadParameters("./SAVED_PARAM/");
-    SaveParameters(p, "./SAVED_PARAM2/");
-
-    printf("\n\n");
-    result = predict(img, p);
-    m_print(result);
-
+    clock_t end = clock();
+    double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("execution time : %fs\n", cpu_time_used);
     return 0;
 }

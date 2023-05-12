@@ -13,7 +13,7 @@ size_t size = 24;
 //
 // path: Path of the image.
 
-SDL_Surface* load_image(const char* path)
+SDL_Surface* load_image(char* path)
 {
     SDL_Surface *tmp = IMG_Load(path);
     SDL_Surface *img = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_RGB888, 0);
@@ -46,7 +46,7 @@ void surface_to_grayscale(SDL_Surface* surface)
     SDL_UnlockSurface(surface);
 }
 
-matrix *imageToMatrix(const char* path)
+matrix *imageToMatrix(char* path)
 {
     // - Create a surface from the colored image.
     SDL_Surface *surface = load_image(path);
@@ -61,8 +61,9 @@ matrix *imageToMatrix(const char* path)
     
     for(int i = 0; i < len; i++)
     {
-        dataImage->data[i] = pixel_to_grayscale(pixels[i], format)/255;
-        //dataImage->data[i] = pixels[i];
+        dataImage->data[i] = pixel_to_grayscale(pixels[i], format)/255.;
+        dataImage->data[i] = dataImage->data[i] >= 0.3 ? 1 : 0;
+        //dataImage->data[i] = pixels[i]/255.;
     }
 
     SDL_UnlockSurface(surface);
@@ -72,7 +73,36 @@ matrix *imageToMatrix(const char* path)
     return dataImage;
 }
 
-size_t count_png_files(const char *path) {
+matrix *surfaceToMatrix(SDL_Surface *surface)
+{
+    Uint32* pixels = surface->pixels;
+    int len = surface->w * surface->h;
+    SDL_PixelFormat* format = surface->format;
+
+    matrix *dataImage = Matrix(len, 1);
+    
+    for(int i = 0; i < len; i++)
+        dataImage->data[i] = pixels[i]/255.;
+
+    return dataImage;
+}
+
+matrix *LoadFromSurface(SDL_Surface** surface, size_t n)
+{
+    size_t nbData = n*n;
+    size_t h = size, w = size;
+    matrix* loaded = Matrix(h*w, nbData);
+    for(size_t j = 0; j < nbData; j++)
+    {
+        matrix* l_surface = surfaceToMatrix(surface[j]);
+        for(size_t i = 0; i < h*w; i++)
+            loaded->data[i*nbData+j] = l_surface->data[i];
+    }
+    return loaded;
+}
+
+size_t count_png_files(char *path)
+{
     size_t count = 0;
     struct dirent *entry;
     DIR *dir = opendir(path);
@@ -97,14 +127,14 @@ size_t count_png_files(const char *path) {
     return count;
 }
 
-datas *get_imgList(const char *path)
+datas *get_imgList(char *path)
 {
     //Get current repo
     char current_repo[1024];
     getcwd(current_repo, sizeof(current_repo));
 
     //total number of png to compute
-    size_t nb = count_png_files(path);
+    size_t nbData = count_png_files(path);
 
     // directory stream variable for accessing the directory
     DIR *directory;
@@ -121,8 +151,8 @@ datas *get_imgList(const char *path)
 
     size_t h = size, w = size;
     datas *loaded = malloc(sizeof(datas));
-    loaded->input = Matrix(h*w, nb);
-    loaded->output = MatrixOf(10, nb, 0);
+    loaded->input = Matrix(h*w, nbData);
+    loaded->output = MatrixOf(10, nbData, 0);
 
     // Loop through each entry in the directory
     size_t i = 0;
@@ -154,7 +184,3 @@ datas *get_imgList(const char *path)
 
     return loaded;
 }
-
-
-
-

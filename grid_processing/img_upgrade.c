@@ -154,7 +154,7 @@ int fill_top(int width, int height, int* pixels)
 //
 //
 //
-int fill_bottom(int width, int height, int* pixels)
+void fill_bottom(int width, int height, int* pixels)
 {
     // Inits constants.
     int min_zone = width / 3;
@@ -163,8 +163,6 @@ int fill_bottom(int width, int height, int* pixels)
 
     // Saves the last line that has been detected.
     int last_line = height - 1;
-
-    int cpt = 0;
 
     // For only the third part.
     for (int i = height - 1; i > 2 * height / 3; i--)
@@ -187,8 +185,8 @@ int fill_bottom(int width, int height, int* pixels)
             {
                 for (int j_tmp = 0; j_tmp < width; j_tmp++)
                 {
+                    // printf("%i, %i, %i\n", j_tmp + width * i_tmp, width, height * width);
                     pixels[j_tmp + width * i_tmp] = 0;
-                    cpt++;
                 }
             }
 
@@ -196,10 +194,7 @@ int fill_bottom(int width, int height, int* pixels)
             last_line = i;
         }
     }
-
-    return cpt;
 }
-
 
 // Main function to upgrade image.
 //
@@ -211,7 +206,9 @@ void upgrade_exploitation(SDL_Surface* surf, SDL_Surface** dest)
     // Init.
     int width = surf->w;
     int height = surf->h;
-    int pixels[width * height];
+    int* pixels = malloc(width * height * sizeof(int));
+    if (pixels == NULL)
+        return;
 
     // Converts surface into array.
     get_array_of_pixels(surf, pixels);
@@ -233,4 +230,6 @@ void upgrade_exploitation(SDL_Surface* surf, SDL_Surface** dest)
 
     // Saves surface.
     *dest = array_to_surface(width, height, pixels);
+
+    free(pixels);
 }
