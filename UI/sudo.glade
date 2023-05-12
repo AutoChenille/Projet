@@ -13,6 +13,15 @@
     <property name="icon-name">media-floppy</property>
     <property name="icon_size">6</property>
   </object>
+  <object class="GtkImage" id="image2">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="receives-default">True</property>
+    <property name="halign">center</property>
+    <property name="valign">center</property>
+    <property name="margin-end">6</property>
+    <property name="pixbuf">../solve(2).png</property>
+  </object>
   <object class="GtkAdjustment" id="manual_rotation_adjustment">
     <property name="lower">1</property>
     <property name="upper">11</property>
@@ -163,7 +172,7 @@ Image</property>
                 </child>
                 <child>
                   <object class="GtkButton" id="solve_button">
-                    <property name="label">gtk-apply</property>
+                    <property name="label" translatable="yes">Solve</property>
                     <property name="width-request">126</property>
                     <property name="height-request">29</property>
                     <property name="visible">True</property>
@@ -173,7 +182,7 @@ Image</property>
                     <property name="margin-right">40</property>
                     <property name="margin-top">15</property>
                     <property name="margin-bottom">15</property>
-                    <property name="use-stock">True</property>
+                    <property name="image">image2</property>
                     <property name="always-show-image">True</property>
                   </object>
                   <packing>
