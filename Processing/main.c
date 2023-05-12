@@ -100,7 +100,7 @@ void adaptive_threshold_with_noise(SDL_Surface* surface, const double t)
 }
 
 /// @brief Main function to test the detection of sudoku.
-SDL_Surface** ProcessImage(char path[], int NB_CELLS)
+SDL_Surface** ProcessImage(char *path, int NB_CELLS)
 {
     // INIT - GET IMAGE
     // ====================================================
