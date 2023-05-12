@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 
+
 #define SwitchOn 1
 #define SwitchOff 0
 
@@ -71,6 +72,7 @@ int get_switch_state(GtkSwitch *sw, gpointer user_data)
 }
 
 
+
 void on_save(GtkButton *button, gpointer user_data)
 {
     // Get the output image widget
@@ -137,6 +139,26 @@ void on_choose_button_clicked(GtkButton *button, gpointer user_data)
 }
 
 
+// Function to be called when the "solve_button" is clicked
+void on_apply(GtkButton *button, gpointer user_data)
+{
+    GtkSwitch *switch_btn = GTK_SWITCH(user_data);
+    if (is_activated == SwitchOn)
+    {
+        g_print("HEX");
+        // Call a function from "all.c" file if switch is activated
+        // my_function();
+    }
+    else
+    {
+        g_print("INT");
+    }
+}
+
+
+
+
+
 int main(int argc, char *argv[])
 {
     GtkBuilder *builder;
@@ -165,8 +187,24 @@ int main(int argc, char *argv[])
     GtkWidget *output_image = GTK_WIDGET(gtk_builder_get_object(builder, "output_image"));
     g_signal_connect(G_OBJECT(save_button), "clicked", G_CALLBACK(on_save), output_image);
 
+
+    GtkWidget *solve_button = GTK_WIDGET(gtk_builder_get_object(builder, "solve_button"));
+    g_signal_connect(solve_button, "clicked", G_CALLBACK(on_apply), builder);
+
+
+      
     // Get the main window widget
     window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
+
+    // Create a new GdkRGBA color object and set its values to red
+    GdkRGBA color;
+    gdk_rgba_parse(&color, "white");
+
+    // Set the background color of the GtkBox
+    gtk_widget_override_background_color(window, GTK_STATE_FLAG_NORMAL, &color);
+
+
+
 
     // Show the main window
     gtk_widget_show_all(window);
@@ -178,4 +216,5 @@ int main(int argc, char *argv[])
     g_object_unref(builder);
 
     return 0;
+    
 }

@@ -57,6 +57,4 @@ dkms.conf
 *.png
 *.jpeg
 
-#Archives
 *.gz
-*.zip
