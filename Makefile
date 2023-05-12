@@ -1,8 +1,8 @@
 CC = gcc
 CPPFLAGS = -MMD
-CFLAGS = -Wall -Wextra -O3 `pkg-config --cflags sdl2 SDL2_image gtk+-3.0` -lm
+CFLAGS = -Wall -Wextra -O3 `pkg-config --cflags sdl2 SDL2_image gtk+-3.0`
 LDFLAGS =
-LDLIBS = `pkg-config --libs sdl2 SDL2_image` -lm
+LDLIBS = `pkg-config --libs sdl2 SDL2_image gtk+-3.0` -lm
 
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 OBJ = ${SRC:.c=.o}
