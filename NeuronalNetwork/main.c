@@ -1,3 +1,4 @@
+#include <SDL2/SDL_surface.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,28 @@ char *sizeTToPath(size_t num)
     //Convert a size_t num to char './num/
     char *result = malloc(sizeof(char) * 20); // Assumes a maximum size_t of 20 digits
     sprintf(result, "./%zu/", num);
+    return result;
+}
+
+int* PredictSurface(SDL_Surface **surface, size_t nbData, char *params)
+{
+    parameters *p = LoadParameters(params);
+
+    matrix* loaded = LoadFromSurface(surface, nbData);
+
+    matrix *v = predictionVector(loaded, p);
+
+    int* result = malloc(sizeof(int) * nbData);
+    for(size_t j = 0; j < v->col; j++)
+    {
+        result[j] = 0;
+        for(size_t i = 1; i < v->row; i++)
+        {
+            if(v->data[i*v->col+j] > v->data[result[j]*v->col+j])
+                result[j] = i;
+        }
+    }
+
     return result;
 }
 

@@ -73,7 +73,36 @@ matrix *imageToMatrix(char* path)
     return dataImage;
 }
 
-size_t count_png_files(char *path) {
+matrix *surfaceToMatrix(SDL_Surface *surface)
+{
+    Uint32* pixels = surface->pixels;
+    int len = surface->w * surface->h;
+    SDL_PixelFormat* format = surface->format;
+
+    matrix *dataImage = Matrix(len, 1);
+    
+    for(int i = 0; i < len; i++)
+        dataImage->data[i] = pixels[i]/255.;
+
+    return dataImage;
+}
+
+matrix *LoadFromSurface(SDL_Surface** surface, size_t n)
+{
+    size_t nbData = n*n;
+    size_t h = size, w = size;
+    matrix* loaded = Matrix(h*w, nbData);
+    for(size_t j = 0; j < nbData; j++)
+    {
+        matrix* l_surface = surfaceToMatrix(surface[j]);
+        for(size_t i = 0; i < h*w; i++)
+            loaded->data[i*nbData+j] = l_surface->data[i];
+    }
+    return loaded;
+}
+
+size_t count_png_files(char *path)
+{
     size_t count = 0;
     struct dirent *entry;
     DIR *dir = opendir(path);
@@ -155,7 +184,3 @@ datas *get_imgList(char *path)
 
     return loaded;
 }
-
-
-
-
