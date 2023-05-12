@@ -328,6 +328,10 @@ void draw_sudoku(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
     // Iterate through the grid and draw the digits
     for (int row = 0; row < 9; row++) {
         for (int col = 0; col < 9; col++) {
+            
+            if(grid[row][col] == '.')
+                continue;
+                
             // Calculate the position of the cell in the image
             int x = col * digit_surfaces[0]->w;
             int y = row * digit_surfaces[0]->h;
@@ -393,7 +397,9 @@ void draw_hexadoku(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
 
             // Get the digit to draw
             int digit;
-            if(grid[row][col] <= '9')
+            if(grid[row][col] == '.')
+                continue;
+            else if(grid[row][col] <= '9')
                 digit = grid[row][col] - '0';
             else if(grid[row][col] == 'A')
                 digit = 10;
@@ -447,14 +453,14 @@ int main(int argc, char *argv[])
 
     // Get the grid from file in one array.
     get_grid_from_file(argv[1], grid);
-    immediat_solutions(grid, possibilities);
+    //immediat_solutions(grid, possibilities);
 
     // Solves sudoku by checking if the original grid is not valid.
-    if (!solve(grid, possibilities, 0))
-        errx(EXIT_FAILURE, "File found, but grid not valid.");
+    //if (!solve(grid, possibilities, 0))
+    //    errx(EXIT_FAILURE, "File found, but grid not valid.");
 
     // Saves the result in a new file.
-    write_grid_in_file(grid, argv[1]);
+    //write_grid_in_file(grid, argv[1]);
 
     if(HEXA)
         draw_hexadoku(grid, argv[1]);
