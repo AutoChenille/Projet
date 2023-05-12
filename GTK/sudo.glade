@@ -36,7 +36,6 @@
     <property name="window-position">center</property>
     <property name="default-width">1024</property>
     <property name="default-height">576</property>
-    <property name="type-hint">desktop</property>
     <property name="gravity">center</property>
     <child>
       <object class="GtkBox" id="main_box">
@@ -128,6 +127,29 @@
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
+                  <object class="GtkButton" id="save_button">
+                    <property name="label" translatable="yes"> Save
+Image</property>
+                    <property name="width-request">126</property>
+                    <property name="height-request">29</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="margin-top">15</property>
+                    <property name="margin-bottom">15</property>
+                    <property name="image">image1</property>
+                    <property name="always-show-image">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="pack-type">end</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkImage" id="Logo_autochenille">
                     <property name="width-request">100</property>
                     <property name="height-request">100</property>
@@ -138,7 +160,29 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="solve_button">
+                    <property name="label">gtk-apply</property>
+                    <property name="width-request">126</property>
+                    <property name="height-request">29</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="margin-left">40</property>
+                    <property name="margin-right">40</property>
+                    <property name="margin-top">15</property>
+                    <property name="margin-bottom">15</property>
+                    <property name="use-stock">True</property>
+                    <property name="always-show-image">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="pack-type">end</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
                 <child>
@@ -153,41 +197,17 @@
                     <property name="receives-default">True</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
-                    <property name="margin-top">20</property>
-                    <property name="margin-bottom">20</property>
+                    <property name="margin-top">15</property>
+                    <property name="margin-bottom">15</property>
                     <property name="image">save_icon1</property>
                     <property name="always-show-image">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="position">1</property>
+                    <property name="pack-type">end</property>
+                    <property name="position">4</property>
                   </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="save_button">
-                    <property name="label" translatable="yes"> Save
-Image</property>
-                    <property name="width-request">126</property>
-                    <property name="height-request">29</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="margin-top">20</property>
-                    <property name="margin-bottom">20</property>
-                    <property name="image">image1</property>
-                    <property name="always-show-image">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
                 </child>
                 <child>
                   <object class="GtkBox" id="inner_content_box">
@@ -198,6 +218,9 @@ Image</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">INT</property>
+                        <attributes>
+                          <attribute name="foreground" value="#24241f1f3131"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -225,6 +248,9 @@ Image</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">HEX</property>
+                        <attributes>
+                          <attribute name="foreground" value="#24241f1f3131"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -236,27 +262,7 @@ Image</property>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">4</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="solve_button">
-                    <property name="label">gtk-apply</property>
-                    <property name="width-request">126</property>
-                    <property name="height-request">29</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="margin-left">40</property>
-                    <property name="margin-right">40</property>
-                    <property name="margin-top">20</property>
-                    <property name="margin-bottom">20</property>
-                    <property name="use-stock">True</property>
-                    <property name="always-show-image">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
+                    <property name="pack-type">end</property>
                     <property name="position">5</property>
                   </packing>
                 </child>
