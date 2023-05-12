@@ -374,7 +374,7 @@ SDL_Surface *convert_surface(SDL_Surface* surf, int dst_width, int dst_height)
 /// @param list_y List of y coordinates (81 y coordinates).
 /// @param surf Initial surface.
 /// @return nothing.
-void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf, int NB_CELLS)
+void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf, int NB_CELLS, SDL_Surface** ocr_eleven)
 {
     double width = surf->w / NB_CELLS;
     double height = surf->h / NB_CELLS;
@@ -400,11 +400,13 @@ void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf
             SDL_Surface* resized_square = convert_surface(square, 24, 24);
             // ===========================================
 
-            char filepath[100];
-            snprintf(filepath, sizeof(filepath), "img/%i_%i.png", (NB_CELLS - 1) - y, (NB_CELLS - 1) - x);
-            IMG_SavePNG(resized_square, filepath);
+            // char filepath[100];
+            // snprintf(filepath, sizeof(filepath), "img/%i_%i.png", (NB_CELLS - 1) - y, (NB_CELLS - 1) - x);
+            // IMG_SavePNG(resized_square, filepath);
 
-            SDL_FreeSurface(square);
+            ocr_eleven[NB_CELLS * ((NB_CELLS - 1) - y) + ((NB_CELLS - 1) - x)] = resized_square;
+
+            // SDL_FreeSurface(square);
             SDL_FreeSurface(resized_square);
         }
     }
@@ -416,7 +418,7 @@ void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf
 /// @param list_theta Initial list of thetas.
 /// @param surf_sudoku Surface from the image
 /// @return nothing.
-void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface* surf_sudoku, int NB_CELLS)
+void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface* surf_sudoku, int NB_CELLS, SDL_Surface** ocr_eleven)
 {
     // Parameters.
     double width = surf_sudoku->w;
@@ -449,9 +451,8 @@ void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface*
 
     // EXTRACTS CELLS - THE END
     // ==========================================
-    cell_extraction(final_grid_x, final_grid_y, surf_sudoku, NB_CELLS);
+    cell_extraction(final_grid_x, final_grid_y, surf_sudoku, NB_CELLS, ocr_eleven);
     // ==========================================
-
 
     // Frees memory.
     list_destroy(list_rho_av);

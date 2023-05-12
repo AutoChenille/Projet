@@ -16,14 +16,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bb027cc1-cb15-445c-a2ec-7f4a73d2f072" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/contour_manager.c" beforeDir="false" afterPath="$PROJECT_DIR$/contour_manager.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contour_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/contour_manager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/grid_detection.c" beforeDir="false" afterPath="$PROJECT_DIR$/grid_detection.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/grid_detection.h" beforeDir="false" afterPath="$PROJECT_DIR$/grid_detection.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hough_transform.c" beforeDir="false" afterPath="$PROJECT_DIR$/hough_transform.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/grid_test1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img_upgrade.c" beforeDir="false" afterPath="$PROJECT_DIR$/img_upgrade.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/img_upgrade.h" beforeDir="false" afterPath="$PROJECT_DIR$/img_upgrade.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -84,6 +79,7 @@
       <workItem from="1683815887868" duration="1458000" />
       <workItem from="1683818406374" duration="1719000" />
       <workItem from="1683869444979" duration="9000" />
+      <workItem from="1683871381953" duration="1237000" />
     </task>
     <servers />
   </component>

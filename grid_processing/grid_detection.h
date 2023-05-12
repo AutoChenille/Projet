@@ -23,7 +23,7 @@ void get_intersections(double w, double h, double diag, struct list* list_rho,
         struct list* list_theta, struct list** list_point_x, struct list** list_point_y);
 void get_good_points(struct list* point_x, struct list* point_y, struct list** dest_x, struct list** dest_y, double width, double height, int NB_CELLS);
 SDL_Surface *convert_surface(SDL_Surface* surf, int dst_width, int dst_height);
-void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf, int NB_CELLS);
-void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface* surf_sudoku, int NB_CELLS);
+void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf, int NB_CELLS, SDL_Surface** ocr_eleven);
+void grid_detection(struct list* list_rho, struct list* list_theta, SDL_Surface* surf_sudoku, int NB_CELLS, SDL_Surface** ocr_eleven);
 
 #endif

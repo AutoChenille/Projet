@@ -67,14 +67,23 @@ int main(int argc, char** argv)
 
     // MAXIMUM DETECTION - MATRIX PERSPECTIVE TRANSFORM - CELLS EXTRACTION
     // ====================================================
-    grid_detection(list_rho, list_theta, surf, 16);
+    int NB_CELLS = 9;
+    SDL_Surface** ocr_eleven = calloc(NB_CELLS * NB_CELLS, sizeof(SDL_Surface*));
+    grid_detection(list_rho, list_theta, surf, NB_CELLS, ocr_eleven);
     // ====================================================
-
 
     // Frees memory.
     SDL_FreeSurface(surf);
     list_destroy(list_rho);
     list_destroy(list_theta);
+
+    for (int i = 0; i < NB_CELLS * NB_CELLS; i++)
+    {
+        // printf("%p\n", ocr_eleven[i]);
+        SDL_FreeSurface(ocr_eleven[i]);
+    }
+
+    free(ocr_eleven);
 
     // End.
     return EXIT_SUCCESS;
