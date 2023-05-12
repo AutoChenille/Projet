@@ -17,14 +17,14 @@ TARGET := main
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-        $(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+		$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
-        @mkdir -p $(@D)
-        $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+		@mkdir -p $(@D)
+		$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
-        rm -rf $(BUILDDIR) $(TARGET)
+		rm -rf $(BUILDDIR) $(TARGET)
 
 -include $(DEPENDENCIES)
 
