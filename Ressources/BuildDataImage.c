@@ -88,9 +88,15 @@ matrix *surfaceToMatrix(SDL_Surface *surface)
     return dataImage;
 }
 
-matrix *LoadFromSurface(SDL_Surface** surface, size_t n)
+matrix *LoadFromSurface(SDL_Surface** surface, size_t nbData)
 {
-    size_t nbData = n*n;
+    for(size_t i = 0; i < nbData*nbData; i ++)
+    {
+        char filepath[100];
+        snprintf(filepath, sizeof(filepath), "img2/%li.png",i);
+        IMG_SavePNG(surface[i], filepath);
+    }
+    nbData *= nbData;
     size_t h = size, w = size;
     matrix* loaded = Matrix(h*w, nbData);
     for(size_t j = 0; j < nbData; j++)

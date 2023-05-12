@@ -10,6 +10,8 @@
 #include "../Ressources/neuronalNetwork.h"
 #include "../Ressources/saveParams.h"
 
+#include <gtk/gtk.h>
+
 size_t layerSize = 800;
 size_t nb_iter = 200000;
 
@@ -36,20 +38,37 @@ char *sizeTToPath(size_t num)
 
 char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
 {
+    g_print("je suis ici \n");
     parameters *p = LoadParameters(params);
+    if(p == NULL)
+        g_print("Error loading params\n");
 
     matrix* loaded = LoadFromSurface(surface, nbData);
 
     matrix *v = predictionVector(loaded, p);
+    for(size_t j = 0; j < v->col; j++)
+    {
+        for(size_t i = 1; i < v->row; i++)
+        {
+            g_print("%f ", v->data[i*v->col+j]);
+        }
+        g_print("\n");
+    }
 
-    int* result = malloc(sizeof(int) * nbData);
+    g_print("\n");
+
+    int* result = malloc(sizeof(int) * nbData * nbData);
     for(size_t j = 0; j < v->col; j++)
     {
         result[j] = 0;
         for(size_t i = 1; i < v->row; i++)
         {
+            g_print("%f %f \n", v->data[i*v->col+j], v->data[result[j]*v->col+j]);
             if(v->data[i*v->col+j] > v->data[result[j]*v->col+j])
+            {
                 result[j] = i;
+                g_print("%f\n", v->data[i*v->col+j]);
+            }
         }
     }
 
@@ -65,7 +84,10 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
                 cresult[i][j] = result[i*nbData+j] + '0';
             else
                 cresult[i][j] = result[i*nbData+j] + 'A' - 10;
+
+            g_print("%c ", cresult[i][j]);
         }
+        g_print("\n");
     }
 
     return cresult;

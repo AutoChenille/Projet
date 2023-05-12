@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <stddef.h>
 
 //Preprocessing
 #include "Preprocessing/pretreatment.h"
@@ -133,12 +134,33 @@ char* on_choose_image(GtkButton *button, gpointer user_data)
     char *filename = NULL;
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     if (res == GTK_RESPONSE_ACCEPT) {
-        GtkImage *image_widget = GTK_IMAGE(image);
-
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         filename = g_strdup(gtk_file_chooser_get_filename(chooser));
 
-        gtk_image_set_from_file(image_widget, filename);
+        // Load the image using GdkPixbuf
+        GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+
+        // Check if the image size is already 300x300 or less
+        int width = gdk_pixbuf_get_width(pixbuf);
+        int height = gdk_pixbuf_get_height(pixbuf);
+        if (width > 400 || height > 400) {
+            // Resize the image to fit into a 300x300 square
+            int new_width, new_height;
+            if (width > height) {
+                new_width = 400;
+                new_height = height * 400 / width;
+            } else {
+                new_width = width * 400 / height;
+                new_height = 400;
+            }
+            GdkPixbuf *new_pixbuf = gdk_pixbuf_scale_simple(pixbuf, new_width, new_height, GDK_INTERP_BILINEAR);
+            g_object_unref(pixbuf);
+            pixbuf = new_pixbuf;
+        }
+
+        // Set the image in the GtkImage widget
+        gtk_image_set_from_pixbuf(GTK_IMAGE(image), pixbuf);
+        g_object_unref(pixbuf);
     }
 
     gtk_widget_destroy(dialog);
@@ -154,16 +176,31 @@ void open_image(GtkButton *button, gpointer user_data)
     int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
     
 
+    g_print("ok\n");
     SDL_Surface **loaded = ProcessImage(paf, NB_CELLS);
+    g_print("ok\n");
     if(is_activated == SwitchOn)
-        tosolve = PredictSurface_16x16(loaded, NB_CELLS*NB_CELLS ,"./NeuronalNetwork/800x3_with_blank_handwrite");
-    else
-        tosolve = PredictSurface_9x9(loaded, NB_CELLS*NB_CELLS ,"./NeuronalNetwork/800x3_with_blank_handwrite");
-
-    if(is_activated == SwitchOn)
+    {
+        tosolve = PredictSurface_16x16(loaded, NB_CELLS ,"./NeuronalNetwork_Hexa/800x3_with_blank_handwrite");
         draw_hexadoku(tosolve, "./unsolved.png");
+    }
     else
+    {
+        tosolve = PredictSurface_9x9(loaded, NB_CELLS,"./NeuronalNetwork/800x3_with_blank_handwrite");
+        for(size_t i = 0; i < NB_CELLS; i++)
+        {
+            for(size_t j = 0; j < NB_CELLS; j++)
+            {
+                g_print("%c ", tosolve[i][j]);
+            }
+            g_print("\n");
+        }
+        if(tosolve == NULL)
+            g_print("Error while loading grid");
+        g_print("unsolved 9x9\n");
         draw_sudoku(tosolve, "./unsolved.png");
+        g_print("unsolved 9x9 done\n");
+    }
 
     //free loaded surfaces
     SDL_FreeSurface(*loaded);
@@ -238,7 +275,7 @@ int main(int argc, char *argv[])
     g_signal_connect(gtk_builder_get_object(builder, "open"), "activate", G_CALLBACK(on_open_activate), NULL);
     g_signal_connect(gtk_builder_get_object(builder, "close"), "select", G_CALLBACK(on_quit_activate), NULL);
     g_signal_connect(gtk_builder_get_object(builder, "about"), "activate", G_CALLBACK(on_about_activate), NULL);
-    g_signal_connect(GTK_BUTTON(gtk_builder_get_object(builder, "choose_button")), "clicked", G_CALLBACK(on_choose_image), builder);
+    g_signal_connect(GTK_BUTTON(gtk_builder_get_object(builder, "choose_button")), "clicked", G_CALLBACK(open_image), builder);
     g_signal_connect(gtk_builder_get_object(builder, "switch_int_hex"), "state-changed", G_CALLBACK(get_switch_state), NULL);
 
     // Connect the save button to the on_save function
