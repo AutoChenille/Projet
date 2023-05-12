@@ -55,8 +55,8 @@ matrix *model(const matrix *X, const matrix *W, double b)
     //printf("model -> apply sigm\n");
     matrix *Z = m_apply(sigmoid, XWpB);
 
-    m_free(XW);
-    m_free(XWpB);
+    freeMatrix(XW);
+    freeMatrix(XWpB);
 
     return Z;
 }
@@ -85,13 +85,13 @@ double log_loss(const matrix *A, const matrix *y)
 
     double loss = (double) 1/y->row * m_sum(L);
     
-    m_free(oneLessA);
-    m_free(logOneA);
-    m_free(logA);
-    m_free(oneLessY);
-    m_free(rightTerm);
-    m_free(leftTerm);
-    m_free(L);
+    freeMatrix(oneLessA);
+    freeMatrix(logOneA);
+    freeMatrix(logA);
+    freeMatrix(oneLessY);
+    freeMatrix(rightTerm);
+    freeMatrix(leftTerm);
+    freeMatrix(L);
 
     //double loss = m_sum(m_apply(square, m_sub(A, y)));
 
@@ -115,9 +115,9 @@ perceptron_param *gradients(const matrix *A, const matrix *X, const matrix *Y)
     dp->W = dw;
     dp->b = db;
 
-    m_free(AsubY);
-    m_free(X_t);
-    m_free(X_tAsubY);
+    freeMatrix(AsubY);
+    freeMatrix(X_t);
+    freeMatrix(X_tAsubY);
 
     return dp;
 }
@@ -131,7 +131,7 @@ void update_param(perceptron_param *p, const perceptron_param *dp, double learni
     p->W = m_sub(p->W, learnW);
     p->b -= learning_rate * dp->b;
 
-    m_free(learnW);
+    freeMatrix(learnW);
 }
 
 double ceil_prob(double prob)
@@ -168,6 +168,6 @@ void neuron(matrix *X, matrix *Y, double learning_rate, int nbr_generation, perc
         if(i == 0 || i == nbr_generation-1)
             printf("loss : %f\n", log_loss(A, Y));
         free(dp);
-        m_free(A);
+        freeMatrix(A);
     }
 }
