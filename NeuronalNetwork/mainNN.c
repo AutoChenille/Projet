@@ -34,7 +34,7 @@ char *sizeTToPath(size_t num)
     return result;
 }
 
-int* PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
+char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
 {
     parameters *p = LoadParameters(params);
 
@@ -53,7 +53,22 @@ int* PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
         }
     }
 
-    return result;
+    char **cresult = malloc(sizeof(char*) * nbData);
+    for(size_t i = 0; i < nbData; i++)
+    {
+        cresult[i] = malloc(sizeof(char) * nbData);
+        for(size_t j = 0; j < nbData; j++)
+        {
+            if(result[i*nbData+j] == 0)
+                cresult[i][j] = '.';
+            else if(result[i*nbData+j] < 9)
+                cresult[i][j] = result[i*nbData+j] + '0';
+            else
+                cresult[i][j] = result[i*nbData+j] + 'A' - 10;
+        }
+    }
+
+    return cresult;
 }
 
 int Predict(char *img, char *params)
