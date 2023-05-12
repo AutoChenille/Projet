@@ -317,7 +317,7 @@ void draw_image(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
 }
 
 // Main function.
-int main(int argc, char *argv[])
+int main_solver(int argc, char *argv[])
 {
     // Exit if there is not only one parameter.
     if (argc != 3)

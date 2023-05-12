@@ -5,7 +5,7 @@
 
 
 /// @brief Main function to test the detection of sudoku.
-int main(int argc, char** argv)
+int main_grid_processing(int argc, char** argv)
 {
     // Checks the number of arguments.
     if (argc != 2)

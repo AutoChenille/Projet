@@ -138,7 +138,7 @@ void TrainAgain(char *data, char *loadpath, char *savepath)
 }
 
 
-int main(int argc, char** argv)
+int main_NeuronalNetwork_Hexa(int argc, char** argv)
 {
     clock_t start = clock();
     // Checks the number of arguments.

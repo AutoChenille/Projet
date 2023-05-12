@@ -20,7 +20,7 @@ double string_to_double(char *string)
     return result;
 }
 
-int main(int argc, char **argv)
+int main_XOR(int argc, char **argv)
 {
     if(argc != 3 && argc != 4)
         errx(1, "2 parameters requiered, %i given.\n", argc-1);

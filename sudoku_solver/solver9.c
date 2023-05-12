@@ -373,7 +373,7 @@ int SolveSudoku(char grid[16][16])
 
 
 // Main function.
-int main_last(int argc, char *argv[])
+int main_solver9(int argc, char *argv[])
 {
     // Exit if there is not only one parameter.
     if (argc != 3)

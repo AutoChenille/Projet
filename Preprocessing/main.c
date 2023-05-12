@@ -152,7 +152,7 @@ SDL_Surface* reduce_noise(SDL_Surface* surface, int size)
 }
 
 
-int main(int argc, char** argv)
+int main_Preprocessing(int argc, char** argv)
 {
     if (argc > 3)
     errx(EXIT_FAILURE, "Usage: image-file");
