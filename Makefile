@@ -1,6 +1,6 @@
 CC = gcc
 CPPFLAGS = -MMD
-CFLAGS = -Wall -Wextra -O3 `pkg-config --cflags sdl2 SDL2_image gtk+-3.0`
+CFLAGS = -Wall -Wextra -O3 `pkg-config --cflags sdl2 SDL2_image gtk+-3.0` -lm
 LDFLAGS =
 LDLIBS = `pkg-config --libs sdl2 SDL2_image` -lm
 
