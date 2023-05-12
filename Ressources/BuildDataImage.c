@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <err.h>
 #include <dirent.h>
+#include <stddef.h>
 #include <unistd.h> 
 
 //Images size
@@ -13,7 +14,7 @@ size_t size = 24;
 //
 // path: Path of the image.
 
-SDL_Surface* load_image(char* path)
+SDL_Surface* load_image2(char* path)
 {
     SDL_Surface *tmp = IMG_Load(path);
     SDL_Surface *img = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_RGB888, 0);
@@ -21,7 +22,7 @@ SDL_Surface* load_image(char* path)
     return img;
 }
 
-double pixel_to_grayscale(Uint32 pixel_color, SDL_PixelFormat* format)
+double pixel_to_grayscale2(Uint32 pixel_color, SDL_PixelFormat* format)
 {
     Uint8 r, g, b;
     SDL_GetRGB(pixel_color, format, &r, &g, &b);
@@ -40,7 +41,7 @@ void surface_to_grayscale(SDL_Surface* surface)
     
     for(int i = 0; i < len; i++)
     {
-        pixels[i] = pixel_to_grayscale(pixels[i], format);
+        pixels[i] = pixel_to_grayscale2(pixels[i], format);
     }
 
     SDL_UnlockSurface(surface);
@@ -49,7 +50,7 @@ void surface_to_grayscale(SDL_Surface* surface)
 matrix *imageToMatrix(char* path)
 {
     // - Create a surface from the colored image.
-    SDL_Surface *surface = load_image(path);
+    SDL_Surface *surface = load_image2(path);
 
     Uint32* pixels = surface->pixels;
     int len = surface->w * surface->h;
@@ -61,7 +62,7 @@ matrix *imageToMatrix(char* path)
     
     for(int i = 0; i < len; i++)
     {
-        dataImage->data[i] = pixel_to_grayscale(pixels[i], format)/255.;
+        dataImage->data[i] = pixel_to_grayscale2(pixels[i], format)/255.;
         dataImage->data[i] = dataImage->data[i] >= 0.3 ? 1 : 0;
         //dataImage->data[i] = pixels[i]/255.;
     }
@@ -126,7 +127,7 @@ size_t count_png_files(char *path) {
     return count;
 }
 
-datas *get_imgList(char *path)
+datas *get_imgList(char *path, size_t size)
 {
     //Get current repo
     char current_repo[1024];
@@ -151,7 +152,7 @@ datas *get_imgList(char *path)
     size_t h = size, w = size;
     datas *loaded = malloc(sizeof(datas));
     loaded->input = Matrix(h*w, nbData);
-    loaded->output = MatrixOf(16, nbData, 0);
+    loaded->output = MatrixOf(size, nbData, 0);
 
     // Loop through each entry in the directory
     size_t i = 0;
@@ -167,7 +168,10 @@ datas *get_imgList(char *path)
             {
                 loaded->input->data[j*loaded->input->col+i] = imgData->data[j];
             }
-            loaded->output->data[strtol(&entry->d_name[0], NULL, 16)*loaded->output->col+i] = 1;
+            if(size == 16)
+                loaded->output->data[strtol(&entry->d_name[0], NULL, 16)*loaded->output->col+i] = 1;
+            else
+                loaded->output->data[(entry->d_name[0] - (char)48)*loaded->output->col+i] = 1;
             freeMatrix(imgData);
 
             i++;
@@ -183,5 +187,3 @@ datas *get_imgList(char *path)
 
     return loaded;
 }
-
-

@@ -1,3 +1,4 @@
+#pragma once
 #include <SDL2/SDL_surface.h>
 #include "matrix.h"
 
@@ -10,7 +11,7 @@ typedef struct
 
 SDL_Surface* load_image(char* path);
 
-datas *get_imgList(char* dirpath);
+datas *get_imgList(char* dirpath, size_t size);
 
 matrix *imageToMatrix(char* path);
 

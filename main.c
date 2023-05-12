@@ -1,10 +1,14 @@
 #include <gtk/gtk.h>
+
+//Preprocessing
+#include "Preprocessing/pretreatment.h"
+
+//Processing
 #include "Processing/main.c"
 #include "NeuronalNetwork/mainNN.h"
 #include "NeuronalNetwork_Hexa/mainNNH.h"
 #include "sudoku_solver/solver16.h"
 #include "sudoku_solver/solver9.h"
-
 
 #define SwitchOn 1
 #define SwitchOff 0

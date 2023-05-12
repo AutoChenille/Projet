@@ -1,4 +1,5 @@
 #pragma once
+#include "useful.h"
 
 void draw_sudoku(char grid[9][9], char filepath[]);
 

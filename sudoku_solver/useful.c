@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "useful.h"
 
 int max(int x, int y)
 {
@@ -20,12 +21,6 @@ void printc(char n)
 {
     printf("%c\n", n);
 }
-
-struct Node
-{
-    char data;
-    struct Node *next;
-};
 
 struct Node* newList()
 {

@@ -1,4 +1,5 @@
 #pragma once
+#include "useful.h"
 
 void draw_hexadoku(char grid[16][16], char filepath[]);
 

@@ -6,9 +6,9 @@
 #include <err.h>
 #include <unistd.h>
 #include <time.h>
-#include "matrix.h"
-#include "neuronalNetwork.h"
-#include "saveParams.h"
+#include "../Ressources/matrix.h"
+#include "../Ressources/neuronalNetwork.h"
+#include "../Ressources/saveParams.h"
 
 size_t layerSize = 800;
 size_t nb_iter = 200000;
@@ -79,7 +79,7 @@ int Predict(char *img, char *params)
     matrix *v = predictionVector(m, p);
     m_print(v);
     return i;*/
-    datas *topredict = get_imgList(img);
+    datas *topredict = get_imgList(img, 10);
 
     matrix *v = predictionVector(topredict->input, p);
 
@@ -113,7 +113,7 @@ void TrainNetwork(char *data, char *savepath)
     }
 
     //Go to data dir
-    datas *inputs = get_imgList(data);
+    datas *inputs = get_imgList(data, 10);
 
     //Come back to normal repo
     chdir(current_dir);
@@ -137,7 +137,7 @@ void TrainAgain(char *data, char *loadpath, char *savepath)
         perror("getcwd() error");
 
     //Go to data dir
-    datas *inputs = get_imgList(data);
+    datas *inputs = get_imgList(data, 10);
 
     //Come back to normal repo
     chdir(current_dir);

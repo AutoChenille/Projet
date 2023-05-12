@@ -4,20 +4,19 @@
 #include <string.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "useful.c"
-
+#include "solver16.h"
 
 // Global variable to deal with sudoku and hexadoku.
-int HEXA = 1;
-size_t GRID_DIMENSION = 16;
-size_t BOX_DIMENSION = 4;
+int HEXA16 = 1;
+size_t GRID_DIMENSION16 = 16;
+size_t BOXDIMENSION16 = 4;
 
 
 // Get grid from file and store it in an array.
 //
 // filename: path of the file where the grid is stored.
 // grid: grid where the sudoku in file is put.
-void get_grid_from_file(char filepath[], char grid[GRID_DIMENSION][GRID_DIMENSION])
+void get_grid_from_file16(char filepath[], char grid[GRID_DIMENSION16][GRID_DIMENSION16])
 {
     // Point on the file where the grid is stored.
     FILE *file = fopen(filepath, "r");
@@ -27,15 +26,15 @@ void get_grid_from_file(char filepath[], char grid[GRID_DIMENSION][GRID_DIMENSIO
         errx(EXIT_FAILURE, "File not found.");
   
     // Store all digits and point in the grid by reading each lines.
-    for (size_t z = 0; z < BOX_DIMENSION; z++) 
+    for (size_t z = 0; z < BOXDIMENSION16; z++) 
     {
         // First blocks.
-        for (size_t i = z * BOX_DIMENSION; i < BOX_DIMENSION + z * BOX_DIMENSION; i++) 
+        for (size_t i = z * BOXDIMENSION16; i < BOXDIMENSION16 + z * BOXDIMENSION16; i++) 
         {   
-            for (size_t j = 0; j < BOX_DIMENSION; j++) 
+            for (size_t j = 0; j < BOXDIMENSION16; j++) 
             {
                 // 3 or 4 characters.
-                for (size_t k = j * BOX_DIMENSION; k < BOX_DIMENSION + j * BOX_DIMENSION; k++) 
+                for (size_t k = j * BOXDIMENSION16; k < BOXDIMENSION16 + j * BOXDIMENSION16; k++) 
                 {
                     grid[i][k] = fgetc(file);
                 }
@@ -57,7 +56,7 @@ void get_grid_from_file(char filepath[], char grid[GRID_DIMENSION][GRID_DIMENSIO
 //
 // grid: grid with the digits of sudoku.
 // filepath: path of the file where the grid is stored.
-void write_grid_in_file(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath[])
+void write_grid_in_file(char grid[GRID_DIMENSION16][GRID_DIMENSION16], char filepath[])
 {
     // Concate filepath and extension.
     char filepath_extension[strlen(filepath) + 7];
@@ -73,15 +72,15 @@ void write_grid_in_file(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath
         errx(EXIT_FAILURE, "Unable to create file.");
 
     // Writes in file.
-    for (size_t z = 0; z < BOX_DIMENSION; z++) 
+    for (size_t z = 0; z < BOXDIMENSION16; z++) 
     {
-        for (size_t i = z * BOX_DIMENSION; i < BOX_DIMENSION + z * BOX_DIMENSION; i++) 
+        for (size_t i = z * BOXDIMENSION16; i < BOXDIMENSION16 + z * BOXDIMENSION16; i++) 
         {
             // First blocks (2 for sudoku and 3 for hexadoku).
-            for (size_t j = 0; j < BOX_DIMENSION - 1; j++) 
+            for (size_t j = 0; j < BOXDIMENSION16 - 1; j++) 
             {
                 // 3 charaters for sudoku and 4 for hexadoku.
-                for (size_t k = j * BOX_DIMENSION; k < BOX_DIMENSION + j * BOX_DIMENSION; k++) 
+                for (size_t k = j * BOXDIMENSION16; k < BOXDIMENSION16 + j * BOXDIMENSION16; k++) 
                 {
                     fprintf(result_file, "%c", grid[i][k]);
                 }
@@ -91,7 +90,7 @@ void write_grid_in_file(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath
             }
         
             // Last characters.
-            for (size_t k = (BOX_DIMENSION - 1) * BOX_DIMENSION; k < GRID_DIMENSION; k++) 
+            for (size_t k = (BOXDIMENSION16 - 1) * BOXDIMENSION16; k < GRID_DIMENSION16; k++) 
             {
                 fprintf(result_file, "%c", grid[i][k]);
             }
@@ -114,30 +113,30 @@ void write_grid_in_file(char grid[GRID_DIMENSION][GRID_DIMENSION], char filepath
 // grid: grid with the digits of sudoku.
 // row: row of the digit in grid.
 // col: column of the digit in grid.
-int number_is_valid(char digit, char grid[GRID_DIMENSION][GRID_DIMENSION], size_t row, size_t col)
+int number_is_valid(char digit, char grid[GRID_DIMENSION16][GRID_DIMENSION16], size_t row, size_t col)
 {
     // Checks column.
-    for (size_t i = 0; i < GRID_DIMENSION; i++) 
+    for (size_t i = 0; i < GRID_DIMENSION16; i++) 
     {
         if (grid[i][col] == digit)
             return 0;
     }
 
     // Checks row.
-    for (size_t i = 0; i < GRID_DIMENSION; i++) 
+    for (size_t i = 0; i < GRID_DIMENSION16; i++) 
     {
         if (grid[row][i] == digit)
             return 0;
     } 
      
     // Inits row and column of current box.
-    size_t begin_row = row - row % BOX_DIMENSION;
-    size_t begin_col = col - col % BOX_DIMENSION;
+    size_t begin_row = row - row % BOXDIMENSION16;
+    size_t begin_col = col - col % BOXDIMENSION16;
 
     // Checks box.
-    for (size_t i = begin_row; i < begin_row + BOX_DIMENSION; i++) 
+    for (size_t i = begin_row; i < begin_row + BOXDIMENSION16; i++) 
     {
-        for (size_t j = begin_col; j < begin_col + BOX_DIMENSION; j++) 
+        for (size_t j = begin_col; j < begin_col + BOXDIMENSION16; j++) 
         {
             if (grid[i][j] == digit)
                 return 0;
@@ -148,18 +147,18 @@ int number_is_valid(char digit, char grid[GRID_DIMENSION][GRID_DIMENSION], size_
     return 1;
 }
 
-void immediat_solutions(char grid[GRID_DIMENSION][GRID_DIMENSION], char possibilities[GRID_DIMENSION*GRID_DIMENSION][GRID_DIMENSION])
+void immediat_solutions(char grid[GRID_DIMENSION16][GRID_DIMENSION16], char possibilities[GRID_DIMENSION16*GRID_DIMENSION16][GRID_DIMENSION16])
 {
-    struct Node*** solutions = calloc(GRID_DIMENSION, sizeof(struct Node**));
-    for(size_t i = 0; i < GRID_DIMENSION; i++)
+    struct Node*** solutions = calloc(GRID_DIMENSION16, sizeof(struct Node**));
+    for(size_t i = 0; i < GRID_DIMENSION16; i++)
     {
-        solutions[i] = calloc(GRID_DIMENSION, sizeof(struct Node*));
-        for(size_t j = 0; j < GRID_DIMENSION; j++)
+        solutions[i] = calloc(GRID_DIMENSION16, sizeof(struct Node*));
+        for(size_t j = 0; j < GRID_DIMENSION16; j++)
         {
             solutions[i][j] = newList();
             if(grid[i][j] == '.')
             {
-                for(char n = (HEXA?0:1); n < (char)GRID_DIMENSION+(HEXA?0:1); n++)
+                for(char n = (HEXA16?0:1); n < (char)GRID_DIMENSION16+(HEXA16?0:1); n++)
                     insert_list(solutions[i][j], (n > 9 ? n+7: n)+'0');
             }
             else
@@ -171,28 +170,28 @@ void immediat_solutions(char grid[GRID_DIMENSION][GRID_DIMENSION], char possibil
     while(gotchanges)
     {
         gotchanges = 0;
-        for(size_t x = 0; x < GRID_DIMENSION; x++)
+        for(size_t x = 0; x < GRID_DIMENSION16; x++)
         {
-            for(size_t y = 0; y < GRID_DIMENSION; y++)
+            for(size_t y = 0; y < GRID_DIMENSION16; y++)
             {
                 if(grid[x][y] == '.')
                 {
                     //Check column
-                    for(size_t i = 0; i < GRID_DIMENSION; i++)
+                    for(size_t i = 0; i < GRID_DIMENSION16; i++)
                     {
                         if(grid[i][y] != '.')
                             gotchanges = max(gotchanges, remove_list(solutions[x][y], grid[i][y]));
                     }
                     //Check lines
-                    for(size_t j = 0; j < GRID_DIMENSION; j++)
+                    for(size_t j = 0; j < GRID_DIMENSION16; j++)
                     {
                         if(grid[x][j] != '.')
                             gotchanges = max(gotchanges, remove_list(solutions[x][y], grid[x][j]));
                     }
                     //Check box
-                    for(size_t i = x/BOX_DIMENSION * BOX_DIMENSION; i < (x/BOX_DIMENSION + 1) * BOX_DIMENSION; i++)
+                    for(size_t i = x/BOXDIMENSION16 * BOXDIMENSION16; i < (x/BOXDIMENSION16 + 1) * BOXDIMENSION16; i++)
                     {
-                        for(size_t j = y/BOX_DIMENSION * BOX_DIMENSION; j < (y/BOX_DIMENSION + 1) * BOX_DIMENSION; j++)
+                        for(size_t j = y/BOXDIMENSION16 * BOXDIMENSION16; j < (y/BOXDIMENSION16 + 1) * BOXDIMENSION16; j++)
                         {
                             if(grid[i][j] != '.')
                                 gotchanges = max(gotchanges, remove_list(solutions[x][y], grid[i][j]));
@@ -206,11 +205,11 @@ void immediat_solutions(char grid[GRID_DIMENSION][GRID_DIMENSION], char possibil
         }
     }
 
-    for(size_t i = 0; i < GRID_DIMENSION; i++)
+    for(size_t i = 0; i < GRID_DIMENSION16; i++)
     {
-        for(size_t j = 0; j < GRID_DIMENSION; j++)
+        for(size_t j = 0; j < GRID_DIMENSION16; j++)
         {
-            size_t pos = i*GRID_DIMENSION + j;
+            size_t pos = i*GRID_DIMENSION16 + j;
             size_t k = 0;
             struct Node* current = solutions[i][j]->next;
             while(current != NULL)
@@ -219,7 +218,7 @@ void immediat_solutions(char grid[GRID_DIMENSION][GRID_DIMENSION], char possibil
                 current = current->next;
                 k++;
             }
-            if(k < GRID_DIMENSION)
+            if(k < GRID_DIMENSION16)
                 possibilities[pos][k] = -1;
         }
     }
@@ -229,22 +228,22 @@ void immediat_solutions(char grid[GRID_DIMENSION][GRID_DIMENSION], char possibil
 //
 // grid: grid where the digits of sudoku.
 // pos: current pos the function is dealing with.
-int solve(char grid[GRID_DIMENSION][GRID_DIMENSION], char possibilities[GRID_DIMENSION*GRID_DIMENSION][GRID_DIMENSION], size_t pos)
+int solve(char grid[GRID_DIMENSION16][GRID_DIMENSION16], char possibilities[GRID_DIMENSION16*GRID_DIMENSION16][GRID_DIMENSION16], size_t pos)
 {
     // Stops if it is the last coords.
-    if (pos == GRID_DIMENSION * GRID_DIMENSION)
+    if (pos == GRID_DIMENSION16 * GRID_DIMENSION16)
         return 1;
 
     // Gets row and col from the current position.
-    size_t row = pos / GRID_DIMENSION;
-    size_t col = pos % GRID_DIMENSION;
+    size_t row = pos / GRID_DIMENSION16;
+    size_t col = pos % GRID_DIMENSION16;
 
     // Got to the next cell if there is already a number in the cell (row, col).
     if (grid[row][col] != '.')
         return solve(grid, possibilities, pos + 1);
     
     // Tests numbers between 1 and 9 for the cell (row, col).
-    for (size_t i = 0; i < GRID_DIMENSION && possibilities[pos][i] != -1; i++)
+    for (size_t i = 0; i < GRID_DIMENSION16 && possibilities[pos][i] != -1; i++)
     {
         char possible_nb = possibilities[pos][i];
         if (number_is_valid(possible_nb, grid, row, col))
@@ -310,7 +309,7 @@ void draw_hexadoku(char grid[16][16], char filepath[])
 
 
     // Load the digit images
-    SDL_Surface* digit_surfaces[GRID_DIMENSION];
+    SDL_Surface* digit_surfaces[GRID_DIMENSION16];
     for (size_t i = 0; i < 16; i++) {
         char filename[10];
         sprintf(filename, "%li.png", i);

@@ -5,33 +5,13 @@
 #include <err.h>
 #include <unistd.h>
 #include <time.h>
-#include "matrix.h"
-#include "neuronalNetwork.h"
-#include "saveParams.h"
+#include "../Ressources/matrix.h"
+#include "../Ressources/neuronalNetwork.h"
+#include "../Ressources/saveParams.h"
+#include "../Ressources/BuildDataImage.h"
 
-size_t layerSize = 800;
-size_t nb_iter = 60000;
-
-double string_to_double(char *string)
-{
-    double result = 0;
-    
-    for(size_t i = 0; i < sizeof(string)/8; i++)
-    {
-        result *= 10;
-        result += (double) string[i] - 48;
-    }
-
-    return result;
-}
-
-char *sizeTToPath(size_t num)
-{
-    //Convert a size_t num to char './num/
-    char *result = malloc(sizeof(char) * 20); // Assumes a maximum size_t of 20 digits
-    sprintf(result, "./%zu/", num);
-    return result;
-}
+size_t layerSize16 = 800;
+size_t nb_iter16 = 60000;
 
 char** PredictSurface_16x16(SDL_Surface **surface, size_t nbData, char *params)
 {
@@ -71,7 +51,7 @@ char** PredictSurface_16x16(SDL_Surface **surface, size_t nbData, char *params)
 }
 
 
-int Predict(char *img, char *params)
+int Predict16(char *img, char *params)
 {
     parameters *p = LoadParameters(params);
     /*matrix *m = imageToMatrix(img);
@@ -79,7 +59,7 @@ int Predict(char *img, char *params)
     matrix *v = predictionVector(m, p);
     m_print(v);
     return i;*/
-    datas *topredict = get_imgList(img);
+    datas *topredict = get_imgList(img, 16);
 
     matrix *v = predictionVector(topredict->input, p);
 
@@ -102,7 +82,7 @@ int Predict(char *img, char *params)
     return 0;
 }
 
-void TrainNetwork(char *data, char *savepath)
+void TrainNetwork16(char *data, char *savepath)
 {
     //Data must contain 10 repo : one for each to treat
 
@@ -113,21 +93,21 @@ void TrainNetwork(char *data, char *savepath)
     }
 
     //Go to data dir
-    datas *inputs = get_imgList(data);
+    datas *inputs = get_imgList(data, 16);
 
     //Come back to normal repo
     chdir(current_dir);
 
     //Train network
-    parameters *p = neuronal_network(inputs, layerSize, layerSize, layerSize, 0.1, nb_iter, 1, NULL);
+    parameters *p = neuronal_network(inputs, layerSize16, layerSize16, layerSize16, 0.1, nb_iter16, 1, NULL);
     //Save parameters to savepath
     SaveParameters(p, savepath);
 
-    Predict("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/", savepath);
+    Predict16("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/", savepath);
    
 }
 
-void TrainAgain(char *data, char *loadpath, char *savepath)
+void TrainAgain16(char *data, char *loadpath, char *savepath)
 {
     //Data must contain 10 repo : one for each to treat
 
@@ -137,18 +117,18 @@ void TrainAgain(char *data, char *loadpath, char *savepath)
         perror("getcwd() error");
 
     //Go to data dir
-    datas *inputs = get_imgList(data);
+    datas *inputs = get_imgList(data, 16);
 
     //Come back to normal repo
     chdir(current_dir);
 
     //Train network
     parameters *p = LoadParameters(loadpath);
-    p = neuronal_network(inputs, layerSize, layerSize, layerSize, 0.1, nb_iter, 1, p);
+    p = neuronal_network(inputs, layerSize16, layerSize16, layerSize16, 0.1, nb_iter16, 1, p);
     //Save parameters to savepath
     SaveParameters(p, savepath);
 
-    Predict("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/mnist_images/test", savepath);
+    Predict16("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/mnist_images/test", savepath);
    
 }
 
@@ -162,17 +142,17 @@ int main_NeuronalNetwork_Hexa(int argc, char** argv)
 
     if(!strcmp(argv[1], "-train"))
     {
-        TrainNetwork(argv[2], argv[3]);
+        TrainNetwork16(argv[2], argv[3]);
     }
 
     else if(!strcmp(argv[1], "-tA"))
     {
-        TrainAgain(argv[2], argv[3], argv[4]);
+        TrainAgain16(argv[2], argv[3], argv[4]);
     }
 
     else if(!strcmp(argv[1], "-predict"))
     {
-        Predict(argv[2], argv[3]);
+        Predict16(argv[2], argv[3]);
     }
 
     clock_t end = clock();
