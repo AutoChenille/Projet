@@ -150,7 +150,7 @@ void open_image(GtkButton *button, gpointer user_data)
     int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
     
 
-    SDL_Surface **loaded = ProcessImage(paf, NB_CELLS); //
+    SDL_Surface **loaded = ProcessImage(paf, NB_CELLS);
     tosolve = PredictSurface(loaded, NB_CELLS*NB_CELLS ,"./NeuronalNetwork/800x3_with_blank_handwrite");
     if(is_activated == SwitchOn)
         draw_hexadoku(tosolve, "./unsolved.png");
