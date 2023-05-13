@@ -325,31 +325,27 @@ void draw_sudoku(char grid[9][9], char filepath[])
     for (int row = 0; row < 9; row++)
         drawHLine9(grid_surface, 0, row*CELL_SIZE, 800, SDL_MapRGB(draw_surface->format, 0, 0, 0), row%3==0?6:1);
 
-    g_print("coucou2\n");
+    int w = digit_surfaces[0]->w;
+    int h = digit_surfaces[0]->h;
 
     // Iterate through the grid and draw the digits
     for (int row = 0; row < 9; row++) {
         for (int col = 0; col < 9; col++) {
-
             // Calculate the position of the cell in the image
-            int x = col * digit_surfaces[0]->w;
-            int y = row * digit_surfaces[0]->h;
-
+            int x = col * w;
+            int y = row * h;
+	    g_print("x: %i/ y: %i\n", x, y);
             // Get the digit to draw
             int digit = grid[row][col] - '0';
-
+	    g_print("digit: %i\n", digit);
             // Blit the digit image onto the surface
-            SDL_Rect src_rect = {15, 15, digit_surfaces[digit-1]->w - 30, digit_surfaces[digit-1]->h - 30};
+            SDL_Rect src_rect = {15, 15, w - 30, h - 30};
 
-            SDL_Rect dest_rect = {x + 10, y + 10, digit_surfaces[digit-1]->w - 20, digit_surfaces[digit-1]->h - 20};
+            SDL_Rect dest_rect = {x + 10, y + 10, w - 20, h - 20};
 
             SDL_BlitSurface(digit_surfaces[digit-1], &src_rect, grid_surface, &dest_rect);
         }
     }
-
-    g_print("coucou3\n");
-
-    errx(1, "lol");
 
     // Save the surface as a PNG image
     char result_filepath[strlen(filepath) + 12];

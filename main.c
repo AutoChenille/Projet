@@ -193,10 +193,14 @@ void open_image(GtkButton *button, gpointer user_data)
             }
             g_print("\n");
         }
+	char tosolve9[9][9];
+	for (size_t i = 0; i < 9; i++)
+	  for (size_t j = 0; j < 9; j++)
+	    tosolve9[i][j] = tosolve[i][j];
         if(tosolve == NULL)
             g_print("Error while loading grid");
         g_print("unsolved 9x9\n");
-        draw_sudoku(tosolve, "./unsolved.png");
+        draw_sudoku(tosolve9, "./unsolved.png");
         g_print("unsolved 9x9 done\n");
     }
 
