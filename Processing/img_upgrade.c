@@ -133,7 +133,7 @@ int fill_top(int width, int height, int* pixels)
 
         if (moy <= threshold)
         {
-            for (int i_tmp = last_line; i_tmp < i - 1; i_tmp++)
+            for (int i_tmp = last_line; i_tmp < i; i_tmp++)
             {
                 for (int j_tmp = 0; j_tmp < width; j_tmp++)
                 {
@@ -181,7 +181,7 @@ void fill_bottom(int width, int height, int* pixels)
 
         if (moy <= threshold)
         {
-            for (int i_tmp = last_line; i_tmp > i + 1; i_tmp--)
+            for (int i_tmp = last_line; i_tmp > i; i_tmp--)
             {
                 for (int j_tmp = 0; j_tmp < width; j_tmp++)
                 {
@@ -214,6 +214,7 @@ void upgrade_exploitation(SDL_Surface* surf, SDL_Surface** dest)
     // Converts surface into array.
     get_array_of_pixels(surf, pixels);
 
+
     // Deals with left part of the image.
     fill_left(width, height, pixels);
 
@@ -230,7 +231,9 @@ void upgrade_exploitation(SDL_Surface* surf, SDL_Surface** dest)
     // int result = 100 * (r1 + r2 + r3 + r4) / (width * height);
 
     // Saves surface.
+    //g_print("1\n");
     *dest = array_to_surface(width, height, pixels);
+    //g_print("2\n");
 
     free(pixels);
 }

@@ -15,14 +15,15 @@
 #define SwitchOff 0
 
 char WEIGHT_PATH[] = "./NeuronalNetwork/800x3_with_blank_handwrite/";
-
 char **tosolve;
-
 int is_activated = 0;
 
 // Callback function for the "Open" menu item
-void on_open_activate(GtkMenuItem *menuitem, gpointer user_data)
+void on_open_activate(GtkMenuItem *MenuItem, gpointer user_data)
 {
+    (void) MenuItem;
+    (void) user_data;
+
     g_print("Open menu item clicked\n");
 }
 
@@ -35,8 +36,11 @@ void on_quit_activate()
 
 
 // Callback function for the "About" menu item
-void on_about_activate(GtkMenuItem *menuitem, gpointer user_data)
+void on_about_activate(GtkMenuItem *MenuItem, gpointer user_data)
 {
+    (void) MenuItem;
+    (void) user_data;
+
     GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
     GtkWidget *dialog = gtk_message_dialog_new(NULL, flags, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "About SudoC");
     gtk_dialog_run(GTK_DIALOG(dialog));
@@ -46,6 +50,8 @@ void on_about_activate(GtkMenuItem *menuitem, gpointer user_data)
 
 void file_opener(GtkWidget *widget, gpointer data)
 {
+    (void) widget;
+
     GtkWidget *dialog;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
     gint res;
@@ -74,6 +80,8 @@ void file_opener(GtkWidget *widget, gpointer data)
 
 int get_switch_state(GtkSwitch *sw, gpointer user_data)
 {
+    (void) user_data;
+
     if (gtk_switch_get_active(sw))
     {
         g_print("Switch state: %d\n", SwitchOn);
@@ -89,6 +97,8 @@ int get_switch_state(GtkSwitch *sw, gpointer user_data)
 
 void on_save(GtkButton *button, gpointer user_data)
 {
+    (void) button;
+
     // Get the output image widget
     GtkImage *output_image = GTK_IMAGE(user_data);
 
@@ -106,10 +116,8 @@ void on_save(GtkButton *button, gpointer user_data)
     snprintf(filename, sizeof(filename), "saved_%s.png", timestamp);
 
     // Save the pixbuf to the file
-    GError *error = NULL;
-    if (!gdk_pixbuf_savev(pixbuf, filename, "png", NULL, &error, NULL)) {
-        g_printerr("Error saving file: %s\n", error->message);
-        g_error_free(error);
+    if (!gdk_pixbuf_savev(pixbuf, filename, "png", NULL, NULL, NULL)) {
+        g_printerr("Error saving file.");
     } else {
         g_print("File saved successfully: %s\n", filename);
     }
@@ -119,6 +127,8 @@ void on_save(GtkButton *button, gpointer user_data)
 
 char* on_choose_image(GtkButton *button, gpointer user_data)
 {
+    (void) button;
+
     GtkBuilder *builder = GTK_BUILDER(user_data);
     GtkWidget *image = GTK_WIDGET(gtk_builder_get_object(builder, "input_image"));
 
@@ -168,7 +178,8 @@ char* on_choose_image(GtkButton *button, gpointer user_data)
 }
 
 
-void resize_image(GtkWidget *image_widget, size_t height, size_t width) {
+void resize_image(GtkWidget *image_widget, size_t height, size_t width)
+{
     GdkPixbuf *pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image_widget));
     GdkPixbuf *resized = gdk_pixbuf_scale_simple(pixbuf, width, height, GDK_INTERP_BILINEAR);
     gtk_image_set_from_pixbuf(GTK_IMAGE(image_widget), resized);
@@ -179,34 +190,62 @@ void resize_image(GtkWidget *image_widget, size_t height, size_t width) {
 void open_image(GtkButton *button, gpointer user_data)
 {
     // Call the on_choose_image() function to get the path to the image
-
     char *paf = on_choose_image(button,user_data);//VERIFIER QUE CA FONCTIONNE
     int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
 
     SDL_Surface **loaded = ProcessImage(paf, NB_CELLS);
 
+    //SDL_Surface **loaded = calloc(81, sizeof(SDL_Surface*));
+    /*
+    for (int i = 0; i < 81; i++)
+    {
+        char filepath[20];
+        snprintf(filepath, sizeof(filepath), "img_working/%i.png", i);
+        loaded[i] = IMG_Load(filepath);
+    }
+    */
+
+    /*
+    for (int i = 0; i < 81; i++)
+    {
+        char filepath[100];
+        snprintf(filepath, sizeof(filepath), "img2/%i.png", i);
+        IMG_SavePNG(loaded[i], filepath);
+    }
+    */
+
     if(is_activated == SwitchOn)
     {
         tosolve = PredictSurface_16x16(loaded, NB_CELLS ,"./NeuronalNetwork_Hexa/800x3_with_blank_handwrite");
-        draw_hexadoku(tosolve, "./unsolved.png");
+
+        char tosolve16[16][16];
+        for (size_t i = 0; i < 16; i++)
+            for (size_t j = 0; j < 16; j++)
+                tosolve16[i][j] = tosolve[i][j];
+
+        draw_hexadoku(tosolve16, "./unsolved.png");
     }
     else
     {
         tosolve = PredictSurface_9x9(loaded, NB_CELLS,"./NeuronalNetwork/800x3_with_blank_handwrite");
-        for(size_t i = 0; i < NB_CELLS; i++)
-        {
-            for(size_t j = 0; j < NB_CELLS; j++)
-            {
+
+        /*
+        for(size_t i = 0; i < NB_CELLS; i++) {
+            for(size_t j = 0; j < NB_CELLS; j++) {
                 g_print("%c ", tosolve[i][j]);
             }
             g_print("\n");
         }
-	char tosolve9[9][9];
-	for (size_t i = 0; i < 9; i++)
-	  for (size_t j = 0; j < 9; j++)
-	    tosolve9[i][j] = tosolve[i][j];
+        */
+
+	    char tosolve9[9][9];
+	    for (size_t i = 0; i < 9; i++)
+	        for (size_t j = 0; j < 9; j++)
+	            tosolve9[i][j] = tosolve[i][j];
+
         if(tosolve == NULL)
             g_print("Error while loading grid");
+
         g_print("unsolved 9x9\n");
         draw_sudoku(tosolve9, "./unsolved.png");
         g_print("unsolved 9x9 done\n");
@@ -235,24 +274,36 @@ void on_choose_button_clicked(GtkButton *button, gpointer user_data)
 
 void on_apply(GtkButton *button, gpointer user_data)
 {
+    (void) button;
+
     GtkBuilder *builder = GTK_BUILDER(user_data);
-    int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
+    // int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
 
     // Get the input image widget
-    GtkImage *input_image = GTK_IMAGE(gtk_builder_get_object(builder, "input_image"));
+    // GtkImage *input_image = GTK_IMAGE(gtk_builder_get_object(builder, "input_image"));
 
     // Get the pixbuf from the input image
-    GdkPixbuf *pixbuf = gtk_image_get_pixbuf(input_image);
+    // GdkPixbuf *pixbuf = gtk_image_get_pixbuf(input_image);
 
-   if(is_activated == SwitchOn)
+    if(is_activated == SwitchOn)
     {
-        SolveHexadoku(tosolve);
-        draw_hexadoku(tosolve, "./solved.png");
+        char tosolve16[16][16];
+        for (size_t i = 0; i < 16; i++)
+            for (size_t j = 0; j < 16; j++)
+                tosolve16[i][j] = tosolve[i][j];
+
+        SolveHexadoku(tosolve16);
+        draw_hexadoku(tosolve16, "./solved.png");
     }
     else
     {
-        SolveSudoku(tosolve);
-        draw_sudoku(tosolve, "./solved.png");
+        char tosolve9[9][9];
+        for (size_t i = 0; i < 9; i++)
+            for (size_t j = 0; j < 9; j++)
+                tosolve9[i][j] = tosolve[i][j];
+
+        SolveSudoku(tosolve9);
+        draw_sudoku(tosolve9, "./solved.png");
     }
 
     // Get the output image widget
@@ -304,11 +355,11 @@ int main(int argc, char *argv[])
     window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
 
     // Create a new GdkRGBA color object and set its values to red
-    GdkRGBA color;
-    gdk_rgba_parse(&color, "white");
+    //GdkRGBA color;
+    //gdk_rgba_parse(&color, "white");
 
     // Set the background color of the GtkBox
-    gtk_widget_override_background_color(window, GTK_STATE_FLAG_NORMAL, &color);
+    // gtk_widget_override_background_color(window, GTK_STATE_FLAG_NORMAL, &color);
 
     // Show the main window
     gtk_widget_show_all(window);

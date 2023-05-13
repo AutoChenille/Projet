@@ -352,8 +352,6 @@ void draw_sudoku(char grid[9][9], char filepath[])
     sprintf(result_filepath, "%s", filepath);
     IMG_SavePNG(grid_surface, result_filepath);
 
-    g_print("coucou4\n");
-
     // Clean up
     SDL_FreeSurface(grid_surface);
     for (int i = 0; i < 9; i++)

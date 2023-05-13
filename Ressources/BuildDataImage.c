@@ -78,7 +78,7 @@ matrix *surfaceToMatrix(SDL_Surface *surface)
 {
     Uint32* pixels = surface->pixels;
     int len = surface->w * surface->h;
-    SDL_PixelFormat* format = surface->format;
+    //SDL_PixelFormat* format = surface->format;
 
     matrix *dataImage = Matrix(len, 1);
     
@@ -90,21 +90,26 @@ matrix *surfaceToMatrix(SDL_Surface *surface)
 
 matrix *LoadFromSurface(SDL_Surface** surface, size_t nbData)
 {
+    /*
     for(size_t i = 0; i < nbData*nbData; i ++)
     {
         char filepath[100];
         snprintf(filepath, sizeof(filepath), "img2/%li.png",i);
         IMG_SavePNG(surface[i], filepath);
     }
+    */
+
     nbData *= nbData;
     size_t h = size, w = size;
     matrix* loaded = Matrix(h*w, nbData);
+
     for(size_t j = 0; j < nbData; j++)
     {
         matrix* l_surface = surfaceToMatrix(surface[j]);
         for(size_t i = 0; i < h*w; i++)
             loaded->data[i*nbData+j] = l_surface->data[i];
     }
+
     return loaded;
 }
 
@@ -137,7 +142,11 @@ datas *get_imgList(char *path, size_t size)
 {
     //Get current repo
     char current_repo[1024];
-    getcwd(current_repo, sizeof(current_repo));
+
+    if (getcwd(current_repo, sizeof(current_repo)) == NULL) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("getcwd failed");
+    }
 
     //total number of png to compute
     size_t nbData = count_png_files(path);
@@ -162,7 +171,12 @@ datas *get_imgList(char *path, size_t size)
 
     // Loop through each entry in the directory
     size_t i = 0;
-    chdir(path);
+
+    if (chdir(path) != 0) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("chdir failed");
+    }
+
     while ((entry = readdir(directory)) != NULL)
     {
         // If the entry is a regular file, load the image and add its data to dataList
@@ -189,7 +203,10 @@ datas *get_imgList(char *path, size_t size)
         errx(EXIT_FAILURE, "Failed to close directory.");
 
     //Return in origin repo
-    chdir(current_repo);
+    if (chdir(current_repo) != 0) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("chdir failed");
+    }
 
     return loaded;
 }

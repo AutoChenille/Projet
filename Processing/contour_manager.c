@@ -633,10 +633,12 @@ void get_max_points_rect(SDL_Surface* surf, double *corners_x, double *corners_y
     // ======================================
 
 
+    printf("\n---Corners detected---\n");
     for (int i = 0; i < 4; i++)
     {
         printf("%f,%f\n", corners_x[i], corners_y[i]);
     }
+    printf("----------------------\n");
 
     /*
     struct list* point_x = list_new();

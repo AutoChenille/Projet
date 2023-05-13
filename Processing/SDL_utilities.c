@@ -37,6 +37,7 @@ SDL_Surface* array_to_surface(int w, int h, int accumulator[])
     // Get array of pixels of type Uint32.
     Uint32* pixels = surf->pixels;
 
+
     for (int i = 0; i < w; ++i)
     {
         for (int j = 0; j < h; ++j)
@@ -56,6 +57,7 @@ SDL_Surface* array_to_surface(int w, int h, int accumulator[])
             pixels[i + w * j] = SDL_MapRGB(surf->format, val, val, val);
         }
     }
+
 
     // Unlock surface surf.
     SDL_UnlockSurface(surf);

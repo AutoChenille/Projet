@@ -356,13 +356,13 @@ void get_good_points(struct list* point_x, struct list* point_y, struct list** d
 SDL_Surface *convert_surface(SDL_Surface* surf, int dst_width, int dst_height)
 {
     // Removes the contours on the image.
-    //SDL_Surface* surf_contour = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32, SDL_PIXELFORMAT_RGBA32);
-    //upgrade_exploitation(surf, &surf_contour);
+    // SDL_Surface* surf_contour;
+    // (surf, &surf_contour);
 
     // Resizes image to a new surface.
     SDL_Surface* resized_surf = SDL_CreateRGBSurfaceWithFormat(0, dst_width, dst_height, 32, SDL_PIXELFORMAT_RGBA32);
     SDL_BlitScaled(surf, NULL, resized_surf, NULL);
-    //SDL_FreeSurface(surf_contour);
+    // SDL_FreeSurface(surf_contour);
 
     // Returns a new created surface.
     return resized_surf;
@@ -400,14 +400,10 @@ void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf
             SDL_Surface* resized_square = convert_surface(square, 24, 24);
             // ===========================================
 
-            char filepath[100];
-            snprintf(filepath, sizeof(filepath), "img/%i_%i.png", (NB_CELLS - 1) - y, (NB_CELLS - 1) - x);
-            IMG_SavePNG(resized_square, filepath);
-
             ocr_eleven[NB_CELLS * ((NB_CELLS - 1) - y) + ((NB_CELLS - 1) - x)] = resized_square;
-            char filepath2[100];
-            snprintf(filepath, sizeof(filepath), "img2/%i.png",x);
-            IMG_SavePNG(ocr_eleven[NB_CELLS * ((NB_CELLS - 1) - y) + ((NB_CELLS - 1) - x)], filepath2);
+            //char filepath2[100];
+            //snprintf(filepath, sizeof(filepath), "img2/%i.png",x);
+            //IMG_SavePNG(ocr_eleven[NB_CELLS * ((NB_CELLS - 1) - y) + ((NB_CELLS - 1) - x)], filepath2);
 
             // SDL_FreeSurface(square);
             SDL_FreeSurface(resized_square);

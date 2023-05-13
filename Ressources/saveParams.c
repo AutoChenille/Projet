@@ -73,7 +73,10 @@ void SaveParameters(parameters *p, char *path)
 
     //Get current repo
     char current_repo[1024];
-    getcwd(current_repo, sizeof(current_repo));
+    if (getcwd(current_repo, sizeof(current_repo)) == NULL) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("getcwd failed");
+    }
 
     // Delete old repo if it exists
     struct stat st;
@@ -91,7 +94,10 @@ void SaveParameters(parameters *p, char *path)
         errx(0, "Error while creating repository.");
 
     //Go to created repo
-    chdir(path);
+    if (chdir(path) != 0) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("chdir failed");
+    }
 
     matrixToFile(p->W1, "./W1");
     matrixToFile(p->b1, "./b1");
@@ -103,7 +109,10 @@ void SaveParameters(parameters *p, char *path)
     matrixToFile(p->b4, "./b4");
 
     //Return in origin repo
-    chdir(current_repo);
+    if (chdir(current_repo) != 0) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("chdir failed");
+    }
 }
 
 size_t charToSizeT(char *str)

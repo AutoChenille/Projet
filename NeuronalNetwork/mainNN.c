@@ -45,6 +45,8 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
     matrix* loaded = LoadFromSurface(surface, nbData);
 
     matrix *v = predictionVector(loaded, p);
+
+    /*
     for(size_t j = 0; j < v->col; j++)
     {
         for(size_t i = 1; i < v->row; i++)
@@ -53,6 +55,7 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
         }
         g_print("\n");
     }
+     */
 
     g_print("\n");
 
@@ -62,11 +65,11 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
         result[j] = 0;
         for(size_t i = 1; i < v->row; i++)
         {
-            g_print("%f %f \n", v->data[i*v->col+j], v->data[result[j]*v->col+j]);
+            // g_print("%f %f \n", v->data[i*v->col+j], v->data[result[j]*v->col+j]);
             if(v->data[i*v->col+j] > v->data[result[j]*v->col+j])
             {
                 result[j] = i;
-                g_print("%f\n", v->data[i*v->col+j]);
+                // g_print("%f\n", v->data[i*v->col+j]);
             }
         }
     }
@@ -138,7 +141,10 @@ void TrainNetwork(char *data, char *savepath)
     datas *inputs = get_imgList(data, 10);
 
     //Come back to normal repo
-    chdir(current_dir);
+    if (chdir(current_dir) != 0) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("chdir failed");
+    }
 
     //Train network
     parameters *p = neuronal_network(inputs, layerSize, layerSize, layerSize, 0.1, nb_iter, 1, NULL);
@@ -162,7 +168,10 @@ void TrainAgain(char *data, char *loadpath, char *savepath)
     datas *inputs = get_imgList(data, 10);
 
     //Come back to normal repo
-    chdir(current_dir);
+    if (chdir(current_dir) != 0) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("chdir failed");
+    }
 
     //Train network
     parameters *p = LoadParameters(loadpath);

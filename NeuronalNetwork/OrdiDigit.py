@@ -5,7 +5,7 @@ import cv2
 import os
 from numpy import random
 
-PATH = "/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork_Hexa/dataset/Letters"
+PATH = "./test"
 
 s1 = 48
 s2 = 24
@@ -18,7 +18,7 @@ def main(num_nbr):
     while(num_nbr > 0):
 
         #loop over all the digits
-        for i in range(65, 71):
+        for i in range(48,58):
             img = np.zeros((s1,s1), np.uint8)
             #draw the digit on the image with random font
             if i != 0:
@@ -48,4 +48,4 @@ def main(num_nbr):
             #print("wrote :", name)
         num_nbr -= 1
 
-main(27000)
+main(8)

@@ -96,7 +96,10 @@ void TrainNetwork16(char *data, char *savepath)
     datas *inputs = get_imgList(data, 16);
 
     //Come back to normal repo
-    chdir(current_dir);
+    if (chdir(current_dir) != 0) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("chdir failed");
+    }
 
     //Train network
     parameters *p = neuronal_network(inputs, layerSize16, layerSize16, layerSize16, 0.1, nb_iter16, 1, NULL);
@@ -120,7 +123,10 @@ void TrainAgain16(char *data, char *loadpath, char *savepath)
     datas *inputs = get_imgList(data, 16);
 
     //Come back to normal repo
-    chdir(current_dir);
+    if (chdir(current_dir) != 0) {
+        // Handle the error condition, e.g., display an error message or take appropriate action
+        perror("chdir failed");
+    }
 
     //Train network
     parameters *p = LoadParameters(loadpath);
