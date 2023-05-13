@@ -38,7 +38,6 @@ char *sizeTToPath(size_t num)
 
 char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
 {
-    g_print("je suis ici \n");
     parameters *p = LoadParameters(params);
     if(p == NULL)
         g_print("Error loading params\n");
@@ -73,6 +72,7 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
     }
 
     char **cresult = malloc(sizeof(char*) * nbData);
+
     for(size_t i = 0; i < nbData; i++)
     {
         cresult[i] = malloc(sizeof(char) * nbData);

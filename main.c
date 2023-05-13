@@ -174,11 +174,9 @@ void open_image(GtkButton *button, gpointer user_data)
 
     char *paf = on_choose_image(button,user_data);//VERIFIER QUE CA FONCTIONNE
     int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
-    
 
-    g_print("ok\n");
     SDL_Surface **loaded = ProcessImage(paf, NB_CELLS);
-    g_print("ok\n");
+
     if(is_activated == SwitchOn)
     {
         tosolve = PredictSurface_16x16(loaded, NB_CELLS ,"./NeuronalNetwork_Hexa/800x3_with_blank_handwrite");

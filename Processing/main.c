@@ -126,16 +126,6 @@ SDL_Surface** ProcessImage(char *path, int NB_CELLS)
     list_destroy(list_rho);
     list_destroy(list_theta);
 
-
-    for (int i = 0; i < NB_CELLS * NB_CELLS; i++)
-    {
-        IMG_SavePNG(ocr_eleven[i], "res/%i.png", i);
-        //printf("%p\n", ocr_eleven[i]);
-        //SDL_FreeSurface(ocr_eleven[i]);
-    }
-
-    free(ocr_eleven);
-
     // End.
     return ocr_eleven;
 }
