@@ -40,20 +40,25 @@ SDL_Surface** ProcessImage(char *path, int NB_CELLS)
 
     //Adaptive Threshold Filter
     double noise = noise_level(surf_wait);
-    printf("noise = %f\n", noise);
-    if (noise > 15)
+
+    if (noise == 226)
     {
-      printf("adaptive\n");
-      noise = 0.5;
-      adaptive_threshold(surf_wait, noise);
+        surf_wait = threshold(surf_wait, 170);
+    }
+    else if (noise > 15)
+    {
+        printf("adaptive\n");
+        noise = 0.5;
+        adaptive_threshold(surf_wait, noise);
     }
     else
     {
-      printf("non-adaptive\n");
-      noise = 0.2;
-      adaptive_threshold(surf_wait, noise);
-      //surf_wait = threshold(surf_wait, 150);
+        printf("non-adaptive\n");
+        noise = 0.2;
+        adaptive_threshold(surf_wait, noise);
+        //surf_wait = threshold(surf_wait, 150);
     }
+
     SDL_BlitSurface(surf_wait, NULL, cut_img, NULL);
     IMG_SavePNG(surf_wait, "Processing/res/adaptive_threshold.png");
 
