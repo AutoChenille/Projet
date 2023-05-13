@@ -177,6 +177,13 @@ void open_image(GtkButton *button, gpointer user_data)
 
     SDL_Surface **loaded = ProcessImage(paf, NB_CELLS);
 
+    for (int i = 0; i < 81; i++)
+    {
+            char filepath[100];
+            snprintf(filepath, sizeof(filepath), "img2/%i.png",i);
+            IMG_SavePNG(loaded[i], filepath);
+    }
+
     if(is_activated == SwitchOn)
     {
         tosolve = PredictSurface_16x16(loaded, NB_CELLS ,"./NeuronalNetwork_Hexa/800x3_with_blank_handwrite");
@@ -193,10 +200,12 @@ void open_image(GtkButton *button, gpointer user_data)
             }
             g_print("\n");
         }
-	char tosolve9[9][9];
-	for (size_t i = 0; i < 9; i++)
-	  for (size_t j = 0; j < 9; j++)
-	    tosolve9[i][j] = tosolve[i][j];
+
+	    char tosolve9[9][9];
+	    for (size_t i = 0; i < 9; i++)
+	        for (size_t j = 0; j < 9; j++)
+	            tosolve9[i][j] = tosolve[i][j];
+
         if(tosolve == NULL)
             g_print("Error while loading grid");
         g_print("unsolved 9x9\n");
@@ -205,8 +214,8 @@ void open_image(GtkButton *button, gpointer user_data)
     }
 
     //free loaded surfaces
-    SDL_FreeSurface(*loaded);
-    free(loaded);
+    //SDL_FreeSurface(*loaded);
+    //free(loaded);
 
     // Load the new image into the output_image GtkImage widget
     GtkBuilder *builder = GTK_BUILDER(user_data);

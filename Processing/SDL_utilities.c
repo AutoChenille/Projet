@@ -45,7 +45,9 @@ SDL_Surface* array_to_surface(int w, int h, int accumulator[])
             int acc_pixel = accumulator[i + w * j];
 
             // Computes pixel value for the color.
-            int pixel_value = 255 * acc_pixel / max_acc;
+            int pixel_value = 255 * acc_pixel;
+            if (max_acc != 0)
+                pixel_value /= max_acc;
 
             // Assigns the new value of pixel.
             Uint8 val = (pixel_value > 255) ? 255 : pixel_value;

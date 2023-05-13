@@ -55,18 +55,18 @@ SDL_Surface** ProcessImage(char *path, int NB_CELLS)
       //surf_wait = threshold(surf_wait, 150);
     }
     SDL_BlitSurface(surf_wait, NULL, cut_img, NULL);
-    IMG_SavePNG(surf_wait, "res/adaptive_threshold.png");
+    IMG_SavePNG(surf_wait, "Processing/res/adaptive_threshold.png");
 
     //Invert Filter
     cut_img = invert(cut_img);
 
     //Canny Edge Detection
     canny(surf_wait);
-    IMG_SavePNG(surf_wait, "res/canny.png");
+    IMG_SavePNG(surf_wait, "Processing/res/canny.png");
 
     //Dilate Filter
     dilate(surf_wait);
-    IMG_SavePNG(surf_wait, "res/dilate.png");
+    IMG_SavePNG(surf_wait, "Processing/res/dilate.png");
     // ====================================================
 
 
@@ -95,12 +95,12 @@ SDL_Surface** ProcessImage(char *path, int NB_CELLS)
     surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGB888, 0);
 
     surf = perspective_transform(surf, corners);
-    IMG_SavePNG(surf, "res/perspective.png");
+    IMG_SavePNG(surf, "Processing/res/perspective.png");
 
     surf = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGBA32, 0);
 
     cut_img = perspective_transform(cut_img, corners);
-    IMG_SavePNG(cut_img, "res/cut_img.png");
+    IMG_SavePNG(cut_img, "Processing/res/cut_img.png");
 
     cut_img = SDL_ConvertSurfaceFormat(cut_img, SDL_PIXELFORMAT_RGBA32, 0);
     // ====================================================
@@ -118,7 +118,7 @@ SDL_Surface** ProcessImage(char *path, int NB_CELLS)
     // MAXIMUM DETECTION - MATRIX PERSPECTIVE TRANSFORM - CELLS EXTRACTION
     // ====================================================
     SDL_Surface** ocr_eleven = calloc(NB_CELLS * NB_CELLS, sizeof(SDL_Surface*));
-    grid_detection(list_rho, list_theta, surf, NB_CELLS, ocr_eleven);
+    grid_detection(list_rho, list_theta, cut_img, NB_CELLS, ocr_eleven);
     // ====================================================
 
     // Frees memory.

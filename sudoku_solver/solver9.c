@@ -334,10 +334,10 @@ void draw_sudoku(char grid[9][9], char filepath[])
             // Calculate the position of the cell in the image
             int x = col * w;
             int y = row * h;
-	    g_print("x: %i/ y: %i\n", x, y);
+
             // Get the digit to draw
+
             int digit = grid[row][col] - '0';
-	    g_print("digit: %i\n", digit);
             // Blit the digit image onto the surface
             SDL_Rect src_rect = {15, 15, w - 30, h - 30};
 
@@ -353,6 +353,7 @@ void draw_sudoku(char grid[9][9], char filepath[])
     IMG_SavePNG(grid_surface, result_filepath);
 
     g_print("coucou4\n");
+
     // Clean up
     SDL_FreeSurface(grid_surface);
     for (int i = 0; i < 9; i++)
