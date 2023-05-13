@@ -101,6 +101,7 @@ SDL_Surface** ProcessImage(char *path, int NB_CELLS)
 
     cut_img = perspective_transform(cut_img, corners);
     IMG_SavePNG(cut_img, "Processing/res/cut_img.png");
+    IMG_SavePNG(cut_img, "pre.png");
 
     cut_img = SDL_ConvertSurfaceFormat(cut_img, SDL_PIXELFORMAT_RGBA32, 0);
     // ====================================================
