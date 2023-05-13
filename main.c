@@ -143,15 +143,15 @@ char* on_choose_image(GtkButton *button, gpointer user_data)
         // Check if the image size is already 300x300 or less
         int width = gdk_pixbuf_get_width(pixbuf);
         int height = gdk_pixbuf_get_height(pixbuf);
-        if (width > 400 || height > 400) {
+        if (width > 350 || height > 350) {
             // Resize the image to fit into a 300x300 square
             int new_width, new_height;
             if (width > height) {
-                new_width = 400;
-                new_height = height * 400 / width;
+                new_width = 350;
+                new_height = height * 350 / width;
             } else {
-                new_width = width * 400 / height;
-                new_height = 400;
+                new_width = width * 350 / height;
+                new_height = 350;
             }
             GdkPixbuf *new_pixbuf = gdk_pixbuf_scale_simple(pixbuf, new_width, new_height, GDK_INTERP_BILINEAR);
             g_object_unref(pixbuf);
@@ -168,6 +168,14 @@ char* on_choose_image(GtkButton *button, gpointer user_data)
 }
 
 
+void resize_image(GtkWidget *image_widget, size_t height, size_t width) {
+    GdkPixbuf *pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image_widget));
+    GdkPixbuf *resized = gdk_pixbuf_scale_simple(pixbuf, width, height, GDK_INTERP_BILINEAR);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(image_widget), resized);
+    g_object_unref(resized);
+}
+
+
 void open_image(GtkButton *button, gpointer user_data)
 {
     // Call the on_choose_image() function to get the path to the image
@@ -176,13 +184,6 @@ void open_image(GtkButton *button, gpointer user_data)
     int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
 
     SDL_Surface **loaded = ProcessImage(paf, NB_CELLS);
-
-    for (int i = 0; i < 81; i++)
-    {
-            char filepath[100];
-            snprintf(filepath, sizeof(filepath), "img2/%i.png",i);
-            IMG_SavePNG(loaded[i], filepath);
-    }
 
     if(is_activated == SwitchOn)
     {
@@ -200,28 +201,27 @@ void open_image(GtkButton *button, gpointer user_data)
             }
             g_print("\n");
         }
-
 	char tosolve9[9][9];
 	for (size_t i = 0; i < 9; i++)
-	    for (size_t j = 0; j < 9; j++)
-	        tosolve9[i][j] = tosolve[i][j];
-
+	  for (size_t j = 0; j < 9; j++)
+	    tosolve9[i][j] = tosolve[i][j];
         if(tosolve == NULL)
             g_print("Error while loading grid");
         g_print("unsolved 9x9\n");
         draw_sudoku(tosolve9, "./unsolved.png");
         g_print("unsolved 9x9 done\n");
-
-	// Free loaded surfaces
-	for (size_t i = 0; i < 81; i++)
-	    SDL_FreeSurface(loaded[i]);
-	free(loaded);	
     }
-
     // Load the new image into the output_image GtkImage widget
     GtkBuilder *builder = GTK_BUILDER(user_data);
     GtkWidget *output_image = GTK_WIDGET(gtk_builder_get_object(builder, "output_image"));
     gtk_image_set_from_file(GTK_IMAGE(output_image), "./unsolved.png");
+
+    resize_image(output_image, 350, 350);
+
+
+    //free loaded surfaces
+    //SDL_FreeSurface(loaded);
+    //g_free(path); 
 }
 
 
