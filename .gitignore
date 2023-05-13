@@ -54,7 +54,5 @@ Mkfile.old
 dkms.conf
 
 # Images
-*.png
-*.jpeg
 
 *.gz

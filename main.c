@@ -201,21 +201,22 @@ void open_image(GtkButton *button, gpointer user_data)
             g_print("\n");
         }
 
-	    char tosolve9[9][9];
-	    for (size_t i = 0; i < 9; i++)
-	        for (size_t j = 0; j < 9; j++)
-	            tosolve9[i][j] = tosolve[i][j];
+	char tosolve9[9][9];
+	for (size_t i = 0; i < 9; i++)
+	    for (size_t j = 0; j < 9; j++)
+	        tosolve9[i][j] = tosolve[i][j];
 
         if(tosolve == NULL)
             g_print("Error while loading grid");
         g_print("unsolved 9x9\n");
         draw_sudoku(tosolve9, "./unsolved.png");
         g_print("unsolved 9x9 done\n");
-    }
 
-    //free loaded surfaces
-    //SDL_FreeSurface(*loaded);
-    //free(loaded);
+	// Free loaded surfaces
+	for (size_t i = 0; i < 81; i++)
+	    SDL_FreeSurface(loaded[i]);
+	free(loaded);	
+    }
 
     // Load the new image into the output_image GtkImage widget
     GtkBuilder *builder = GTK_BUILDER(user_data);
