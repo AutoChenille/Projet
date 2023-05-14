@@ -17,6 +17,7 @@
 char WEIGHT_PATH[] = "./NeuronalNetwork/800x3_with_blank_handwrite/";
 char **tosolve;
 int is_activated = 0;
+char *paf = NULL;
 
 // Callback function for the "Open" menu item
 void on_open_activate(GtkMenuItem *MenuItem, gpointer user_data)
@@ -125,7 +126,7 @@ void on_save(GtkButton *button, gpointer user_data)
 
 
 
-char* on_choose_image(GtkButton *button, gpointer user_data)
+void on_choose_image(GtkButton *button, gpointer user_data)
 {
     (void) button;
 
@@ -141,7 +142,7 @@ char* on_choose_image(GtkButton *button, gpointer user_data)
                                                     GTK_RESPONSE_ACCEPT,
                                                     NULL);
 
-    char *filename = NULL;
+    char *filename = NULL; 
     gint res = gtk_dialog_run(GTK_DIALOG(dialog));
     if (res == GTK_RESPONSE_ACCEPT) {
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
@@ -173,8 +174,9 @@ char* on_choose_image(GtkButton *button, gpointer user_data)
         g_object_unref(pixbuf);
     }
 
+    paf = filename;
     gtk_widget_destroy(dialog);
-    return filename;
+    
 }
 
 
@@ -190,7 +192,68 @@ void resize_image(GtkWidget *image_widget, size_t height, size_t width)
 void open_image(GtkButton *button, gpointer user_data)
 {
     // Call the on_choose_image() function to get the path to the image
-    char *paf = on_choose_image(button,user_data);//VERIFIER QUE CA FONCTIONNE
+    on_choose_image(button,user_data);//VERIFIER QUE CA FONCTIONNE
+}
+
+
+/*
+void on_choose_button_clicked(GtkButton *button, gpointer user_data)
+{
+    g_print("Choose button clicked!\n");
+}
+*/
+
+
+void on_apply(GtkButton *button, gpointer user_data)//on_solve
+{
+    (void) button;
+
+    GtkBuilder *builder = GTK_BUILDER(user_data);
+    // int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
+
+    // Get the input image widget
+    // GtkImage *input_image = GTK_IMAGE(gtk_builder_get_object(builder, "input_image"));
+
+    // Get the pixbuf from the input image
+    // GdkPixbuf *pixbuf = gtk_image_get_pixbuf(input_image);
+
+    if(is_activated == SwitchOn)
+    {
+        char tosolve16[16][16];
+        for (size_t i = 0; i < 16; i++)
+            for (size_t j = 0; j < 16; j++)
+                tosolve16[i][j] = tosolve[i][j];
+
+        SolveHexadoku(tosolve16);
+        draw_hexadoku(tosolve16, "./solved.png");
+    }
+    else
+    {
+        char tosolve9[9][9];
+        for (size_t i = 0; i < 9; i++)
+            for (size_t j = 0; j < 9; j++)
+                tosolve9[i][j] = tosolve[i][j];
+
+        SolveSudoku(tosolve9);
+        draw_sudoku(tosolve9, "./solved.png");
+    }
+
+    // Get the output image widget
+    GtkImage *output_image = GTK_IMAGE(gtk_builder_get_object(builder, "output_image"));
+
+    // Load the solved image into the output image widget
+    GdkPixbuf *solved_pixbuf = gdk_pixbuf_new_from_file("./solved.png", NULL);
+    gtk_image_set_from_pixbuf(output_image, solved_pixbuf);
+
+    resize_image(output_image, 350, 350);
+    // Clean up
+    g_object_unref(solved_pixbuf);
+}
+
+
+void on_process(GtkButton *button, gpointer user_data)
+{
+   (void) button;
     int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
 
     SDL_Surface **loaded = ProcessImage(paf, NB_CELLS);
@@ -258,64 +321,6 @@ void open_image(GtkButton *button, gpointer user_data)
     resize_image(output_image, 350, 350);
 
 
-    //free loaded surfaces
-    //SDL_FreeSurface(loaded);
-    //g_free(path); 
-}
-
-
-/*
-void on_choose_button_clicked(GtkButton *button, gpointer user_data)
-{
-    g_print("Choose button clicked!\n");
-}
-*/
-
-
-void on_apply(GtkButton *button, gpointer user_data)//on_solve
-{
-    (void) button;
-
-    GtkBuilder *builder = GTK_BUILDER(user_data);
-    // int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
-
-    // Get the input image widget
-    // GtkImage *input_image = GTK_IMAGE(gtk_builder_get_object(builder, "input_image"));
-
-    // Get the pixbuf from the input image
-    // GdkPixbuf *pixbuf = gtk_image_get_pixbuf(input_image);
-
-    if(is_activated == SwitchOn)
-    {
-        char tosolve16[16][16];
-        for (size_t i = 0; i < 16; i++)
-            for (size_t j = 0; j < 16; j++)
-                tosolve16[i][j] = tosolve[i][j];
-
-        SolveHexadoku(tosolve16);
-        draw_hexadoku(tosolve16, "./solved.png");
-    }
-    else
-    {
-        char tosolve9[9][9];
-        for (size_t i = 0; i < 9; i++)
-            for (size_t j = 0; j < 9; j++)
-                tosolve9[i][j] = tosolve[i][j];
-
-        SolveSudoku(tosolve9);
-        draw_sudoku(tosolve9, "./solved.png");
-    }
-
-    // Get the output image widget
-    GtkImage *output_image = GTK_IMAGE(gtk_builder_get_object(builder, "output_image"));
-
-    // Load the solved image into the output image widget
-    GdkPixbuf *solved_pixbuf = gdk_pixbuf_new_from_file("./solved.png", NULL);
-    gtk_image_set_from_pixbuf(output_image, solved_pixbuf);
-
-    resize_image(output_image, 350, 350);
-    // Clean up
-    g_object_unref(solved_pixbuf);
 }
 
 
@@ -342,14 +347,18 @@ int main(int argc, char *argv[])
     g_signal_connect(GTK_BUTTON(gtk_builder_get_object(builder, "choose_button")), "clicked", G_CALLBACK(open_image), builder);
     g_signal_connect(gtk_builder_get_object(builder, "switch_int_hex"), "state-changed", G_CALLBACK(get_switch_state), NULL);
 
+
     // Connect the save button to the on_save function
     GtkWidget *save_button = GTK_WIDGET(gtk_builder_get_object(builder, "save_button"));
     GtkWidget *output_image = GTK_WIDGET(gtk_builder_get_object(builder, "output_image"));
-    g_signal_connect(G_OBJECT(save_button), "clicked", G_CALLBACK(on_save), output_image);
-
-    // Connect the solve button to the on_apply function
     GtkWidget *solve_button = GTK_WIDGET(gtk_builder_get_object(builder, "solve_button"));
+    GtkWidget *process_button = GTK_WIDGET(gtk_builder_get_object(builder, "process_button"));
+
+    g_signal_connect(G_OBJECT(save_button), "clicked", G_CALLBACK(on_save), output_image);
+   
+    // Connect the solve button to the on_apply function
     g_signal_connect(solve_button, "clicked", G_CALLBACK(on_apply), builder);
+    g_signal_connect(process_button, "clicked", G_CALLBACK(on_process), builder);
 
 
     // Get the main window widget
