@@ -7,7 +7,6 @@
 #include <unistd.h> 
 
 //Images size
-size_t size = 24;
 
 // Loads an image in a surface.
 // The format of the surface is SDL_PIXELFORMAT_RGB888.
@@ -73,6 +72,21 @@ matrix *imageToMatrix(char* path)
 
     return dataImage;
 }
+float pixel_to_bit_value2(SDL_Surface* surf, Uint32 color)
+{
+    // Will use only red value.
+    // We do not need the other because it is a black and white image.
+
+    Uint8 r, g, b;
+
+    // Saves value of red color in variable r.
+    SDL_GetRGB(color, surf->format, &r, &g, &b);
+
+    // Returns if r correspond to black or white (0: black, 1: white).
+    // Detects if 'r' is the null character for black or not.
+    // Uint8 is like a char.
+    return (float) r == '\0' ? 0 : 1;
+}
 
 matrix *surfaceToMatrix(SDL_Surface *surface)
 {
@@ -83,7 +97,7 @@ matrix *surfaceToMatrix(SDL_Surface *surface)
     matrix *dataImage = Matrix(len, 1);
     
     for(int i = 0; i < len; i++)
-        dataImage->data[i] = pixels[i]/255.;
+        dataImage->data[i] = pixel_to_bit_value2(surface, pixels[i]);
 
     return dataImage;
 }
@@ -100,7 +114,7 @@ matrix *LoadFromSurface(SDL_Surface** surface, size_t nbData)
     */
 
     nbData *= nbData;
-    size_t h = size, w = size;
+    size_t h = 24, w = 24;
     matrix* loaded = Matrix(h*w, nbData);
 
     for(size_t j = 0; j < nbData; j++)
@@ -164,7 +178,7 @@ datas *get_imgList(char *path, size_t size)
     if (directory == NULL)
         errx(EXIT_FAILURE, "Unfound directory %s", path);
 
-    size_t h = size, w = size;
+    size_t h = 24, w = 24;
     datas *loaded = malloc(sizeof(datas));
     loaded->input = Matrix(h*w, nbData);
     loaded->output = MatrixOf(size, nbData, 0);
