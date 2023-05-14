@@ -231,9 +231,9 @@ void upgrade_exploitation(SDL_Surface* surf, SDL_Surface** dest)
     // int result = 100 * (r1 + r2 + r3 + r4) / (width * height);
 
     // Saves surface.
-    //g_print("1\n");
+    //printf("1\n");
     *dest = array_to_surface(width, height, pixels);
-    //g_print("2\n");
+    //printf("2\n");
 
     free(pixels);
 }

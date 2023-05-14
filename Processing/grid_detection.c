@@ -353,19 +353,27 @@ void get_good_points(struct list* point_x, struct list* point_y, struct list** d
 /// \param dst_width The width of the destination image.
 /// \param dst_height The height of the destination image.
 /// \return The resized surface.
-SDL_Surface *convert_surface(SDL_Surface* surf, int dst_width, int dst_height)
+SDL_Surface *convert_surface(SDL_Surface* surface, int newWidth, int newHeight)
 {
-    // Removes the contours on the image.
-    // SDL_Surface* surf_contour;
-    // (surf, &surf_contour);
+    SDL_Surface* newSurface = SDL_CreateRGBSurface(0, newWidth, newHeight, surface->format->BitsPerPixel,
+                                                   surface->format->Rmask, surface->format->Gmask,
+                                                   surface->format->Bmask, surface->format->Amask);
 
-    // Resizes image to a new surface.
-    SDL_Surface* resized_surf = SDL_CreateRGBSurfaceWithFormat(0, dst_width, dst_height, 32, SDL_PIXELFORMAT_RGBA32);
-    SDL_BlitScaled(surf, NULL, resized_surf, NULL);
-    // SDL_FreeSurface(surf_contour);
+    SDL_Rect sourceRect;
+    sourceRect.x = 0;
+    sourceRect.y = 0;
+    sourceRect.w = surface->w;
+    sourceRect.h = surface->h;
 
-    // Returns a new created surface.
-    return resized_surf;
+    SDL_Rect destRect;
+    destRect.x = 0;
+    destRect.y = 0;
+    destRect.w = newWidth;
+    destRect.h = newHeight;
+
+    SDL_BlitScaled(surface, &sourceRect, newSurface, &destRect);
+
+    return newSurface;
 }
 
 /// @brief Extracts cells and put them in files.
@@ -401,12 +409,12 @@ void cell_extraction(struct list* list_x, struct list* list_y, SDL_Surface* surf
             // ===========================================
 
             ocr_eleven[NB_CELLS * ((NB_CELLS - 1) - y) + ((NB_CELLS - 1) - x)] = resized_square;
-            //char filepath2[100];
-            //snprintf(filepath, sizeof(filepath), "img2/%i.png",x);
-            //IMG_SavePNG(ocr_eleven[NB_CELLS * ((NB_CELLS - 1) - y) + ((NB_CELLS - 1) - x)], filepath2);
+            char filepath[100];
+            snprintf(filepath, sizeof(filepath), "img2/img/%i%i.png",x,y);
+            IMG_SavePNG(ocr_eleven[NB_CELLS * ((NB_CELLS - 1) - y) + ((NB_CELLS - 1) - x)], filepath);
 
             // SDL_FreeSurface(square);
-            SDL_FreeSurface(resized_square);
+            SDL_FreeSurface(square);
         }
     }
 }

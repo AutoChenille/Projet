@@ -1,4 +1,4 @@
-#include <gtk/gtk.h>
+ 
 #include <stdio.h>
 #include <time.h>
 
@@ -286,7 +286,7 @@ int main_game(int argc, char *argv[])
     GError* error = NULL;
     if (gtk_builder_add_from_file(builder, "sudo.glade", &error) == 0)
     {
-        g_printerr("Error loading file: %s\n", error->message);
+        printferr("Error loading file: %s\n", error->message);
         g_clear_error(&error);
         return 1;
     }
