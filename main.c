@@ -272,7 +272,7 @@ void on_choose_button_clicked(GtkButton *button, gpointer user_data)
 */
 
 
-void on_apply(GtkButton *button, gpointer user_data)
+void on_apply(GtkButton *button, gpointer user_data)//on_solve
 {
     (void) button;
 
@@ -313,6 +313,7 @@ void on_apply(GtkButton *button, gpointer user_data)
     GdkPixbuf *solved_pixbuf = gdk_pixbuf_new_from_file("./solved.png", NULL);
     gtk_image_set_from_pixbuf(output_image, solved_pixbuf);
 
+    resize_image(output_image, 350, 350);
     // Clean up
     g_object_unref(solved_pixbuf);
 }
