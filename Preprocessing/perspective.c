@@ -43,15 +43,14 @@ double determining(double matrix_minor[9][9], int size)
     return sum;
 }
 
-void transpose_matrix(double cofactorMatrix[9][9], double size, double delta, double coutMatrix[9][9], double transposeMatrix[9][9])
+void transpose_matrix(double matrix[9][9], double size, double delta, double c_matrix[9][9], double t_matrix[9][9])
 {
-    int row, col;
-    for (row = 0; row < size; row++)
+    for (int row = 0; row < size; row++)
     {
-        for (col = 0; col < size; col++)
+        for (int col = 0; col < size; col++)
         {
-            transposeMatrix[row][col] = cofactorMatrix[col][row];
-            coutMatrix[row][col] = cofactorMatrix[col][row] / delta;
+            t_matrix[row][col] = matrix[col][row];
+            c_matrix[row][col] = matrix[col][row] / delta;
         }
     }
 }
