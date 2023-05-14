@@ -253,7 +253,7 @@ void open_image(GtkButton *button, gpointer user_data)
     // Load the new image into the output_image GtkImage widget
     GtkBuilder *builder = GTK_BUILDER(user_data);
     GtkWidget *output_image = GTK_WIDGET(gtk_builder_get_object(builder, "output_image"));
-    gtk_image_set_from_file(GTK_IMAGE(output_image), "./unsolved.png");
+    gtk_image_set_from_file(GTK_IMAGE(output_image), "./pre.png");
 
     resize_image(output_image, 350, 350);
 
@@ -310,7 +310,7 @@ void on_apply(GtkButton *button, gpointer user_data)//on_solve
     GtkImage *output_image = GTK_IMAGE(gtk_builder_get_object(builder, "output_image"));
 
     // Load the solved image into the output image widget
-    GdkPixbuf *solved_pixbuf = gdk_pixbuf_new_from_file("./pre.png", NULL);
+    GdkPixbuf *solved_pixbuf = gdk_pixbuf_new_from_file("./solved.png", NULL);
     gtk_image_set_from_pixbuf(output_image, solved_pixbuf);
 
     resize_image(output_image, 350, 350);
