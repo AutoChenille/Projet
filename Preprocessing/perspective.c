@@ -1,18 +1,18 @@
 #include "pretreatment.h"
 
-void Minor(double minorMatrix[9][9], int colMatrix, int size, double newMinorMatrix[9][9])
+void minor(double matrix_minor[9][9], int column, int size, double new_matrix_minor[9][9])
 {
-    int col = 0;
-    int row = 0;
+    int col = 0, row = 0;
 
     for (int i = 1; i < size; i++)
     {
         for (int j = 0; j < size; j++)
         {
-            if (j == colMatrix)
+            if (j == column)
                 continue;
-            newMinorMatrix[row][col] = minorMatrix[i][j];
+            new_matrix_minor[row][col] = matrix_minor[i][j];
             col++;
+            
             if (col == (size - 1))
             {
                 row++;
@@ -20,25 +20,23 @@ void Minor(double minorMatrix[9][9], int colMatrix, int size, double newMinorMat
             }
         }
     }
-
-    return;
 }
 
-double determining(double minorMatrix[9][9], int size)
+double determining(double matrix_minor[9][9], int size)
 {
     int col;
-    double sum = 0, newMinorMatrix[9][9];
+    double sum = 0, new_matrix_minor[9][9];
 
     if (size == 1)
-        return minorMatrix[0][0];
+        return matrix_minor[0][0];
     else if (size == 2)
-        return (minorMatrix[0][0] * minorMatrix[1][1] - minorMatrix[0][1] * minorMatrix[1][0]);
+        return (matrix_minor[0][0] * matrix_minor[1][1] - matrix_minor[0][1] * matrix_minor[1][0]);
     else
     {
         for (col = 0; col < size; col++)
         {
-            Minor(minorMatrix, col, size, newMinorMatrix);
-            sum += (double)(minorMatrix[0][col] * pow(-1, col) * determining(newMinorMatrix, (size - 1)));
+            minor(matrix_minor, col, size, new_matrix_minor);
+            sum += (double)(matrix_minor[0][col] * pow(-1, col) * determining(new_matrix_minor, (size - 1)));
         }
     }
 
@@ -56,27 +54,26 @@ void transpose_matrix(double cofactorMatrix[9][9], double size, double delta, do
             coutMatrix[row][col] = cofactorMatrix[col][row] / delta;
         }
     }
-    return;
 }
 
-void Cofactor(double cinMatrix[9][9], double size, double determinte, double coutMatrix[9][9], double transposeMatrix[9][9])
+void cofactor(double cinMatrix[9][9], double size, double determinte, double c_matrix[9][9], double t_matrix[9][9])
 {
-    double minorMatrix[9][9], cofactorMatrix[9][9];
+    double minor_matrix[9][9], cofactor_matrix[9][9];
     int col3, row3, row2, col2, row, col;
 
     for (row3 = 0; row3 < size; row3++)
     {
         for (col3 = 0; col3 < size; col3++)
         {
-            row2 = 0;
-            col2 = 0;
+            row2 = 0, col2 = 0;
             for (row = 0; row < size; row++)
             {
                 for (col = 0; col < size; col++)
                 {
                     if (row != row3 && col != col3)
                     {
-                        minorMatrix[row2][col2] = cinMatrix[row][col];
+                        minor_matrix[row2][col2] = cinMatrix[row][col];
+                        
                         if (col2 < (size - 2))
                         {
                             col2++;
@@ -89,32 +86,29 @@ void Cofactor(double cinMatrix[9][9], double size, double determinte, double cou
                     }
                 }
             }
-            cofactorMatrix[row3][col3] = pow(-1, (row3 + col3)) * determining(minorMatrix, (size - 1));
+            cofactor_matrix[row3][col3] = pow(-1, (row3 + col3)) * determining(minor_matrix, (size - 1));
         }
     }
-    transpose_matrix(cofactorMatrix, size, determinte, coutMatrix, transposeMatrix);
-
-    return;
+    transpose_matrix(cofactor_matrix, size, determinte, c_matrix, t_matrix);
 }
 
-void inverse(double cinMatrix[9][9], int size, double delta, double coutMatrix[9][9], double transposeMatrix[9][9])
+void inverse(double matrix[9][9], int size, double delta, double c_matrix[9][9], double t_matrix[9][9])
 {
     if (delta == 0)
-        printf("Inverse of entered matrix is not possible\n");
+        errx(1, "No inverse for the given Matrix\n");
     else if (size == 1)
-        coutMatrix[0][0] = 1;
+        c_matrix[0][0] = 1;
     else
-        Cofactor(cinMatrix, size, delta, coutMatrix, transposeMatrix);
-
-    return;
+        cofactor(matrix, size, delta, c_matrix, t_matrix);
 }
 
-void inverse_matrix(double cinMatrix[9][9], double coutMatrix[9][9], int size)
+void inverse_matrix(double matrix[9][9], double c_matrix[9][9], int size)
 {
-    double delta, transposeMatrix[9][9];
+    double delta, t_matrix[9][9];
 
-    delta = (double)determining(cinMatrix, size);
-    inverse(cinMatrix, size, delta, coutMatrix, transposeMatrix);
+    delta = (double)determining(matrix, size);
+    
+    inverse(matrix, size, delta, c_matrix, t_matrix);
 }
 
 double** malloc_matrix(int size)
@@ -123,42 +117,38 @@ double** malloc_matrix(int size)
     
     if (matrix == NULL)
     {
-        printf("Error malloc matrix at malloc_matrix\n");
-        exit(1);
+        errx(1, "malloc_matrix\n");
     }
     
     for (int i = 0; i < size; i++)
     {
         matrix[i] = calloc(size, sizeof(double));
+        
         if (matrix[i] == NULL)
-	{
-            printf("Error malloc matrix at malloc_matrix\n");
-            exit(1);
+	    {
+            errx(1, "malloc_matrix\n");
         }
     }
     
     return matrix;
 }
 
-void multiplyMatStat(double M[9][9], double v[9], double v_out[9], int size)
+void multiply_matrix_normal(double matrix[9][9], double column[9], double res[9], int size)
 {
     for (int i = 0; i < size; i++)
     {
         for (int j = 0; j < size; j++)
         {
-            v_out[i] += M[i][j] * v[j];
+            res[i] += matrix[i][j] * column[j];
         }
     }
-    return;
 }
 
-void multiplyMatBis(double **M, double *v, double *v_out, int size)
+void multiply_matrix_inverse(double **matrix, double *column, double *res, int size)
 {
     for (int i = 0; i < size; i++)
         for (int j = 0; j < size; j++)
-            v_out[i] += M[i][j] * v[j];
-
-    return;
+            res[i] += matrix[i][j] * column[j];
 }
 
 void free_matrix(double** matrix, int size)
@@ -171,7 +161,7 @@ void free_matrix(double** matrix, int size)
     free(matrix);
 }
 
-void inverse_matrix_3(double **M, double **M_inv)
+void inverse_matrix_3(double **M, double **matrix_inverse)
 {
     double MM = M[0][0] * M[1][1] * M[2][2] + M[0][1] * M[1][2] * M[2][0] + M[0][2] * M[2][1] * M[1][0] - M[0][2] * M[1][1] * M[2][0]
       - M[0][1] * M[1][0] * M[2][2] - M[0][0] * M[2][1] * M[1][2];
@@ -182,50 +172,58 @@ void inverse_matrix_3(double **M, double **M_inv)
 
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
-            M_inv[i][j] = AM[i][j] / MM;
+            matrix_inverse[i][j] = AM[i][j] / MM;
 }
 
-void crossProduct(double vect_A[], double vect_B[], double cross_P[])
+// Compute the cross product
+void cross_product(double matrix1[], double matrix2[], double cross_product[])
 {
-    cross_P[0] = vect_A[1] * vect_B[2] - vect_A[2] * vect_B[1];
-    cross_P[1] = vect_A[2] * vect_B[0] - vect_A[0] * vect_B[2];
-    cross_P[2] = vect_A[0] * vect_B[1] - vect_A[1] * vect_B[0];
+    cross_product[0] = matrix1[1] * matrix2[2] - matrix1[2] * matrix2[1];
+    cross_product[1] = matrix1[2] * matrix2[0] - matrix1[0] * matrix2[2];
+    cross_product[2] = matrix1[0] * matrix2[1] - matrix1[1] * matrix2[0];
 }
 
-void get_perspective_matrix(double src[4][2], double dst[4][2], double **transformation_matrix, double **transformation_matrix_inv)
+void get_perspective_matrix(double src[4][2], double dst[4][2], double **transformation_matrix, double **transformation_matrix_inverse)
 {
     // Create perspective matrix
-    double P[][9] = {{-src[0][0], -src[0][1], -1, 0, 0, 0, src[0][0] * dst[0][0], src[0][1] * dst[0][0], dst[0][0]},
-		     {0, 0, 0, -src[0][0], -src[0][1], -1, src[0][0] * dst[0][1], src[0][1] * dst[0][1], dst[0][1]},
-		     {-src[1][0], -src[1][1], -1, 0, 0, 0, src[1][0] * dst[1][0], src[1][1] * dst[1][0], dst[1][0]},
-		     {0, 0, 0, -src[1][0], -src[1][1], -1, src[1][0] * dst[1][1], src[1][1] * dst[1][1], dst[1][1]},
-		     {-src[2][0], -src[2][1], -1, 0, 0, 0, src[2][0] * dst[2][0], src[2][1] * dst[2][0], dst[2][0]},
-		     {0, 0, 0, -src[2][0], -src[2][1], -1, src[2][0] * dst[2][1],  src[2][1] * dst[2][1], dst[2][1]},
-		     {-src[3][0], -src[3][1], -1, 0, 0, 0, src[3][0] * dst[3][0], src[3][1] * dst[3][0], dst[3][0]},
-		     {0, 0, 0, -src[3][0], -src[3][1], -1, src[3][0] * dst[3][1],  src[3][1] * dst[3][1], dst[3][1]},
-		     {0, 0, 0, 0, 0, 0, 0, 0, 1}};
+    double perspective_matrix[][9] = {{-src[0][0], -src[0][1], -1, 0, 0, 0, src[0][0] * dst[0][0], src[0][1] * dst[0][0], dst[0][0]},
+		                              {0, 0, 0, -src[0][0], -src[0][1], -1, src[0][0] * dst[0][1], src[0][1] * dst[0][1], dst[0][1]},
+		                              {-src[1][0], -src[1][1], -1, 0, 0, 0, src[1][0] * dst[1][0], src[1][1] * dst[1][0], dst[1][0]},
+		                              {0, 0, 0, -src[1][0], -src[1][1], -1, src[1][0] * dst[1][1], src[1][1] * dst[1][1], dst[1][1]},
+		                              {-src[2][0], -src[2][1], -1, 0, 0, 0, src[2][0] * dst[2][0], src[2][1] * dst[2][0], dst[2][0]},
+		                              {0, 0, 0, -src[2][0], -src[2][1], -1, src[2][0] * dst[2][1],  src[2][1] * dst[2][1], dst[2][1]},
+		                              {-src[3][0], -src[3][1], -1, 0, 0, 0, src[3][0] * dst[3][0], src[3][1] * dst[3][0], dst[3][0]},
+		                              {0, 0, 0, -src[3][0], -src[3][1], -1, src[3][0] * dst[3][1],  src[3][1] * dst[3][1], dst[3][1]},
+		                              {0, 0, 0, 0, 0, 0, 0, 0, 1}};
 
     // Create the inverse of the perspective matrix
-    double P_inv[9][9] = {0};
+    double perspective_matrix_inverse[9][9] = {0};
 
     double R[9] = {0, 0, 0, 0, 0, 0, 0, 0, 1};
+    double* homography = calloc(9, sizeof(double));
 
     // Compute the inverse of matrix P
-    inverse_matrix(P, P_inv, 9);
+    inverse_matrix(perspective_matrix, perspective_matrix_inverse, 9);
 
-    double *H = calloc(9, sizeof(double));
+    // Compute homography = perspective_matrix_inverse * R
+    multiply_matrix_normal(perspective_matrix_inverse, R, homography, 9);
 
-    // Compute H = P_inv * R
-    multiplyMatStat(P_inv, R, H, 9);
-
-    // Convert H to a matrix with 3 rows and 3 columns
+    // Convert homography to a matrix with 3 rows and 3 columns
     int k = 0;
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++, k++)
-            transformation_matrix[i][j] = H[k];
+    size_t rows = 3, cols = 3;
 
-    inverse_matrix_3(transformation_matrix, transformation_matrix_inv);
-    free(H);
+    for (size_t i = 0; i < rows; i++)
+    {
+        for (size_t j = 0; j < cols; j++)
+        {
+            transformation_matrix[i][j] = homography[k];
+            k++;
+        }
+    }
+
+    inverse_matrix_3(transformation_matrix, transformation_matrix_inverse);
+    
+    free(homography);
 }
 
 SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2])
@@ -243,11 +241,11 @@ SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2])
     double dst[4][2] = {{0, 0},	{length, 0}, {length, length}, {0, length}};
 
     // Malloc the matrix and matrix inverse
-    double **transformationMat = malloc_matrix(3);
-    double **transformationMatInv = malloc_matrix(3);
+    double **trans_matrix = malloc_matrix(3);
+    double **trans_matrix_inverse = malloc_matrix(3);
 
     // Get the perspective matrix
-    get_perspective_matrix(corners, dst, transformationMat, transformationMatInv);
+    get_perspective_matrix(corners, dst, trans_matrix, trans_matrix_inverse);
 
     // Create the result surface with the correct perspective
     SDL_Surface* perspective_surface = SDL_CreateRGBSurfaceWithFormat(0, length, length, 32, SDL_PIXELFORMAT_RGBA32);
@@ -266,32 +264,32 @@ SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2])
     // Main algorithm
     for (size_t i = 0; i < length; i++)
     {
-	for (size_t j = 0; j < length; j++)
-	{	    
-	    double old_coords[3] = {(double)i, (double)j, 1};
-	    double new_coords[3] = {0, 0, 0};
+	    for (size_t j = 0; j < length; j++)
+	    {	    
+	        double old_coords[3] = {(double)i, (double)j, 1};
+	        double new_coords[3] = {0, 0, 0};
 	    
-	    multiplyMatBis(transformationMatInv, old_coords, new_coords, 3);
+	        multiply_matrix_inverse(trans_matrix_inverse, old_coords, new_coords, 3);
 	    
-	    int x = (int)(new_coords[0] / new_coords[2]);
-	    int y = (int)(new_coords[1] / new_coords[2]);
+	        int x = (int)(new_coords[0] / new_coords[2]);
+	        int y = (int)(new_coords[1] / new_coords[2]);
 	    
-	    if (x >= 0 && y >= 0 && x < surface->w && y < surface->h)
-	    {
-		// Calculate correct pixel index
-		Uint32 src_index = y * surface->pitch/4 + x;
-		Uint32 dst_index = j * perspective_surface->pitch/4 + i;
+	        if (x >= 0 && y >= 0 && x < surface->w && y < surface->h)
+	        {
+		        // Calculate correct pixel index
+		        Uint32 src_index = y * surface->pitch/4 + x;
+		        Uint32 dst_index = j * perspective_surface->pitch/4 + i;
 		
-		// Copy pixel data
-		dst_pixels[dst_index] = src_pixels[src_index];
-	    }
-	    else
-	    {
-	        // If out of bounds, set pixel to black (default)
-		Uint32 dst_index = j * perspective_surface->pitch/4 + i;
+		        // Copy pixel data
+		        dst_pixels[dst_index] = src_pixels[src_index];
+	        }
+	        else
+	        {
+	            // If out of bounds, set pixel to black (default)
+		        Uint32 dst_index = j * perspective_surface->pitch/4 + i;
 
-		dst_pixels[dst_index] = SDL_MapRGBA(perspective_surface->format, 0, 0, 0, 255);
-	    }
+		        dst_pixels[dst_index] = SDL_MapRGBA(perspective_surface->format, 0, 0, 0, 255);
+	        }
         }
     }
 
@@ -300,8 +298,9 @@ SDL_Surface* perspective_transform(SDL_Surface* surface, double corners[4][2])
     SDL_UnlockSurface(perspective_surface);
 
     // Free matrices
-    free_matrix(transformationMat, 3);
-    free_matrix(transformationMatInv, 3);
+    free_matrix(trans_matrix, 3);
+    free_matrix(trans_matrix_inverse, 3);
 
+    // Return the corrected perspective surface
     return perspective_surface;
 }
