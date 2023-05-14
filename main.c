@@ -191,7 +191,7 @@ void open_image(GtkButton *button, gpointer user_data)
 {
     // Call the on_choose_image() function to get the path to the image
     char *paf = on_choose_image(button,user_data);//VERIFIER QUE CA FONCTIONNE
-    int NB_CELLS = is_activated == SwitchOn ? 16 : 9;
+    size_t NB_CELLS = is_activated == SwitchOn ? 16 : 9;
 
     SDL_Surface **loaded = ProcessImage(paf, NB_CELLS);
 
@@ -227,7 +227,7 @@ void open_image(GtkButton *button, gpointer user_data)
     }
     else
     {
-        tosolve = PredictSurface_9x9(loaded, NB_CELLS,"./NeuronalNetwork/800x3_with_blank_handwrite");
+        tosolve = PredictSurface_9x9(loaded, NB_CELLS,"./NeuronalNetwork/OverfittedWeight");
 
         /*
         for(size_t i = 0; i < NB_CELLS; i++) {

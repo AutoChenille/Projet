@@ -90,17 +90,15 @@ matrix *surfaceToMatrix(SDL_Surface *surface)
 
 matrix *LoadFromSurface(SDL_Surface** surface, size_t nbData)
 {
-    /*
-    for(size_t i = 0; i < nbData*nbData; i ++)
+    for(size_t i = 0; i < nbData * nbData; i++)
     {
         char filepath[100];
         snprintf(filepath, sizeof(filepath), "img2/%li.png",i);
         IMG_SavePNG(surface[i], filepath);
     }
-    */
 
-    nbData *= nbData;
-    size_t h = size, w = size;
+    nbData = nbData * nbData;
+    size_t h = 24, w = 24;
     matrix* loaded = Matrix(h*w, nbData);
 
     for(size_t j = 0; j < nbData; j++)

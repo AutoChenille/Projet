@@ -10,8 +10,6 @@
 #include "../Ressources/neuronalNetwork.h"
 #include "../Ressources/saveParams.h"
 
-#include <gtk/gtk.h>
-
 size_t layerSize = 800;
 size_t nb_iter = 200000;
 
@@ -40,24 +38,22 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
 {
     parameters *p = LoadParameters(params);
     if(p == NULL)
-        g_print("Error loading params\n");
+        printf("Error loading params\n");
 
     matrix* loaded = LoadFromSurface(surface, nbData);
 
     matrix *v = predictionVector(loaded, p);
 
-    /*
     for(size_t j = 0; j < v->col; j++)
     {
-        for(size_t i = 1; i < v->row; i++)
+        for(size_t i = 0; i < v->row; i++)
         {
             g_print("%f ", v->data[i*v->col+j]);
         }
         g_print("\n");
     }
-     */
 
-    g_print("\n");
+    printf("\n");
 
     int* result = malloc(sizeof(int) * nbData * nbData);
     for(size_t j = 0; j < v->col; j++)
@@ -88,9 +84,9 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
             else
                 cresult[i][j] = result[i*nbData+j] + 'A' - 10;
 
-            g_print("%c ", cresult[i][j]);
+            printf("%c ", cresult[i][j]);
         }
-        g_print("\n");
+        printf("\n");
     }
 
     return cresult;
