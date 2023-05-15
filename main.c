@@ -100,29 +100,43 @@ int solveSudoku(int sudoku[9][9]) {
     return 1;
 }
 
-void generate_sudoku(int sudoku[9][9]) {
-    // Seed the random number generator
-    srand(time(NULL));
+void generate_sudoku(int sudoku[9][9]) 
+{
 
-    // Initialize the sudoku grid with zeros
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
-            sudoku[i][j] = 0;
-        }
+    FILE *fp;
+    int i, j;
+
+    fp = fopen("sudoku.txt", "r");
+    if (fp == NULL) {
+        g_warning("Unable to open file 'sudoku.txt'");
+        return;
     }
 
-    // Generate the complete sudoku grid
-    while(!solveSudoku(sudoku));
-
-    // Remove some digits to create a playable sudoku
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
-            // Randomly remove digits
-            if (rand() % 2 == 0 || rand() % 2 == 0) {
-                sudoku[i][j] = 0;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            char c = fgetc(fp);
+            while (c == ' ' || c == '\n') {
+                c = fgetc(fp);  // skip whitespace and newlines
+            }
+            if (c == EOF) {
+                g_warning("Reached end of file prematurely");
+                fclose(fp);
+                return;
+            }
+            if (c == '.') {
+                sudoku[i][j] = 0;  // treat '.' as empty cell
+            } else if (c >= '1' && c <= '9') {
+                sudoku[i][j] = c - '0';  // convert character to integer
+            } else {
+                g_warning("Invalid character in file 'sudoku.txt'");
+                fclose(fp);
+                return;
             }
         }
     }
+
+    fclose(fp);
+    
 }
 
 // Function to update the label text with the elapsed time
@@ -252,6 +266,7 @@ void on_new(GtkButton* button, gpointer user_data)
     int sudoku[9][9] = {};
     generate_sudoku(sudoku);
 
+    
     // Set not editable cases.
     for (int i = 0; i < 9; i++)
     {
@@ -265,7 +280,7 @@ void on_new(GtkButton* button, gpointer user_data)
             if (sudoku[i][j] != 0)
             {
                 gchar *value = g_strdup_printf("%i", sudoku[i][j]);
-                gtk_widget_set_sensitive(GTK_WIDGET(entry), FALSE);
+                gtk_widget_set_sensitive(GTK_WIDGET(entry), TRUE);
                 gtk_entry_set_text(entry, value);
 
                 // Apply CSS style to make the text bold and set label color
