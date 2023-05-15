@@ -207,9 +207,9 @@ double noise_level(SDL_Surface* surface)
             double average = 0.0;
 
             // Calculate the average of the neighboring pixels
-            for (int k = -1; k <= 1; k++)
+            for (int k = -1; k < 2; k++)
 	        {
-                for (int l = -1; l <= 1; l++)
+                for (int l = -1; l < 2; l++)
 		        {
                     Uint32 neighbor = ((Uint32*)surface->pixels)[(j + l) * width + (i + k)];
                     Uint8 r, g, b;
@@ -218,7 +218,9 @@ double noise_level(SDL_Surface* surface)
                     average += r;
                 }
             }
-            average /= 9;
+
+            // Divide by the number of pixels
+            average = average / (3 * 3);
 
             // Get the value of the current pixel
             Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
