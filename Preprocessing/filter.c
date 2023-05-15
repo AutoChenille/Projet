@@ -244,11 +244,11 @@ void adaptive_threshold(SDL_Surface* surface, double threshold)
     int width = surface->w;
     int height = surface->h;
 
-    int s2 = fmax(width, height) / 16;
+    int parameter = fmax(width, height) / 16;
     unsigned long *thresh = calloc(width * height, sizeof(unsigned long));
     long sum = 0;
     unsigned int count = 0;
-    int x1, y1, x2, y2;
+    int xmax, ymax, xmin, ymin;
 
     for (int y = 0; y < height; y++)
     {
@@ -278,13 +278,13 @@ void adaptive_threshold(SDL_Surface* surface, double threshold)
     {
         for (int j = 0; j < height; j++)
 	{
-            x1 = fmax(i - s2, 1);
-            x2 = fmin(i + s2, width - 1);
-            y1 = fmax(j - s2, 1);
-            y2 = fmin(j + s2, height - 1);
-            count = (x2 - x1) * (y2 - y1);
-            sum = thresh[x2 * height + y2] - thresh[x2 * height + (y1 - 1)] - thresh[(x1 - 1) * height + y2]
-	        + thresh[(x1 - 1) * height + (y1 - 1)];
+            xmax = fmax(i - parameter, 1);
+            xmin = fmin(i + parameter, width - 1);
+            ymax = fmax(j - parameter, 1);
+            ymin = fmin(j + parameter, height - 1);
+            count = (xmin - xmax) * (ymin - ymax);
+            sum = thresh[xmin * height + ymin] - thresh[xmin * height + (ymax - 1)] - thresh[(xmax - 1) * height + ymin]
+	        + thresh[(xmax - 1) * height + (ymax - 1)];
 
             Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
             Uint8 r, g, b;
@@ -657,5 +657,6 @@ SDL_Surface* threshold(SDL_Surface *input, Uint8 threshold_value)
     }
 
     SDL_UnlockSurface(output);
+    
     return output;
 }
