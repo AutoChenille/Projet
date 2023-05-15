@@ -344,7 +344,7 @@ void start_sudoku(char sudoku[9][9])
         return;
     }
 
-    get_grid_from_file9("./sudoku.txt", sudoku);
+    get_grid_from_file9("./evann3.txt", sudoku);
 
     fclose(fp);
     
