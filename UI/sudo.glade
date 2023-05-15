@@ -106,9 +106,13 @@
                 <child>
                   <object class="GtkButton" id="go_to_sudoku">
                     <property name="label" translatable="yes">Play</property>
+                    <property name="width-request">126</property>
+                    <property name="height-request">29</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
                     <property name="margin-start">20</property>
                     <property name="margin-end">20</property>
                     <property name="margin-top">5</property>
@@ -374,23 +378,6 @@
             <property name="orientation">vertical</property>
             <property name="baseline-position">bottom</property>
             <child>
-              <object class="GtkLabel" id="result_label">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="margin-left">20</property>
-                <property name="margin-right">20</property>
-                <property name="margin-start">20</property>
-                <property name="margin-end">20</property>
-                <property name="margin-top">20</property>
-                <property name="margin-bottom">20</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -401,7 +388,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -415,13 +402,30 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkSeparator">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="result_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-left">20</property>
+                <property name="margin-right">20</property>
+                <property name="margin-start">20</property>
+                <property name="margin-end">20</property>
+                <property name="margin-top">20</property>
+                <property name="margin-bottom">20</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -503,6 +507,23 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="to_solve">
+                <property name="label" translatable="yes">Solve</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">20</property>
+                <property name="margin-end">20</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">8</property>
               </packing>
             </child>
           </object>
