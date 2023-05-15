@@ -241,63 +241,78 @@ double noise_level(SDL_Surface* surface)
 // Applies the adaptive threshold algorithm to a surface with a given threshold parameter
 void adaptive_threshold(SDL_Surface* surface, double threshold)
 {
+    // Get the width and the height of the surface
     int width = surface->w;
     int height = surface->h;
 
-    int parameter = fmax(width, height) / 16;
+    // Subdivide into 16 blocks
+    int parameter = fmax(width, height) / (8 * 2);
+    
+    // Initialize the thresh array and the coordinates
+    int xmax = 0;
+    int ymax = 0;
+    int xmin = 0;
+    int ymin = 0;
     unsigned long *thresh = calloc(width * height, sizeof(unsigned long));
-    long sum = 0;
-    unsigned int count = 0;
-    int xmax, ymax, xmin, ymin;
+    long add = 0;
+    size_t count = 0;
 
     for (int y = 0; y < height; y++)
     {
+        // Get each inidivdual pixel and its primary colors
         Uint32 pixel = ((Uint32*)surface->pixels)[y];
         Uint8 r, g, b;
         
         SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-        sum += r;
-        thresh[y] = sum;
+        add += r;
+        thresh[y] = add;
     }
 
     for (int i = 1; i < width; i++)
     {
-        sum = 0;
+        add = 0;
         for (int j = 0; j < height; j++)
-	{
+	    {
+            // Get each inidivdual pixel and its primary colors
             Uint32 pixel = ((Uint32*)surface->pixels)[i * width + j];
             Uint8 r, g, b;
             
             SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-            sum += r;
-            thresh[i * height + j] = thresh[(i - 1) * height + j] + sum;
+            add += r;
+            thresh[i * height + j] = thresh[(i - 1) * height + j] + add;
         }
     }
 
     for (int i = 0; i < width; i++)
     {
         for (int j = 0; j < height; j++)
-	{
+	    {
+            // Get the coordinates for the threshold application
             xmax = fmax(i - parameter, 1);
             xmin = fmin(i + parameter, width - 1);
             ymax = fmax(j - parameter, 1);
             ymin = fmin(j + parameter, height - 1);
             count = (xmin - xmax) * (ymin - ymax);
-            sum = thresh[xmin * height + ymin] - thresh[xmin * height + (ymax - 1)] - thresh[(xmax - 1) * height + ymin]
+
+            add = thresh[xmin * height + ymin] - thresh[xmin * height + (ymax - 1)] - thresh[(xmax - 1) * height + ymin]
 	        + thresh[(xmax - 1) * height + (ymax - 1)];
 
+            // Get each inidivdual pixel and its primary colors
             Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
             Uint8 r, g, b;
             
+            // Reassign the pixel value in the surface
             SDL_GetRGB(pixel, surface->format, &r, &g, &b);
 
-            if (r * count < sum * (1.0 - threshold))
+            // If < to threshold set to black, other white
+            if (r * count < add * (1.0 - threshold))
                 ((Uint32*)surface->pixels)[j * width + i] = SDL_MapRGB(surface->format, 0, 0, 0);
             else
                 ((Uint32*)surface->pixels)[j * width + i] = SDL_MapRGB(surface->format, 255, 255, 255);
         }
     }
 
+    // Free the thresh array
     free(thresh);
 }
 
