@@ -12,11 +12,12 @@
 #include "Processing/main.c"
 #include "NeuronalNetwork/mainNN.h"
 #include "sudoku_solver/solver9.h"
+#include "Ressources/matrix.h"
 
 #define SwitchOn 1
 #define SwitchOff 0
 
-char WEIGHT_PATH[] = "./NeuronalNetwork/800x3_with_blank_handwrite/";
+char WEIGHT_PATH[] = "./NeuronalNetwork/SUDOKU_BORDURES2";
 char **tosolve;
 int is_activated = 0;
 char *paf = NULL;
@@ -794,7 +795,8 @@ void on_process(GtkButton *button, gpointer user_data)
     if(is_activated == SwitchOff)
     {
         //TrainNetwork("./NeuronalNetwork/dataIMG1/", "./overfitWeigth");
-        tosolve = PredictSurface_9x9(loaded, NB_CELLS,"./overfitWeigth");
+        matrix* prevVector;
+        tosolve = PredictSurface_9x9(loaded, NB_CELLS,WEIGHT_PATH, prevVector);
 
 	    for (size_t i = 0; i < 9; i++)
 	        for (size_t j = 0; j < 9; j++)
@@ -859,7 +861,7 @@ int main(int argc, char *argv[])
     g_signal_connect(gtk_builder_get_object(builder, "about"), "activate", G_CALLBACK(on_about_activate), NULL);
     g_signal_connect(GTK_BUTTON(gtk_builder_get_object(builder, "choose_button")), "clicked", G_CALLBACK(open_image), builder);
     g_signal_connect(gtk_builder_get_object(builder, "switch_int_hex"), "state-changed", G_CALLBACK(get_switch_state), NULL);
-
+    
 
     // Connect the save button to the on_save function
     GtkWidget *save_button = GTK_WIDGET(gtk_builder_get_object(builder, "save_button"));
@@ -871,9 +873,7 @@ int main(int argc, char *argv[])
     GtkButton* new_button = GTK_BUTTON(gtk_builder_get_object(builder, "new_button"));
     GtkButton* validate_button = GTK_BUTTON(gtk_builder_get_object(builder, "validate_button"));
     GtkButton* to_solve = GTK_BUTTON(gtk_builder_get_object(builder, "to_solve"));
-
-
-
+    
 
 
     // Connects signal.
@@ -886,6 +886,7 @@ int main(int argc, char *argv[])
     g_signal_connect(new_button, "clicked", G_CALLBACK(on_new), builder);
     g_signal_connect(validate_button, "clicked", G_CALLBACK(on_validate), builder);
     g_signal_connect(to_solve, "clicked", G_CALLBACK(solveS), builder);
+
 
     GtkWidget *go_sudoku_button = gtk_button_new_with_label("go_to_sudoku");
             // Get the main window widget
