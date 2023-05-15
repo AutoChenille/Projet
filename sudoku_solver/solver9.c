@@ -13,6 +13,63 @@ size_t GRID_DIMENSION9 = 9;
 size_t BOX_DIMENSION9 = 3;
 
 
+
+// Save the grid in a new file with extension ".txt".
+//
+// grid: grid with the digits of sudoku.
+// filepath: path of the file where the grid is stored.
+void write_grid_in_file9txt(char grid[GRID_DIMENSION9][GRID_DIMENSION9], char filepath[])
+{
+    // Concate filepath and extension.
+    char filepath_extension[strlen(filepath) + 7];
+    filepath_extension[0] = '\0';
+    strcat(filepath_extension, filepath);
+    strcat(filepath_extension, ".txt");
+    
+    // Creates a new file.
+    FILE *result_file = fopen(filepath_extension, "w");
+
+    // Check if file has been created.
+    if (result_file == NULL)
+        errx(EXIT_FAILURE, "Unable to create file.");
+
+    // Writes in file.
+    for (size_t z = 0; z < BOX_DIMENSION9; z++) 
+    {
+        for (size_t i = z * BOX_DIMENSION9; i < BOX_DIMENSION9 + z * BOX_DIMENSION9; i++) 
+        {
+            // First blocks (2 for sudoku and 3 for hexadoku).
+            for (size_t j = 0; j < BOX_DIMENSION9 - 1; j++) 
+            {
+                // 3 charaters for sudoku and 4 for hexadoku.
+                for (size_t k = j * BOX_DIMENSION9; k < BOX_DIMENSION9 + j * BOX_DIMENSION9; k++) 
+                {
+                    fprintf(result_file, "%c", grid[i][k]);
+                }
+        
+                // Deal with ' '.
+                fprintf(result_file, " ");
+            }
+        
+            // Last characters.
+            for (size_t k = (BOX_DIMENSION9 - 1) * BOX_DIMENSION9; k < GRID_DIMENSION9; k++) 
+            {
+                fprintf(result_file, "%c", grid[i][k]);
+            }
+
+            // Writes a new line between blocks.
+            fprintf(result_file, "\n");
+        }
+        
+        // Writes a new line betwenn blocks.
+        fprintf(result_file, "\n");
+    } 
+      
+    // Closes the new file.
+    fclose(result_file);
+}
+
+
 // Get grid from file and store it in an array.
 //
 // filename: path of the file where the grid is stored.
