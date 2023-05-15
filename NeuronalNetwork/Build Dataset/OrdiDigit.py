@@ -5,47 +5,65 @@ import cv2
 import os
 from numpy import random
 
-PATH = "/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/emnist_images/"
+PATH_TRAIN = "../../bestDataset/hexadoku/train/"
+PATH_TEST = "../../bestDataset/hexadoku/test/"
 
 s1 = 48
 s2 = 24
 
-def main(num_nbr):
-    #create a folder to store the generated digits
-    if not os.path.exists(PATH):
-        os.makedirs(PATH)
+for n in range(2):
+    PATH = PATH_TRAIN if n==1 else PATH_TEST
 
-    while(num_nbr > 0):
+    def main(num_nbr, hexa=False):
+        #create a folder to store the generated digits
+        if not os.path.exists(PATH):
+            os.makedirs(PATH)
 
-        #loop over all the digits
-        for i in range(1):
-            img = np.zeros((s1,s1), np.uint8)
-            #draw the digit on the image with random font
-            if i != 0:
-            	font = random.choice([cv2.FONT_HERSHEY_SIMPLEX, cv2.FONT_HERSHEY_DUPLEX, cv2.FONT_HERSHEY_COMPLEX, cv2.FONT_HERSHEY_TRIPLEX, cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, cv2.FONT_HERSHEY_SCRIPT_COMPLEX])
-            	font_scale = random.uniform(0.7, 1.7)
-            	thickness = random.randint(1, 4)
-            	cv2.putText(img, str(i), (14,38), font, font_scale, (255,255,255), thickness)
+        while(num_nbr > 0):
 
-
-            #add some noise
-            for t in range(random.randint(0, 100)):
-                img[random.randint(0,s1-1)][random.randint(0,s1-1)] = random.randint(0, 150)
-
-            #add some lines
-            if random.random() > 1 :
-            	for t in range(1):
-            		cv2.line(img, (random.randint(0,s1-1), random.randint(0,s1-1)), (random.randint(0,s1-1), random.randint(0,s1-1)), (255,255,255), 1)            
-            
-            #resize the image
-            img = cv2.resize(img, (s2,s2))
-            #img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)[1] / 255.0
+            #loop over all the digits
+            for i in range(16 if hexa else 10):
+                img = np.zeros((s1,s1), np.uint8)
+                #draw the digit on the image with random font
+                if i != 0:
+                    font = random.choice([cv2.FONT_HERSHEY_SIMPLEX, cv2.FONT_HERSHEY_DUPLEX, cv2.FONT_HERSHEY_COMPLEX, cv2.FONT_HERSHEY_TRIPLEX])
+                    font_scale = random.uniform(0.7, 1.7)
+                    thickness = random.randint(1, 4)
+                    posx, posy = random.randint(10, 18), random.randint(34, 42)
+                    cv2.putText(img, str(i) if i <= 9 else chr(i-10+ord('A')), (posx,posy), font, font_scale, (255,255,255), thickness)
 
 
-            #save the image
-            name = PATH + str(i) + "_" + str(num_nbr) + ".png"
-            cv2.imwrite(name, img)
-            #print("wrote :", name)
-        num_nbr -= 1
+                #add some noise
+                for t in range(random.randint(0, 50)):
+                    img[random.randint(0,s1-1)][random.randint(0,s1-1)] = random.randint(0, 50)
 
-main(27000)
+                #add some lines
+                if random.random() > 0.5 :
+                    #ligne gauche
+                    x, y1, y2 = random.randint(0,10), random.randint(0,10), random.randint(38, 48)
+                    cv2.line(img, (x, y1), (x, y2), (255,255,255), random.randint(1, 4))   
+                if random.random() > 0.5 :
+                    #ligne droite
+                    x, y1, y2 = random.randint(38,48), random.randint(0,10), random.randint(38, 48)
+                    cv2.line(img, (x, y1), (x, y2), (255,255,255), random.randint(1, 4))    
+                if random.random() > 0.5 :
+                    #ligne haut
+                    y, x1, x2 = random.randint(0,10), random.randint(0,10), random.randint(38, 48)
+                    cv2.line(img, (x1, y), (x2, y), (255,255,255), random.randint(1, 4))    
+                if random.random() > 0.5 :
+                    #ligne bas
+                    y, x1, x2 = random.randint(38,48), random.randint(0,10), random.randint(38, 48)
+                    cv2.line(img, (x1, y), (x2, y), (255,255,255), random.randint(1, 4))         
+                
+                #resize the image
+                img = cv2.resize(img, (s2,s2))
+                #img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)[1] / 255.0
+
+
+                #save the image
+                name = PATH + (str(i) if i <= 9 else chr(i-10+ord('A'))) + "_" + str(num_nbr) + ".png"
+                cv2.imwrite(name, img)
+                #print("wrote :", name)
+            num_nbr -= 1
+
+    main(8000 if n==1 else 50, hexa=True)

@@ -123,7 +123,7 @@ SDL_Surface** ProcessImage(char *path, int NB_CELLS)
 
     // MAXIMUM DETECTION - MATRIX PERSPECTIVE TRANSFORM - CELLS EXTRACTION
     // ====================================================
-    SDL_Surface** ocr_eleven = calloc(NB_CELLS * NB_CELLS, sizeof(SDL_Surface*));
+    SDL_Surface** ocr_eleven = (SDL_Surface**)calloc(NB_CELLS * NB_CELLS, sizeof(SDL_Surface*));
     grid_detection(list_rho, list_theta, cut_img, NB_CELLS, ocr_eleven);
     // ====================================================
 

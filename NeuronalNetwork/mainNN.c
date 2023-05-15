@@ -10,8 +10,10 @@
 #include "../Ressources/neuronalNetwork.h"
 #include "../Ressources/saveParams.h"
 
+ 
+
 size_t layerSize = 800;
-size_t nb_iter = 200000;
+size_t nb_iter = 100000;
 
 double string_to_double(char *string)
 {
@@ -44,28 +46,17 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
 
     matrix *v = predictionVector(loaded, p);
 
-    for(size_t j = 0; j < v->col; j++)
-    {
-        for(size_t i = 0; i < v->row; i++)
-        {
-            g_print("%f ", v->data[i*v->col+j]);
-        }
-        g_print("\n");
-    }
-
-    printf("\n");
-
     int* result = malloc(sizeof(int) * nbData * nbData);
     for(size_t j = 0; j < v->col; j++)
     {
         result[j] = 0;
         for(size_t i = 1; i < v->row; i++)
         {
-            // g_print("%f %f \n", v->data[i*v->col+j], v->data[result[j]*v->col+j]);
+            // printf("%f %f \n", v->data[i*v->col+j], v->data[result[j]*v->col+j]);
             if(v->data[i*v->col+j] > v->data[result[j]*v->col+j])
             {
                 result[j] = i;
-                // g_print("%f\n", v->data[i*v->col+j]);
+                // printf("%f\n", v->data[i*v->col+j]);
             }
         }
     }
@@ -79,7 +70,7 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
         {
             if(result[i*nbData+j] == 0)
                 cresult[i][j] = '.';
-            else if(result[i*nbData+j] < 9)
+            else if(result[i*nbData+j] <= 9)
                 cresult[i][j] = result[i*nbData+j] + '0';
             else
                 cresult[i][j] = result[i*nbData+j] + 'A' - 10;
@@ -143,11 +134,11 @@ void TrainNetwork(char *data, char *savepath)
     }
 
     //Train network
-    parameters *p = neuronal_network(inputs, layerSize, layerSize, layerSize, 0.1, nb_iter, 1, NULL);
+    parameters *p = neuronal_network(inputs, layerSize, layerSize, layerSize, 1, nb_iter, 1, NULL);
     //Save parameters to savepath
     SaveParameters(p, savepath);
 
-    Predict("/home/maclow/Documents/EPITA/S3#/Projet/NeuronalNetwork/dataset/normalizedSACHA/", savepath);
+    Predict("./bestDataset/test/", savepath);
    
 }
 
