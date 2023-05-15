@@ -810,7 +810,7 @@ void on_process(GtkButton *button, gpointer user_data)
     // Load the new image into the output_image GtkImage widget
     GtkBuilder *builder = GTK_BUILDER(user_data);
     GtkWidget *output_image = GTK_WIDGET(gtk_builder_get_object(builder, "output_image"));
-    gtk_image_set_from_file(GTK_IMAGE(output_image), "./unsolved.png");
+    gtk_image_set_from_file(GTK_IMAGE(output_image), "./pre.png");
 
     resize_image(output_image, 350, 350);
 
