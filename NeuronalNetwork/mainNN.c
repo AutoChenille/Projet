@@ -12,7 +12,7 @@
 
  
 
-size_t layerSize = 300;
+size_t layerSize = 800;
 size_t nb_iter = 1000;
 
 double string_to_double(char *string)
@@ -36,7 +36,78 @@ char *sizeTToPath(size_t num)
     return result;
 }
 
-char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
+int compareAndGetBest(char nb, size_t x1, size_t y1, size_t x2, size_t y2, matrix *prevVect)
+{
+    float pv1 = prevVect->data[(nb-'0')*81+x1*9+y1];
+    float pv2 = prevVect->data[(nb-'0')*81+x2*9+y2];
+    return pv1 > pv2 ? 1:0;
+}
+
+void opti_conflicts9(char **grid, matrix *prevVect)
+{
+    for(size_t x = 0; x < 9; x++)
+    {
+        for(size_t y = 0; y < 9; y++)
+        {
+            char current = grid[x][y];
+
+            if(current != '.')
+            {
+                // Check column.
+                for(size_t i = 0; i < 9; i++)
+                {
+                    if(grid[i][y] == current && i != x)
+                    {
+                        printf("1 - conflict beetween %li:%li and %li:%li\n", x, y, i, y);
+                        int best = compareAndGetBest(current, x, y, i, y, prevVect);
+                        if(best) //if best == current
+                            grid[i][y] = '.';
+                        else
+                            grid[x][y] = '.';
+                        opti_conflicts9(grid, prevVect);
+
+                    }
+                }
+
+                // Check lines.
+                for(size_t j = 0; j < 9; j++)
+                {
+                    if(grid[x][j] == current && j != y)
+                    {
+                        printf("2 - conflict beetween %li:%li and %li:%li\n", x, y, x, j);
+                        size_t best = compareAndGetBest(current, x, y, x, j, prevVect);
+                        if(best) //if best == current
+                            grid[x][j] = '.';
+                        else
+                            grid[x][y] = '.';
+                        opti_conflicts9(grid, prevVect);
+                    }
+                }
+
+                // Check box.
+                for(size_t i = x/3 * 3; i < (x/3 + 1) * 3; i++)
+                {
+                    for(size_t j = y/3 * 3; j < (y/3 + 1) * 3; j++)
+                    {
+                        if(grid[i][j] == current && (i != x || j != y))
+                        {
+                            printf("3 - conflict beetween %li:%li and %li:%li\n", x, y, i, j);
+                            size_t best = compareAndGetBest(current, x, y, i, j, prevVect);
+                            if(best) //if best == current
+                                grid[i][j] = '.';
+                            else
+                                grid[x][y] = '.';
+                            opti_conflicts9(grid, prevVect);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params, matrix* v)
 {
     parameters *p = LoadParameters(params);
     if(p == NULL)
@@ -44,7 +115,7 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
 
     matrix* loaded = LoadFromSurface(surface, nbData);
 
-    matrix *v = predictionVector(loaded, p);
+    v = predictionVector(loaded, p);
 
     int* result = malloc(sizeof(int) * nbData * nbData);
     for(size_t j = 0; j < v->col; j++)
@@ -52,12 +123,8 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
         result[j] = 0;
         for(size_t i = 1; i < v->row; i++)
         {
-            // printf("%f %f \n", v->data[i*v->col+j], v->data[result[j]*v->col+j]);
             if(v->data[i*v->col+j] > v->data[result[j]*v->col+j])
-            {
                 result[j] = i;
-                // printf("%f\n", v->data[i*v->col+j]);
-            }
         }
     }
 
@@ -74,11 +141,10 @@ char** PredictSurface_9x9(SDL_Surface **surface, size_t nbData, char *params)
                 cresult[i][j] = result[i*nbData+j] + '0';
             else
                 cresult[i][j] = result[i*nbData+j] + 'A' - 10;
-
-            printf("%c ", cresult[i][j]);
         }
-        printf("\n");
     }
+
+    opti_conflicts9(cresult, v);
 
     return cresult;
 }
@@ -138,7 +204,7 @@ void TrainNetwork(char *data, char *savepath)
     //Save parameters to savepath
     SaveParameters(p, savepath);
 
-    Predict("./NeuronalNetwork/dataIMG1/", savepath);
+    Predict("./bestDataset/sudoku_sb/test", savepath);
    
 }
 
