@@ -198,32 +198,36 @@ double noise_level(SDL_Surface* surface)
     int width = surface->w;
     int height = surface->h;
 
-    double count = 0.0;
+    int count = 0;
     
     for (int i = 1; i < width - 1; i++)
     {
         for (int j = 1; j < height - 1; j++)
 	    {
-            double medium = 0.0;
+            double average = 0.0;
 
             // Calculate the average of the neighboring pixels
-            for (int ki = -1; ki <= 1; ki++)
+            for (int k = -1; k <= 1; k++)
 	        {
-                for (int kj = -1; kj <= 1; kj++)
+                for (int l = -1; l <= 1; l++)
 		        {
-                    Uint32 neighborPixel = ((Uint32*)surface->pixels)[(j + kj) * width + (i + ki)];
+                    Uint32 neighbor = ((Uint32*)surface->pixels)[(j + l) * width + (i + k)];
                     Uint8 r, g, b;
-                    SDL_GetRGB(neighborPixel, surface->format, &r, &g, &b);
-                    medium += r;
+                    
+                    SDL_GetRGB(neighbor, surface->format, &r, &g, &b);
+                    average += r;
                 }
             }
-            medium /= 9;
+            average /= 9;
 
             // Get the value of the current pixel
             Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
             Uint8 r, g, b;
+            
             SDL_GetRGB(pixel, surface->format, &r, &g, &b);
-            double val = 1 - (r / medium);
+            
+            double val = 1 - (r / average);
+            
             if (val < 0)
                 val *= -1;
             if (val > 0.5)
@@ -231,7 +235,7 @@ double noise_level(SDL_Surface* surface)
         }
     }
 
-    return count;
+    return (double)count;
 }
 
 // Applies the adaptive threshold algorithm to a surface with a given threshold parameter
@@ -250,6 +254,7 @@ void adaptive_threshold(SDL_Surface* surface, double threshold)
     {
         Uint32 pixel = ((Uint32*)surface->pixels)[y];
         Uint8 r, g, b;
+        
         SDL_GetRGB(pixel, surface->format, &r, &g, &b);
         sum += r;
         thresh[y] = sum;
@@ -262,6 +267,7 @@ void adaptive_threshold(SDL_Surface* surface, double threshold)
 	{
             Uint32 pixel = ((Uint32*)surface->pixels)[i * width + j];
             Uint8 r, g, b;
+            
             SDL_GetRGB(pixel, surface->format, &r, &g, &b);
             sum += r;
             thresh[i * height + j] = thresh[(i - 1) * height + j] + sum;
@@ -278,10 +284,11 @@ void adaptive_threshold(SDL_Surface* surface, double threshold)
             y2 = fmin(j + s2, height - 1);
             count = (x2 - x1) * (y2 - y1);
             sum = thresh[x2 * height + y2] - thresh[x2 * height + (y1 - 1)] - thresh[(x1 - 1) * height + y2]
-	      + thresh[(x1 - 1) * height + (y1 - 1)];
+	        + thresh[(x1 - 1) * height + (y1 - 1)];
 
             Uint32 pixel = ((Uint32*)surface->pixels)[j * width + i];
             Uint8 r, g, b;
+            
             SDL_GetRGB(pixel, surface->format, &r, &g, &b);
 
             if (r * count < sum * (1.0 - threshold))
