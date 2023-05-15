@@ -215,7 +215,8 @@ double noise_level(SDL_Surface* surface)
                     Uint8 r, g, b;
                     
                     SDL_GetRGB(neighbor, surface->format, &r, &g, &b);
-                    average += r;
+                    
+                    average  = average + r;
                 }
             }
 
@@ -228,12 +229,12 @@ double noise_level(SDL_Surface* surface)
             
             SDL_GetRGB(pixel, surface->format, &r, &g, &b);
             
-            double val = 1 - (r / average);
+            double neg = 1 - (r / average);
             
-            if (val < 0)
-                val *= -1;
-            if (val > 0.5)
-                count++;
+            if (neg < 0)
+                neg = neg * (-1);
+            if (neg > 0.5)
+                count = count + 1;
         }
     }
 
