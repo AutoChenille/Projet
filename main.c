@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 //Preprocessing
@@ -20,7 +21,17 @@ char **tosolve;
 int is_activated = 0;
 char *paf = NULL;
 char solving = 0;
-char sudoku[9][9] = {};
+
+char sudoku[9][9] = {{0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0}};
+
 
 
 gulong timer_id;
@@ -49,7 +60,7 @@ int isValidSudoku(char sudoku[9][9]) {
     return 1; // Grid is valid
 }
 
-int isSafe(char sudoku[9][9], int row, int col, int num) {
+int isSafe(char sudoku[9][9], int row, int col, char num) {
     // Check row
     for (int i = 0; i < 9; i++) {
         if (sudoku[row][i] == num) {
@@ -215,18 +226,18 @@ int solveSudoku(char sudoku[9][9]) {
     
     for (int row = 0; row < 9; row++) {
         for (int col = 0; col < 9; col++) {
-            if (sudoku[row][col] == 0) {
+            if (sudoku[row][col] == '.') {
                 for (int num = 1; num <= 9; num++) {
-                    if (isSafe(sudoku, row, col, num)) 
+                    if (isSafe(sudoku, row, col, num+'0')) 
                     {
-                        sudoku[row][col] = num;
+                        sudoku[row][col] = num + '0';
                         
 
                         if (solveSudoku(sudoku)) {
                             return 1;
                         }
 
-                        sudoku[row][col] = 0;
+                        sudoku[row][col] = '.';
                     }
                 }
                 return 0;
@@ -239,21 +250,28 @@ int solveSudoku(char sudoku[9][9]) {
 void solveS(GtkButton* button,  gpointer user_data)
 {
 
+    for (int i = 0; i < 9; i++)
+     {
+        for (int j = 0; j < 9; j++)
+            printf("%c ", sudoku[i][j]);
+        printf("\n");
+     }
+
     GtkBuilder* builder = (GtkBuilder*) user_data;
 
     SolveSudoku(sudoku);
+    
     for (int i = 0; i < 9; i++)
      {
 
         for (int j = 0; j < 9; j++)
         {
-            // Gets entry.
             gchar *buffer = g_strdup_printf("%i%i", i, j);
             GtkEntry* entry = GTK_ENTRY(gtk_builder_get_object(builder, buffer));
 
-            if (sudoku[i][j] != 0)
+            if (sudoku[i][j] != '.')
             {
-                gchar *value = g_strdup_printf("%i", sudoku[i][j]);
+                gchar *value = g_strdup_printf("%c", sudoku[i][j]);
                 gtk_widget_set_sensitive(GTK_WIDGET(entry), TRUE);
                 gtk_entry_set_text(entry, value);
 
@@ -294,7 +312,7 @@ void generate_sudoku(char sudoku[9][9])
     // Initialize the sudoku grid with zeros
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            sudoku[i][j] = 0;
+            sudoku[i][j] = '.';
         }
     }
 
@@ -306,7 +324,7 @@ void generate_sudoku(char sudoku[9][9])
         for (int j = 0; j < 9; j++) {
             // Randomly remove digits
             if (rand() % 2 == 0 || rand() % 2 == 0) {
-                sudoku[i][j] = 0;
+                sudoku[i][j] = '.';
             }
         }
     }
@@ -326,28 +344,7 @@ void start_sudoku(char sudoku[9][9])
         return;
     }
 
-    for (i = 0; i < 9; i++) {
-        for (j = 0; j < 9; j++) {
-            char c = fgetc(fp);
-            while (c == ' ' || c == '\n') {
-                c = fgetc(fp);  // skip whitespace and newlines
-            }
-            if (c == EOF) {
-                g_warning("Reached end of file prematurely");
-                fclose(fp);
-                return;
-            }
-            if (c == '.') {
-                sudoku[i][j] = 0;  // treat '.' as empty cell
-            } else if (c >= '1' && c <= '9') {
-                sudoku[i][j] = c - '0';  // convert character to integer
-            } else {
-                g_warning("Invalid character in file 'sudoku.txt'");
-                fclose(fp);
-                return;
-            }
-        }
-    }
+    get_grid_from_file9("./sudoku.txt", sudoku);
 
     fclose(fp);
     
@@ -433,8 +430,6 @@ void on_validate(GtkButton* button, gpointer user_data)
 {
     GtkBuilder* builder = (GtkBuilder*) user_data;
 
-    int sudoku[9][9] = {};
-
     for (int i = 0; i < 9; i++)
     {
         for (int j = 0; j < 9; j++)
@@ -465,9 +460,6 @@ void on_new(GtkButton* button, gpointer user_data)
 {
     GtkBuilder* builder = (GtkBuilder*) user_data;
 
-    
-
-
     if (timer_id != 0)
     {
         //g_print("coucou\n");
@@ -480,7 +472,6 @@ void on_new(GtkButton* button, gpointer user_data)
         gtk_label_set_text(label, "00 : 00");
         gtk_button_set_label(play_button, "Play");
         generate_sudoku(sudoku);
-
     }
 
        else 
@@ -497,9 +488,9 @@ void on_new(GtkButton* button, gpointer user_data)
             gchar *buffer = g_strdup_printf("%i%i", i, j);
             GtkEntry* entry = GTK_ENTRY(gtk_builder_get_object(builder, buffer));
 
-            if (sudoku[i][j] != 0)
+            if (sudoku[i][j] != '.')
             {
-                gchar *value = g_strdup_printf("%i", sudoku[i][j]);
+                gchar *value = g_strdup_printf("%c", sudoku[i][j]);
                 gtk_widget_set_sensitive(GTK_WIDGET(entry), TRUE);
                 gtk_entry_set_text(entry, value);
 
@@ -798,13 +789,13 @@ void on_process(GtkButton *button, gpointer user_data)
     }*/
 
     printf("all saved\n");
-    
+     
+	   char tosolve9[9][9];
     if(is_activated == SwitchOff)
     {
         //TrainNetwork("./NeuronalNetwork/dataIMG1/", "./overfitWeigth");
         tosolve = PredictSurface_9x9(loaded, NB_CELLS,"./overfitWeigth");
 
-	    char tosolve9[9][9];
 	    for (size_t i = 0; i < 9; i++)
 	        for (size_t j = 0; j < 9; j++)
 	            tosolve9[i][j] = tosolve[i][j];
@@ -813,10 +804,9 @@ void on_process(GtkButton *button, gpointer user_data)
             printf("Error while loading grid");
 
         draw_sudoku(tosolve9, "./unsolved.png");
-
     }
 
-   
+    write_grid_in_file9txt(tosolve9,"./sudoku");
     // Load the new image into the output_image GtkImage widget
     GtkBuilder *builder = GTK_BUILDER(user_data);
     GtkWidget *output_image = GTK_WIDGET(gtk_builder_get_object(builder, "output_image"));
@@ -824,61 +814,6 @@ void on_process(GtkButton *button, gpointer user_data)
 
     resize_image(output_image, 350, 350);
 
-}
-
-// Save the grid in a new file with extension ".txt".
-//
-// grid: grid with the digits of sudoku.
-// filepath: path of the file where the grid is stored.
-void write_grid_in_file9txt(char grid[GRID_DIMENSION9][GRID_DIMENSION9], char filepath[])
-{
-    // Concate filepath and extension.
-    char filepath_extension[strlen(filepath) + 7];
-    filepath_extension[0] = '\0';
-    strcat(filepath_extension, filepath);
-    strcat(filepath_extension, ".txt");
-    
-    // Creates a new file.
-    FILE *result_file = fopen(filepath_extension, "w");
-
-    // Check if file has been created.
-    if (result_file == NULL)
-        errx(EXIT_FAILURE, "Unable to create file.");
-
-    // Writes in file.
-    for (size_t z = 0; z < BOX_DIMENSION9; z++) 
-    {
-        for (size_t i = z * BOX_DIMENSION9; i < BOX_DIMENSION9 + z * BOX_DIMENSION9; i++) 
-        {
-            // First blocks (2 for sudoku and 3 for hexadoku).
-            for (size_t j = 0; j < BOX_DIMENSION9 - 1; j++) 
-            {
-                // 3 charaters for sudoku and 4 for hexadoku.
-                for (size_t k = j * BOX_DIMENSION9; k < BOX_DIMENSION9 + j * BOX_DIMENSION9; k++) 
-                {
-                    fprintf(result_file, "%c", grid[i][k]);
-                }
-        
-                // Deal with ' '.
-                fprintf(result_file, " ");
-            }
-        
-            // Last characters.
-            for (size_t k = (BOX_DIMENSION9 - 1) * BOX_DIMENSION9; k < GRID_DIMENSION9; k++) 
-            {
-                fprintf(result_file, "%c", grid[i][k]);
-            }
-
-            // Writes a new line between blocks.
-            fprintf(result_file, "\n");
-        }
-        
-        // Writes a new line betwenn blocks.
-        fprintf(result_file, "\n");
-    } 
-      
-    // Closes the new file.
-    fclose(result_file);
 }
 
 
