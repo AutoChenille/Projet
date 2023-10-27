@@ -1,3 +1,3 @@
 # Projet
 
-19,51/20
+final note: 19,51/20
